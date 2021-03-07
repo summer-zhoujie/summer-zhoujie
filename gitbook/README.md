@@ -13,7 +13,7 @@ int i= 0;
 <script>
   var gitalk = new Gitalk({
     "clientID": "d116f826bbd61e1744fc",
-    "clientSecret": "e57d59b53fca6ca77b7a0bd8eedf3e28d8977f9a",
+    "clientSecret": "1c68303842916d566cb9855acf2d5124d1747703",
     "repo": "summer-zhoujie.github.io",
     "owner": "summer-zhoujie",
     "admin": ["summer-zhoujie"],
