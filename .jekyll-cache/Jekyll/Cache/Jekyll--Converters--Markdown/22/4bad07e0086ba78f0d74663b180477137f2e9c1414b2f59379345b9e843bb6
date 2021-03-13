@@ -1,0 +1,24 @@
+I"�
+<h1 id="一正常下载-glide-源代码">一、正常下载 Glide 源代码</h1>
+<div class="language-powershell highlighter-rouge"><div class="highlight"><pre class="highlight"><code><table class="rouge-table"><tbody><tr><td class="rouge-gutter gl"><pre class="lineno">1
+</pre></td><td class="rouge-code"><pre><span class="w"> </span><span class="n">git</span><span class="w"> </span><span class="nx">clone</span><span class="w"> </span><span class="nx">https://github.com/bumptech/glide.git</span><span class="w">
+</span></pre></td></tr></tbody></table></code></pre></div></div>
+<h1 id="二提速方案下载-glide">二、提速方案下载 Glide</h1>
+<h2 id="1-下载">1. 下载</h2>
+<p>我们将原本的网站中的 github.com 进行替换为 github.com.cnpmjs.org</p>
+<div class="language-powershell highlighter-rouge"><div class="highlight"><pre class="highlight"><code><table class="rouge-table"><tbody><tr><td class="rouge-gutter gl"><pre class="lineno">1
+</pre></td><td class="rouge-code"><pre><span class="w"> </span><span class="n">git</span><span class="w"> </span><span class="nx">clone</span><span class="w"> </span><span class="nx">https://github.com.cnpmjs.org/bumptech/glide.git</span><span class="w">
+</span></pre></td></tr></tbody></table></code></pre></div></div>
+<h2 id="2-查看-origin-配置">2. 查看 origin 配置</h2>
+<div class="language-powershell highlighter-rouge"><div class="highlight"><pre class="highlight"><code><table class="rouge-table"><tbody><tr><td class="rouge-gutter gl"><pre class="lineno">1
+</pre></td><td class="rouge-code"><pre><span class="w"> </span><span class="n">git</span><span class="w"> </span><span class="nx">config</span><span class="w"> </span><span class="nt">--list</span><span class="w">
+</span></pre></td></tr></tbody></table></code></pre></div></div>
+<p>发现:
+ remote.origin.url=https://github.com.cnpmjs.org/bumptech/glide.git</p>
+<h2 id="3-修改-origin-配置">3. 修改 origin 配置</h2>
+<div class="language-powershell highlighter-rouge"><div class="highlight"><pre class="highlight"><code><table class="rouge-table"><tbody><tr><td class="rouge-gutter gl"><pre class="lineno">1
+2
+</pre></td><td class="rouge-code"><pre><span class="w"> </span><span class="n">git</span><span class="w"> </span><span class="nx">remote</span><span class="w"> </span><span class="nx">rm</span><span class="w"> </span><span class="nx">origin</span><span class="w">
+ </span><span class="n">git</span><span class="w"> </span><span class="nx">remote</span><span class="w"> </span><span class="nx">add</span><span class="w"> </span><span class="nx">origin</span><span class="w"> </span><span class="nx">https://github.com/bumptech/glide.git</span><span class="w">
+</span></pre></td></tr></tbody></table></code></pre></div></div>
+:ET
