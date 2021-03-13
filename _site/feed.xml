@@ -1,122 +1,338 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
   <channel>
-    <title>My Blog</title>
-    <description>写一句你想写的话</description>
-    <link>http://localhost:4000/</link>
-    <atom:link href="http://localhost:4000/feed.xml" rel="self" type="application/rss+xml" />
-    <pubDate>Sun, 21 Apr 2019 17:10:45 +0800</pubDate>
-    <lastBuildDate>Sun, 21 Apr 2019 17:10:45 +0800</lastBuildDate>
-    <generator>Jekyll v3.8.5</generator>
+    <title>Zhoujie Blog</title>
+    <description>关于程序与设计以及架构 | 周杰，Java &amp; Mobile Lover，Software Engineer | 这里是 @caojiele 曹杰乐 的个人博客，与你一起发现更大的世界。</description>
+    <link>https://summer-zhoujie.github.io/</link>
+    <atom:link href="https://summer-zhoujie.github.io/feed.xml" rel="self" type="application/rss+xml" />
+    <pubDate>Sat, 13 Mar 2021 18:39:11 +0800</pubDate>
+    <lastBuildDate>Sat, 13 Mar 2021 18:39:11 +0800</lastBuildDate>
+    <generator>Jekyll v4.2.0</generator>
     
       <item>
-        <title>This is title</title>
-        <description>&lt;h1 id=&quot;title&quot;&gt;Title&lt;/h1&gt;
+        <title>github clone 提速</title>
+        <description>&lt;h1 id=&quot;一正常下载-glide-源代码&quot;&gt;一、正常下载 Glide 源代码&lt;/h1&gt;
+&lt;div class=&quot;language-powershell highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;table class=&quot;rouge-table&quot;&gt;&lt;tbody&gt;&lt;tr&gt;&lt;td class=&quot;rouge-gutter gl&quot;&gt;&lt;pre class=&quot;lineno&quot;&gt;1
+&lt;/pre&gt;&lt;/td&gt;&lt;td class=&quot;rouge-code&quot;&gt;&lt;pre&gt;&lt;span class=&quot;w&quot;&gt; &lt;/span&gt;&lt;span class=&quot;n&quot;&gt;git&lt;/span&gt;&lt;span class=&quot;w&quot;&gt; &lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;clone&lt;/span&gt;&lt;span class=&quot;w&quot;&gt; &lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;https://github.com/bumptech/glide.git&lt;/span&gt;&lt;span class=&quot;w&quot;&gt;
+&lt;/span&gt;&lt;/pre&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/tbody&gt;&lt;/table&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+&lt;h1 id=&quot;二提速方案下载-glide&quot;&gt;二、提速方案下载 Glide&lt;/h1&gt;
+&lt;h2 id=&quot;1-下载&quot;&gt;1. 下载&lt;/h2&gt;
+&lt;p&gt;我们将原本的网站中的 github.com 进行替换为 github.com.cnpmjs.org&lt;/p&gt;
+&lt;div class=&quot;language-powershell highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;table class=&quot;rouge-table&quot;&gt;&lt;tbody&gt;&lt;tr&gt;&lt;td class=&quot;rouge-gutter gl&quot;&gt;&lt;pre class=&quot;lineno&quot;&gt;1
+&lt;/pre&gt;&lt;/td&gt;&lt;td class=&quot;rouge-code&quot;&gt;&lt;pre&gt;&lt;span class=&quot;w&quot;&gt; &lt;/span&gt;&lt;span class=&quot;n&quot;&gt;git&lt;/span&gt;&lt;span class=&quot;w&quot;&gt; &lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;clone&lt;/span&gt;&lt;span class=&quot;w&quot;&gt; &lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;https://github.com.cnpmjs.org/bumptech/glide.git&lt;/span&gt;&lt;span class=&quot;w&quot;&gt;
+&lt;/span&gt;&lt;/pre&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/tbody&gt;&lt;/table&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+&lt;h2 id=&quot;2-查看-origin-配置&quot;&gt;2. 查看 origin 配置&lt;/h2&gt;
+&lt;div class=&quot;language-powershell highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;table class=&quot;rouge-table&quot;&gt;&lt;tbody&gt;&lt;tr&gt;&lt;td class=&quot;rouge-gutter gl&quot;&gt;&lt;pre class=&quot;lineno&quot;&gt;1
+&lt;/pre&gt;&lt;/td&gt;&lt;td class=&quot;rouge-code&quot;&gt;&lt;pre&gt;&lt;span class=&quot;w&quot;&gt; &lt;/span&gt;&lt;span class=&quot;n&quot;&gt;git&lt;/span&gt;&lt;span class=&quot;w&quot;&gt; &lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;config&lt;/span&gt;&lt;span class=&quot;w&quot;&gt; &lt;/span&gt;&lt;span class=&quot;nt&quot;&gt;--list&lt;/span&gt;&lt;span class=&quot;w&quot;&gt;
+&lt;/span&gt;&lt;/pre&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/tbody&gt;&lt;/table&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+&lt;p&gt;发现:
+ remote.origin.url=https://github.com.cnpmjs.org/bumptech/glide.git&lt;/p&gt;
+&lt;h2 id=&quot;3-修改-origin-配置&quot;&gt;3. 修改 origin 配置&lt;/h2&gt;
+&lt;div class=&quot;language-powershell highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;table class=&quot;rouge-table&quot;&gt;&lt;tbody&gt;&lt;tr&gt;&lt;td class=&quot;rouge-gutter gl&quot;&gt;&lt;pre class=&quot;lineno&quot;&gt;1
+2
+&lt;/pre&gt;&lt;/td&gt;&lt;td class=&quot;rouge-code&quot;&gt;&lt;pre&gt;&lt;span class=&quot;w&quot;&gt; &lt;/span&gt;&lt;span class=&quot;n&quot;&gt;git&lt;/span&gt;&lt;span class=&quot;w&quot;&gt; &lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;remote&lt;/span&gt;&lt;span class=&quot;w&quot;&gt; &lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;rm&lt;/span&gt;&lt;span class=&quot;w&quot;&gt; &lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;origin&lt;/span&gt;&lt;span class=&quot;w&quot;&gt;
+ &lt;/span&gt;&lt;span class=&quot;n&quot;&gt;git&lt;/span&gt;&lt;span class=&quot;w&quot;&gt; &lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;remote&lt;/span&gt;&lt;span class=&quot;w&quot;&gt; &lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;add&lt;/span&gt;&lt;span class=&quot;w&quot;&gt; &lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;origin&lt;/span&gt;&lt;span class=&quot;w&quot;&gt; &lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;https://github.com/bumptech/glide.git&lt;/span&gt;&lt;span class=&quot;w&quot;&gt;
+&lt;/span&gt;&lt;/pre&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/tbody&gt;&lt;/table&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
 
-&lt;p&gt;content&lt;/p&gt;
 </description>
-        <pubDate>Sun, 21 Apr 2019 00:00:00 +0800</pubDate>
-        <link>http://localhost:4000/2019/04/21/This-is-Title/</link>
-        <guid isPermaLink="true">http://localhost:4000/2019/04/21/This-is-Title/</guid>
+        <pubDate>Sun, 14 Mar 2021 02:26:06 +0800</pubDate>
+        <link>https://summer-zhoujie.github.io/2021/03/14/markdown-github_speed/</link>
+        <guid isPermaLink="true">https://summer-zhoujie.github.io/2021/03/14/markdown-github_speed/</guid>
         
-        <category>Tylor</category>
+        <category>github</category>
+        
+        <category>代理</category>
         
         
       </item>
     
       <item>
-        <title>Install TensorFlow-GPU by Anaconda (conda install tensorflow-gpu)</title>
-        <description>&lt;h1 id=&quot;install-tensorflow-gpu-by-anaconda-conda-install-tensorflow-gpu&quot;&gt;Install TensorFlow-GPU by Anaconda (conda install tensorflow-gpu)&lt;/h1&gt;
+        <title>Markdown介绍</title>
+        <description>&lt;h2 id=&quot;主要内容&quot;&gt;主要内容&lt;/h2&gt;
+&lt;ul&gt;
+  &lt;li&gt;&lt;a href=&quot;#Markdown是什么&quot;&gt;Markdown是什么&lt;/a&gt;&lt;/li&gt;
+  &lt;li&gt;&lt;a href=&quot;#谁创造了它&quot;&gt;谁创造了它&lt;/a&gt;&lt;/li&gt;
+  &lt;li&gt;&lt;a href=&quot;#为什么要使用它&quot;&gt;为什么要使用它&lt;/a&gt;&lt;/li&gt;
+  &lt;li&gt;&lt;a href=&quot;#怎么使用&quot;&gt;怎么使用&lt;/a&gt;&lt;/li&gt;
+  &lt;li&gt;&lt;a href=&quot;#谁在用&quot;&gt;谁在用&lt;/a&gt;&lt;/li&gt;
+  &lt;li&gt;&lt;a href=&quot;#尝试一下&quot;&gt;尝试一下&lt;/a&gt;&lt;/li&gt;
+  &lt;li&gt;&lt;a href=&quot;#其它&quot;&gt;其它&lt;/a&gt;&lt;/li&gt;
+&lt;/ul&gt;
 
-&lt;h2 id=&quot;it-might-be-the-simplest-way-to-install-tensorflow-or-tensorflow-gpu-by-conda-install-in-the-conda-environment&quot;&gt;It might be the simplest way to install Tensorflow or Tensorflow-GPU by conda install in the conda environment&lt;/h2&gt;
+&lt;h2 id=&quot;正文&quot;&gt;正文&lt;/h2&gt;
 
-&lt;p&gt;Nowadays, there are many tutorials that instruct how to install tensorflow or tensorflow-gpu. However, some people may feel it too complex just like me, because in those ways, you should download and install &lt;a href=&quot;https://www.nvidia.com/Download/index.aspx?lang=en-us&quot;&gt;NVIDIA drivers&lt;/a&gt;, and then download and install &lt;a href=&quot;https://developer.nvidia.com/cuda-downloads&quot;&gt;CUDA&lt;/a&gt; (users need to pay attention to the version), afterwards you may sign an agreement and download cuDNN in &lt;a href=&quot;https://developer.nvidia.com/cudnn&quot;&gt;NVIDIA Developer&lt;/a&gt;. Next, install python, and pip install tensorflow-gpu and so on. It’s not esay for developer to do these, let alone it might causes some other error such as &lt;strong&gt;version not match&lt;/strong&gt;, or &lt;strong&gt;conflict between other python libraries&lt;/strong&gt; and so on. Moreover, if you want to &lt;a href=&quot;https://www.tensorflow.org/install/gpu&quot;&gt;install tensorflow by compilation&lt;/a&gt;, it may take much more time.&lt;/p&gt;
+&lt;h3 id=&quot;markdown是什么&quot;&gt;Markdown是什么&lt;/h3&gt;
+&lt;p&gt;&lt;strong&gt;Markdown&lt;/strong&gt;是一种轻量级&lt;strong&gt;标记语言&lt;/strong&gt;，它以纯文本形式(&lt;em&gt;易读、易写、易更改&lt;/em&gt;)编写文档，并最终以HTML格式发布。  &lt;br /&gt;
+&lt;strong&gt;Markdown&lt;/strong&gt;也可以理解为将以MARKDOWN语法编写的语言转换成HTML内容的工具。&lt;/p&gt;
 
-&lt;p&gt;Thus I strongly reconmend you not to do this, there’s a much easier way to install this. Please read the following article.&lt;/p&gt;
+&lt;h3 id=&quot;谁创造了它&quot;&gt;谁创造了它&lt;/h3&gt;
+&lt;p&gt;它由&lt;a href=&quot;http://www.aaronsw.com/&quot;&gt;&lt;strong&gt;Aaron Swartz&lt;/strong&gt;&lt;/a&gt;和&lt;strong&gt;John Gruber&lt;/strong&gt;共同设计，&lt;strong&gt;Aaron Swartz&lt;/strong&gt;就是那位于去年（&lt;em&gt;2013年1月11日&lt;/em&gt;）自杀,有着&lt;strong&gt;开挂&lt;/strong&gt;一般人生经历的程序员。维基百科对他的&lt;a href=&quot;http://zh.wikipedia.org/wiki/%E4%BA%9A%E4%BC%A6%C2%B7%E6%96%AF%E6%B2%83%E8%8C%A8&quot;&gt;介绍&lt;/a&gt;是：&lt;strong&gt;软件工程师、作家、政治组织者、互联网活动家、维基百科人&lt;/strong&gt;。&lt;/p&gt;
 
-&lt;hr /&gt;
+&lt;p&gt;他有着足以让你跪拜的人生经历：&lt;/p&gt;
+&lt;ul&gt;
+  &lt;li&gt;&lt;strong&gt;14岁&lt;/strong&gt;参与RSS 1.0规格标准的制订。&lt;/li&gt;
+  &lt;li&gt;&lt;strong&gt;2004&lt;/strong&gt;年入读&lt;strong&gt;斯坦福&lt;/strong&gt;，之后退学。&lt;/li&gt;
+  &lt;li&gt;&lt;strong&gt;2005&lt;/strong&gt;年创建&lt;a href=&quot;http://infogami.org/&quot;&gt;Infogami&lt;/a&gt;，之后与&lt;a href=&quot;http://www.reddit.com/&quot;&gt;Reddit&lt;/a&gt;合并成为其合伙人。&lt;/li&gt;
+  &lt;li&gt;&lt;strong&gt;2010&lt;/strong&gt;年创立求进会（Demand Progress），积极参与禁止网络盗版法案（SOPA）活动，最终该提案被撤回。&lt;/li&gt;
+  &lt;li&gt;&lt;strong&gt;2011&lt;/strong&gt;年7月19日，因被控从MIT和JSTOR下载480万篇学术论文并以免费形式上传于网络被捕。&lt;/li&gt;
+  &lt;li&gt;&lt;strong&gt;2013&lt;/strong&gt;年1月自杀身亡。&lt;/li&gt;
+&lt;/ul&gt;
 
-&lt;h2 id=&quot;install-anaconda&quot;&gt;Install Anaconda&lt;/h2&gt;
+&lt;p&gt;&lt;img src=&quot;https://github.com/younghz/Markdown/raw/master/resource/Aaron_Swartz.jpg&quot; alt=&quot;Aaron Swartz&quot; /&gt;&lt;/p&gt;
+
+&lt;p&gt;天才都有早逝的归途。&lt;/p&gt;
+
+&lt;h3 id=&quot;为什么要使用它&quot;&gt;为什么要使用它&lt;/h3&gt;
+&lt;ul&gt;
+  &lt;li&gt;它是易读（看起来舒服）、易写（语法简单）、易更改&lt;strong&gt;纯文本&lt;/strong&gt;。处处体现着&lt;strong&gt;极简主义&lt;/strong&gt;的影子。&lt;/li&gt;
+  &lt;li&gt;兼容HTML，可以转换为HTML格式发布。&lt;/li&gt;
+  &lt;li&gt;跨平台使用。&lt;/li&gt;
+  &lt;li&gt;越来越多的网站支持Markdown。&lt;/li&gt;
+  &lt;li&gt;更方便清晰地组织你的电子邮件。（Markdown-here, Airmail）&lt;/li&gt;
+  &lt;li&gt;摆脱Word（我不是认真的）。&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;h3 id=&quot;怎么使用&quot;&gt;怎么使用&lt;/h3&gt;
+&lt;p&gt;如果不算&lt;strong&gt;扩展&lt;/strong&gt;，Markdown的语法绝对&lt;strong&gt;简单&lt;/strong&gt;到让你爱不释手。&lt;/p&gt;
+
+&lt;p&gt;Markdown语法主要分为如下几大部分：
+&lt;strong&gt;标题&lt;/strong&gt;，&lt;strong&gt;段落&lt;/strong&gt;，&lt;strong&gt;区块引用&lt;/strong&gt;，&lt;strong&gt;代码区块&lt;/strong&gt;，&lt;strong&gt;强调&lt;/strong&gt;，&lt;strong&gt;列表&lt;/strong&gt;，&lt;strong&gt;分割线&lt;/strong&gt;，&lt;strong&gt;链接&lt;/strong&gt;，&lt;strong&gt;图片&lt;/strong&gt;，&lt;strong&gt;反斜杠 &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;\&lt;/code&gt;&lt;/strong&gt;，&lt;strong&gt;符号’`‘&lt;/strong&gt;。&lt;/p&gt;
+
+&lt;h4 id=&quot;41-标题&quot;&gt;4.1 标题&lt;/h4&gt;
+&lt;p&gt;两种形式：&lt;br /&gt;
+1）使用&lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;=&lt;/code&gt;和&lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;-&lt;/code&gt;标记一级和二级标题。&lt;/p&gt;
 &lt;blockquote&gt;
-  &lt;p&gt;&lt;a href=&quot;https://www.anaconda.com/&quot;&gt;Anaconda&lt;/a&gt; is a free and open-source distribution of the Python and R programming languages for scientific computing, that aims to simplify package management and deployment.&lt;/p&gt;
+  &lt;p&gt;一级标题 &lt;br /&gt;
+&lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;=========&lt;/code&gt; &lt;br /&gt;
+二级标题  &lt;br /&gt;
+&lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;---------&lt;/code&gt;&lt;/p&gt;
 &lt;/blockquote&gt;
 
-&lt;p&gt;&lt;strong&gt;You can download anaconda &lt;a href=&quot;https://www.anaconda.com/distribution/#download-section&quot;&gt;here&lt;/a&gt;.&lt;/strong&gt;&lt;/p&gt;
+&lt;p&gt;效果：&lt;/p&gt;
+&lt;blockquote&gt;
+  &lt;h1 id=&quot;一级标题&quot;&gt;一级标题&lt;/h1&gt;
+  &lt;p&gt;二级标题
+———&lt;/p&gt;
+&lt;/blockquote&gt;
 
-&lt;p&gt;One of the advantage of anaconda is that it can create &lt;strong&gt;isolated environment&lt;/strong&gt; in your device, and you can configure any libraries and toolkits in the ‘env’ without affect other environment. Once you are nor satisfied of your configuration, you can simplily delete the environment.&lt;/p&gt;
+&lt;p&gt;2）使用&lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;#&lt;/code&gt;，可表示1-6级标题。&lt;/p&gt;
+&lt;blockquote&gt;
+  &lt;p&gt;# 一级标题 &lt;br /&gt;
+## 二级标题 &lt;br /&gt;
+### 三级标题 &lt;br /&gt;
+#### 四级标题 &lt;br /&gt;
+##### 五级标题 &lt;br /&gt;
+###### 六级标题&lt;/p&gt;
+&lt;/blockquote&gt;
 
-&lt;p&gt;Note that in you are in &lt;strong&gt;China&lt;/strong&gt;, download anaconda might take a long time due to some resons that cannot say. Instead, you can download it from &lt;a href=&quot;https://mirror.tuna.tsinghua.edu.cn/help/anaconda/&quot;&gt;&lt;strong&gt;Tsinghua mirror&lt;/strong&gt;&lt;/a&gt;, and install it &lt;strong&gt;manually&lt;/strong&gt;.&lt;/p&gt;
+&lt;p&gt;效果：&lt;/p&gt;
+&lt;blockquote&gt;
+  &lt;h1 id=&quot;一级标题-1&quot;&gt;一级标题&lt;/h1&gt;
+  &lt;h2 id=&quot;二级标题&quot;&gt;二级标题&lt;/h2&gt;
+  &lt;h3 id=&quot;三级标题&quot;&gt;三级标题&lt;/h3&gt;
+  &lt;h4 id=&quot;四级标题&quot;&gt;四级标题&lt;/h4&gt;
+  &lt;h5 id=&quot;五级标题&quot;&gt;五级标题&lt;/h5&gt;
+  &lt;h6 id=&quot;六级标题&quot;&gt;六级标题&lt;/h6&gt;
+&lt;/blockquote&gt;
 
-&lt;p&gt;After downloading this successfully, try to run the installation file.
-For example, if you use ubuntu, you can cd to the path of the sh file and run the following command:&lt;/p&gt;
+&lt;h4 id=&quot;42-段落&quot;&gt;4.2 段落&lt;/h4&gt;
+&lt;p&gt;段落的前后要有空行，所谓的空行是指没有文字内容。若想在段内强制换行的方式是使用&lt;strong&gt;两个以上&lt;/strong&gt;空格加上回车（引用中换行省略回车）。&lt;/p&gt;
 
-&lt;div class=&quot;language-bash highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;./Anaconda3-5.3.1-Linux-x86_64.sh
-&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
-&lt;p&gt;&lt;strong&gt;&lt;em&gt;Attention that you should change the command above to your own installation file name.&lt;/em&gt;&lt;/strong&gt;&lt;/p&gt;
+&lt;h4 id=&quot;43-区块引用&quot;&gt;4.3 区块引用&lt;/h4&gt;
+&lt;p&gt;在段落的每行或者只在第一行使用符号&lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;&amp;gt;&lt;/code&gt;,还可使用多个嵌套引用，如：&lt;/p&gt;
+&lt;blockquote&gt;
+  &lt;p&gt;&amp;gt; 区块引用&lt;br /&gt;
+&amp;gt;&amp;gt; 嵌套引用&lt;/p&gt;
+&lt;/blockquote&gt;
 
-&lt;p&gt;Then you will successfully install Anaconda!&lt;/p&gt;
+&lt;p&gt;效果：&lt;/p&gt;
+&lt;blockquote&gt;
+  &lt;p&gt;区块引用&lt;/p&gt;
+  &lt;blockquote&gt;
+    &lt;p&gt;嵌套引用&lt;/p&gt;
+  &lt;/blockquote&gt;
+&lt;/blockquote&gt;
 
-&lt;h2 id=&quot;create-new-environment-by-conda&quot;&gt;Create new environment by conda&lt;/h2&gt;
+&lt;h4 id=&quot;44-代码区块&quot;&gt;4.4 代码区块&lt;/h4&gt;
+&lt;p&gt;代码区块的建立是在每行加上4个空格或者一个制表符（如同写代码一样）。如  &lt;br /&gt;
+普通段落：&lt;/p&gt;
 
-&lt;p&gt;If you are unwilling to create conda environment (maybe because of lazy), you can skip this section. However, I strongly reconmend you to create this &lt;strong&gt;for the convience in the future&lt;/strong&gt;.&lt;/p&gt;
+&lt;p&gt;void main()  &lt;br /&gt;
+{  &lt;br /&gt;
+    printf(“Hello, Markdown.”);  &lt;br /&gt;
+}&lt;/p&gt;
 
-&lt;p&gt;Run the command below:&lt;/p&gt;
-&lt;div class=&quot;language-bash highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;conda create &lt;span class=&quot;nt&quot;&gt;-n&lt;/span&gt; tf
-&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
-&lt;p&gt;&lt;img src=&quot;/img/20190328post.jpg&quot; alt=&quot;picture1&quot; /&gt;&lt;/p&gt;
+&lt;p&gt;代码区块：&lt;/p&gt;
 
-&lt;p&gt;‘tf’ is the name of your new conda environment, you can try other names as your own interest.&lt;/p&gt;
+&lt;div class=&quot;language-plaintext highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;table class=&quot;rouge-table&quot;&gt;&lt;tbody&gt;&lt;tr&gt;&lt;td class=&quot;rouge-gutter gl&quot;&gt;&lt;pre class=&quot;lineno&quot;&gt;1
+2
+3
+4
+&lt;/pre&gt;&lt;/td&gt;&lt;td class=&quot;rouge-code&quot;&gt;&lt;pre&gt;void main()
+{
+    printf(&quot;Hello, Markdown.&quot;);
+}
+&lt;/pre&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/tbody&gt;&lt;/table&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
 
-&lt;p&gt;For other management you conda env, you can read &lt;a href=&quot;https://conda.io/projects/conda/en/latest/user-guide/tasks/manage-environments.html?highlight=environment&quot;&gt;this&lt;/a&gt;.&lt;/p&gt;
+&lt;p&gt;&lt;strong&gt;注意&lt;/strong&gt;:需要和普通段落之间存在空行。&lt;/p&gt;
 
-&lt;h2 id=&quot;install-tensorflow&quot;&gt;Install Tensorflow&lt;/h2&gt;
+&lt;h4 id=&quot;45-强调&quot;&gt;4.5 强调&lt;/h4&gt;
+&lt;p&gt;在强调内容两侧分别加上&lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;*&lt;/code&gt;或者&lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;_&lt;/code&gt;，如：&lt;/p&gt;
+&lt;blockquote&gt;
+  &lt;p&gt;*斜体*，_斜体_  &lt;br /&gt;
+**粗体**，__粗体__&lt;/p&gt;
+&lt;/blockquote&gt;
 
-&lt;p&gt;First, you need to change to the env you have just built by conda:&lt;/p&gt;
-&lt;div class=&quot;language-bash highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;nb&quot;&gt;source &lt;/span&gt;activete tf
-&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
-&lt;p&gt;&lt;img src=&quot;/img/20190328post2.jpg&quot; alt=&quot;picture2&quot; /&gt;&lt;/p&gt;
+&lt;p&gt;效果：&lt;/p&gt;
+&lt;blockquote&gt;
+  &lt;p&gt;&lt;em&gt;斜体&lt;/em&gt;，&lt;em&gt;斜体&lt;/em&gt;  &lt;br /&gt;
+&lt;strong&gt;粗体&lt;/strong&gt;，&lt;strong&gt;粗体&lt;/strong&gt;&lt;/p&gt;
+&lt;/blockquote&gt;
 
-&lt;p&gt;For Chinese users, before starting the installation, you may change the source of conda as the same reason before. For more details, read the webcite of &lt;a href=&quot;https://mirror.tuna.tsinghua.edu.cn/help/anaconda/&quot;&gt;Tsinghua Mirror&lt;/a&gt;.
-Chinese users should type in this:&lt;/p&gt;
-&lt;div class=&quot;language-bash highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;conda config &lt;span class=&quot;nt&quot;&gt;--add&lt;/span&gt; channels https://mirrors.tuna.tsinghua.edu.cn/anaconda/pkgs/free/
-conda config &lt;span class=&quot;nt&quot;&gt;--add&lt;/span&gt; channels https://mirrors.tuna.tsinghua.edu.cn/anaconda/pkgs/main/
-conda config &lt;span class=&quot;nt&quot;&gt;--set&lt;/span&gt; show_channel_urls &lt;span class=&quot;nb&quot;&gt;yes&lt;/span&gt;
-&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+&lt;h4 id=&quot;46-列表&quot;&gt;4.6 列表&lt;/h4&gt;
+&lt;p&gt;使用&lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;·&lt;/code&gt;、&lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;+&lt;/code&gt;、或&lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;-&lt;/code&gt;标记无序列表，如：&lt;/p&gt;
+&lt;blockquote&gt;
+  &lt;p&gt;-（+*） 第一项
+-（+*） 第二项
+- （+*）第三项&lt;/p&gt;
+&lt;/blockquote&gt;
 
-&lt;p&gt;Afterwards, type in the command to install TensorFlow you need:&lt;/p&gt;
-&lt;div class=&quot;language-bash highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;conda &lt;span class=&quot;nb&quot;&gt;install &lt;/span&gt;tensorflow-gpu
-&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
-&lt;p&gt;&lt;img src=&quot;/img/20190328post3.jpg&quot; alt=&quot;picture3&quot; /&gt;&lt;/p&gt;
+&lt;p&gt;&lt;strong&gt;注意&lt;/strong&gt;：标记后面最少有一个_空格_或_制表符_。若不在引用区块中，必须和前方段落之间存在空行。&lt;/p&gt;
 
-&lt;p&gt;If you want to install a specific version of tensorflow-gpu or cpu veison, you can change the command like this:&lt;/p&gt;
-&lt;div class=&quot;language-bash highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;conda &lt;span class=&quot;nb&quot;&gt;install &lt;/span&gt;tensorflow-gpu&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;1.10.0  &lt;span class=&quot;c&quot;&gt;#if you want to install 1.10.0 version&lt;/span&gt;
-conda &lt;span class=&quot;nb&quot;&gt;install &lt;/span&gt;tensorflow  &lt;span class=&quot;c&quot;&gt;#if you want to install cpu version&lt;/span&gt;
-&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
-&lt;p&gt;After anaconda solve the environment, you just need to type in ‘y’ to confirm the installation.&lt;/p&gt;
+&lt;p&gt;效果：&lt;/p&gt;
+&lt;blockquote&gt;
+  &lt;ul&gt;
+    &lt;li&gt;第一项&lt;/li&gt;
+    &lt;li&gt;第二项&lt;/li&gt;
+    &lt;li&gt;第三项&lt;/li&gt;
+  &lt;/ul&gt;
+&lt;/blockquote&gt;
 
-&lt;h2 id=&quot;anaconda-will-automatically-install-other-libs-and-toolkits-needed-by-tensorfloweg-cuda-and-cudnn-so-you-have-no-need-to-worry-about-this&quot;&gt;Anaconda will &lt;strong&gt;automatically&lt;/strong&gt; install other libs and toolkits needed by tensorflow(e.g. CUDA, and cuDNN), so you have no need to worry about this.&lt;/h2&gt;
+&lt;p&gt;有序列表的标记方式是将上述的符号换成数字,并辅以&lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;.&lt;/code&gt;，如：&lt;/p&gt;
+&lt;blockquote&gt;
+  &lt;p&gt;1 . 第一项 &lt;br /&gt;
+2 . 第二项  &lt;br /&gt;
+3 . 第三项&lt;/p&gt;
+&lt;/blockquote&gt;
 
-&lt;p&gt;Type in &lt;code class=&quot;highlighter-rouge&quot;&gt;python&lt;/code&gt; to enter the python environment.&lt;/p&gt;
-&lt;div class=&quot;language-python highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;kn&quot;&gt;import&lt;/span&gt; &lt;span class=&quot;nn&quot;&gt;tensorflow&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;as&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;tf&lt;/span&gt;
-&lt;span class=&quot;n&quot;&gt;tf&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;__version__&lt;/span&gt;
-&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
-&lt;p&gt;When you see the version of tensorflow, such as 1.10.0, you have successfully install it.&lt;/p&gt;
+&lt;p&gt;效果：&lt;/p&gt;
+&lt;blockquote&gt;
+  &lt;ol&gt;
+    &lt;li&gt;第一项&lt;/li&gt;
+    &lt;li&gt;第二项&lt;/li&gt;
+    &lt;li&gt;第三项&lt;/li&gt;
+  &lt;/ol&gt;
+&lt;/blockquote&gt;
 
-&lt;p&gt;That’s all, Thank you.&lt;/p&gt;
+&lt;h4 id=&quot;47-分割线&quot;&gt;4.7 分割线&lt;/h4&gt;
+&lt;p&gt;分割线最常使用就是三个或以上&lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;*&lt;/code&gt;，还可以使用&lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;-&lt;/code&gt;和&lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;_&lt;/code&gt;。&lt;/p&gt;
 
-&lt;p&gt;If you encounter any problems, you can open an issue in the &lt;strong&gt;Comment area&lt;/strong&gt;.&lt;/p&gt;
+&lt;h4 id=&quot;48-链接&quot;&gt;4.8 链接&lt;/h4&gt;
+&lt;p&gt;链接可以由两种形式生成：&lt;strong&gt;行内式&lt;/strong&gt;和&lt;strong&gt;参考式&lt;/strong&gt;。  &lt;br /&gt;
+&lt;strong&gt;行内式&lt;/strong&gt;：&lt;/p&gt;
+&lt;blockquote&gt;
+  &lt;p&gt;[caojiele的Markdown库](https:://github.com/caojiele/Markdown “Markdown”)。&lt;/p&gt;
+&lt;/blockquote&gt;
+
+&lt;p&gt;效果：&lt;/p&gt;
+&lt;blockquote&gt;
+  &lt;p&gt;&lt;a href=&quot;https:://github.com/caojiele/Markdown&quot; title=&quot;Markdown&quot;&gt;caojiele的Markdown库&lt;/a&gt;。&lt;/p&gt;
+&lt;/blockquote&gt;
+
+&lt;p&gt;&lt;strong&gt;参考式&lt;/strong&gt;：&lt;/p&gt;
+&lt;blockquote&gt;
+  &lt;p&gt;[caojiele的Markdown库1][1]  &lt;br /&gt;
+[caojiele的Markdown库2][2]  &lt;br /&gt;
+[1]:https:://github.com/caojiele/Markdown “Markdown”  &lt;br /&gt;
+[2]:https:://github.com/caojiele/Markdown “Markdown”&lt;/p&gt;
+&lt;/blockquote&gt;
+
+&lt;p&gt;效果：&lt;/p&gt;
+&lt;blockquote&gt;
+  &lt;p&gt;&lt;a href=&quot;https:://github.com/caojiele/Markdown&quot; title=&quot;Markdown&quot;&gt;caojiele的Markdown库1&lt;/a&gt;  &lt;br /&gt;
+&lt;a href=&quot;https:://github.com/caojiele/Markdown&quot; title=&quot;Markdown&quot;&gt;caojiele的Markdown库2&lt;/a&gt;&lt;/p&gt;
+&lt;/blockquote&gt;
+
+&lt;p&gt;&lt;strong&gt;注意&lt;/strong&gt;：上述的&lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;[1]:https:://github.com/caojiele/Markdown &quot;Markdown&quot;&lt;/code&gt;不出现在区块中。&lt;/p&gt;
+
+&lt;h4 id=&quot;49-图片&quot;&gt;4.9 图片&lt;/h4&gt;
+&lt;p&gt;添加图片的形式和链接相似，只需在链接的基础上前方加一个&lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;！&lt;/code&gt;。&lt;/p&gt;
+&lt;h4 id=&quot;410-反斜杠&quot;&gt;4.10 反斜杠&lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;\&lt;/code&gt;&lt;/h4&gt;
+&lt;p&gt;相当于&lt;strong&gt;反转义&lt;/strong&gt;作用。使符号成为普通符号。&lt;/p&gt;
+&lt;h4 id=&quot;411-符号&quot;&gt;4.11 符号’`’&lt;/h4&gt;
+&lt;p&gt;起到标记作用。如：&lt;/p&gt;
+&lt;blockquote&gt;
+  &lt;p&gt;`ctrl+a`&lt;/p&gt;
+&lt;/blockquote&gt;
+
+&lt;p&gt;效果：&lt;/p&gt;
+&lt;blockquote&gt;
+  &lt;p&gt;&lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;ctrl+a&lt;/code&gt;&lt;/p&gt;
+&lt;/blockquote&gt;
+
+&lt;h4 id=&quot;谁在用&quot;&gt;谁在用？&lt;/h4&gt;
+&lt;p&gt;Markdown的使用者：&lt;/p&gt;
+&lt;ul&gt;
+  &lt;li&gt;GitHub&lt;/li&gt;
+  &lt;li&gt;简书&lt;/li&gt;
+  &lt;li&gt;Stack Overflow&lt;/li&gt;
+  &lt;li&gt;Apollo&lt;/li&gt;
+  &lt;li&gt;Moodle&lt;/li&gt;
+  &lt;li&gt;Reddit&lt;/li&gt;
+  &lt;li&gt;等等&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;h4 id=&quot;尝试一下&quot;&gt;尝试一下&lt;/h4&gt;
+&lt;ul&gt;
+  &lt;li&gt;&lt;strong&gt;Chrome&lt;/strong&gt;下的插件诸如&lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;stackedit&lt;/code&gt;与&lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;markdown-here&lt;/code&gt;等非常方便，也不用担心平台受限。&lt;/li&gt;
+  &lt;li&gt;&lt;strong&gt;在线&lt;/strong&gt;的dillinger.io评价也不错&lt;/li&gt;
+  &lt;li&gt;&lt;strong&gt;Windowns&lt;/strong&gt;下的MarkdownPad也用过，不过免费版的体验不是很好。&lt;/li&gt;
+  &lt;li&gt;&lt;strong&gt;Mac&lt;/strong&gt;下的Mou是国人贡献的，口碑很好。&lt;/li&gt;
+  &lt;li&gt;&lt;strong&gt;Linux&lt;/strong&gt;下的ReText不错。&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;p&gt;&lt;strong&gt;当然，最终境界永远都是笔下是语法，心中格式化 :)。&lt;/strong&gt;&lt;/p&gt;
+
+&lt;hr /&gt;
+&lt;p&gt;&lt;strong&gt;注意&lt;/strong&gt;：不同的Markdown解释器或工具对相应语法（扩展语法）的解释效果不尽相同，具体可参见工具的使用说明。
+虽然有人想出面搞一个所谓的标准化的Markdown，[没想到还惹怒了健在的创始人John Gruber]
+(http://blog.codinghorror.com/standard-markdown-is-now-common-markdown/)。
+&lt;em&gt;**&lt;/em&gt;
+以上基本是所有traditonal markdown的语法。&lt;/p&gt;
+
+&lt;h4 id=&quot;其它&quot;&gt;其它&lt;/h4&gt;
+&lt;p&gt;列表的使用(非traditonal markdown)：&lt;/p&gt;
+
+&lt;p&gt;用&lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;|&lt;/code&gt;表示表格纵向边界，表头和表内容用&lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;-&lt;/code&gt;隔开，并可用&lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;:&lt;/code&gt;进行对齐设置，两边都有&lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;:&lt;/code&gt;则表示居中，若不加&lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;:&lt;/code&gt;则默认左对齐。&lt;/p&gt;
+
+&lt;table&gt;
+  &lt;thead&gt;
+    &lt;tr&gt;
+      &lt;th style=&quot;text-align: center&quot;&gt;代码库&lt;/th&gt;
+      &lt;th&gt;链接&lt;/th&gt;
+    &lt;/tr&gt;
+  &lt;/thead&gt;
+  &lt;tbody&gt;
+    &lt;tr&gt;
+      &lt;td style=&quot;text-align: center&quot;&gt;MarkDown&lt;/td&gt;
+      &lt;td&gt;&lt;a href=&quot;https://github.com/caojiele/Markdown&quot; title=&quot;Markdown&quot;&gt;https://github.com/caojiele/Markdown&lt;/a&gt;&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;td style=&quot;text-align: center&quot;&gt;MarkDownCopy&lt;/td&gt;
+      &lt;td&gt;&lt;a href=&quot;https://github.com/caojiele/Markdown&quot; title=&quot;Markdown&quot;&gt;https://github.com/caojiele/Markdown&lt;/a&gt;&lt;/td&gt;
+    &lt;/tr&gt;
+  &lt;/tbody&gt;
+&lt;/table&gt;
+
+&lt;p&gt;关于其它扩展语法可参见具体工具的使用说明。&lt;/p&gt;
 </description>
-        <pubDate>Fri, 29 Mar 2019 00:00:00 +0800</pubDate>
-        <link>http://localhost:4000/2019/03/29/Install-TensorFlow-GPU-by-Anaconda(conda-install-tensorflow-gpu)/</link>
-        <guid isPermaLink="true">http://localhost:4000/2019/03/29/Install-TensorFlow-GPU-by-Anaconda(conda-install-tensorflow-gpu)/</guid>
+        <pubDate>Mon, 07 Mar 2016 00:00:00 +0800</pubDate>
+        <link>https://summer-zhoujie.github.io/2016/03/07/markdown-demo/</link>
+        <guid isPermaLink="true">https://summer-zhoujie.github.io/2016/03/07/markdown-demo/</guid>
         
-        <category>ubuntu</category>
+        <category>Markdown</category>
         
-        <category>TensorFlow</category>
-        
-        <category>深度学习</category>
-        
-        <category>CUDA</category>
+        <category>标记语言</category>
         
         
       </item>

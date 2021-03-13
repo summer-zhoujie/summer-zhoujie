@@ -1,14 +1,14 @@
 {
-    "name": "wp-blog",
-    "title": "WP Blog",
-    "author": "WP <im.wangpei@outlook.com>",
+    "name": "zhoujie-blog",
+    "title": "Zhoujie Blog",
+    "author": "Zhoujie <skyjimzhoujie@gmail.com>",
     "version": "1.7.0",
-    "homepage": "http://xiaokeai18.github.io",
+    "homepage": "https://summer-zhoujie.github.io",
     "repository": {
         "type": "git",
-        "url": "https://github.com/xiaokeai18/xiaokeai18.github.io"
+        "url": "https://github.com/summer-zhoujie/summer-zhoujie.github.io"
     },
-    "bugs": "https://github.com/xiaokeai18/xiaokeai18.github.io/issues",
+    "bugs": "https://github.com/summer-zhoujie/summer-zhoujie.github.io/issues",
     "devDependencies": {
         "grunt": "~0.4.5",
         "grunt-contrib-less": "~0.11.4",

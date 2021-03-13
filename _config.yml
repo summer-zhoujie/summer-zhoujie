@@ -1,111 +1,124 @@
 # Site settings
-title: Jie Zhou`s Blog
-SEOTitle: Jie Zhou`s Blog
-header-img: img/post-bg-desk.jpg
-email: skyjimzhoujie@gmail.com
-description: "不积跬步, 何以千里!"
-keyword: "Jie Zhou`s Blog"
-url: "http://summer-zhoujie.github.io"
-baseurl: ""      # for example, '/blog' if your blog hosted on 'host/blog'
-github_repo: "https://github.com/summer-zhoujie/summer-zhoujie.github.io.git" # you code repository
+title: Zhoujie Blog
+SEOTitle: 周杰的博客 | Zhoujie Blog
+header-img: img/root/home-bg-fj.jpg
+email:  caojiele1225@126.com
+description: "关于程序与设计以及架构 | 周杰，Java & Mobile Lover，Software Engineer | 这里是 @caojiele 曹杰乐 的个人博客，与你一起发现更大的世界。"
+keyword: "周杰的博客, Zhoujie Blog, 博客, 个人网站, 互联网, Java, Android, 开发"
+url: "https://summer-zhoujie.github.io"              # your host, for absolute URL
+baseurl: ""                             # for example, '/blog' if your blog hosted on 'host/blog'
 
-# Sidebar settings
-sidebar: true                           # whether or not using Sidebar.
-sidebar-about-description: "苟利国家生死以，岂因祸福避趋之~"
-sidebar-avatar: /img/avatar_binggan.jpg      # use absolute URL, seeing it's used in both `/` and `/about/`
-
-
+# Publish posts or collection documents with a future date.
+future: true
 
 # SNS settings
 RSS: false
-# weibo_username:     暂无
-zhihu_username:     暂无
-github_username:    暂无
-facebook_username:  暂无
-jianshu_username:   暂无
-#twitter_username:   暂无
-
-
-
+#zhihu_username:     wang-le-6-62
+github_username:    summer-zhoujie
+#linkedin_username:  Jack-cao-387159129
+#weibo_username:    
+#twitter_username:   
+#facebook_username:  
 
 # Build settings
 # from 2016, 'pygments' is unsupported on GitHub Pages. Use 'rouge' for highlighting instead.
+highlighter: rouge
 permalink: pretty
 paginate: 10
-exclude: ["less","node_modules","Gruntfile.js","package.json","README.md"]
-anchorjs: true                          # if you want to customize anchor. check out line:181 of `post.html`
-
-
+exclude: ["less","node_modules","Gruntfile.js","package.json","README.md","README.zh.md"]
+anchorjs: false                           # if you want to customize anchor. check out line:181 of `post.html`
 
 # Gems
 # from PR#40, to support local preview for Jekyll 3.0
-gems: [jekyll-paginate]
-
-
-
+# make sure you have this gem installed
+# `$ gem install jekyll-paginate`
+plugins: [jekyll-paginate]
 
 # Markdown settings
 # replace redcarpet to kramdown,
 # although redcarpet can auto highlight code, the lack of header-id make the catalog impossible, so I switch to kramdown
 # document: http://jekyllrb.com/docs/configuration/#kramdown
 markdown: kramdown
-highlighter: rouge
-#redcarpet:
-#    extensions: [ "hard_wrap","autolink", "tables", "strikethrough", "superscript", "with_toc_data", "highlight", "prettify","no_intra_emphasis"]
 kramdown:
   input: GFM                            # use Github Flavored Markdown !important
+  syntax_highlighter_opts:
+    span:
+      line_numbers: false
+    block:
+      line_numbers: true
+      start_line: 1
 
-
-
-# Gitalk
+# gitalk settings
 gitalk:
-  enable: true    #是否开启Gitalk评论
-  clientID: d116f826bbd61e1744fc                           #生成的clientID
-  clientSecret: 1c68303842916d566cb9855acf2d5124d1747703    #生成的clientSecret
-  repo: summer-zhoujie.github.io    #仓库名称
-  owner: summer-zhoujie     #github用户名
-  admin: summer-zhoujie
-  distractionFreeMode: true #是否启用类似FB的阴影遮罩
+   enable: true
+   owner: summer-zhoujie
+   repo: summer-zhoujie.github.io
+   clientID: d116f826bbd61e1744fc
+   clientSecret: 1c68303842916d566cb9855acf2d5124d1747703
+   admin: summer-zhoujie
 
-
-# 统计
+# ---------------- #
+#      Search      #
+# ---------------- #
+simple_jekyll_search:
+    # 是否支持全文搜索
+    fulltext: false
+    # 最多显示多少条搜索结果
+    limit: 10
 
 # Analytics settings
 # Baidu Analytics
-ba_track_id: 
+#ba_track_id: 5e4a91c21c
+#ba_track_id:8db676af20
+
 # Google Analytics
-ga_track_id:             # Format: UA-xxxxxx-xx
-ga_domain:                # 默认的是 auto, 这里我是自定义了的域名，你如果没有自己的域名，需要改成auto
+#ga_track_id: 'UA-120526213-1'            # Format: UA-xxxxxx-xx
+#ga_domain: auto
 
+# Baidu Analytics
+#baidu_analytics: 'f449fbb4d143d156c197d3a7a38a779d'
 
-
-
+# Sidebar settings
+sidebar: true                           # whether or not using Sidebar.
+sidebar-about-description: "不积跬步, 何以千里."
+sidebar-avatar: "img/root/head.jpg"      # use absolute URL, seeing it's used in both `/` and `/about/`
 
 # Featured Tags
-featured-tags: true                     # 是否使用首页标签
-featured-condition-size: 1              # 相同标签数量大于这个数，才会出现在首页
-
-
+featured-tags: true                     # whether or not using Feature-Tags
+featured-condition-size: 1              # A tag will be featured if the size of it is more than this condition value
 
 # Progressive Web Apps
 chrome-tab-theme-color: "#000000"
 service-worker: true
 
-
+# MathJax rendering for layout:page (e.g. post preview)
+page-mathjax: false
 
 # Friends
-friends: [
-    {
-        title: "WP",
-        href: "https://wangpei.ink"
-    },{
-        title: "简书·BY",
-        href: "http://www.jianshu.com/u/e71990ada2fd"
-    },{
-        title: "Apple",
-        href: "https://apple.com"
-    },{
-        title: "Apple Developer",
-        href: "https://developer.apple.com/"
-    }
-]
+#friends: [
+#    {
+#        title: "黄玄的博客",
+#        href: "https://huangxuan.me/"
+#    },{
+#        title: "许雪里的博客",
+#        href: "http://www.xuxueli.com/blog/#/"
+#    },{
+#        title: "小马哥的技术博客",
+#        href: "https://mercyblitz.github.io/"
+#    },{
+#        title: "Ebn's Blog",
+#        href: "http://ebnbin.com/"
+#    },{
+#        title: "SmdCn's Blog",
+#        href: "http://blog.smdcn.net"
+#    },{
+#        title: "David's Game",
+#        href: "https://www.ruoyaowu.com/"
+#    },{
+#        title: "DHong Say",
+#        href: "http://dhong.co"
+#    },{
+#        title: "一之笔的博客",
+#        href: "https://yizibi.github.io"
+#    }
+#]
