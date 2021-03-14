@@ -1,0 +1,20 @@
+I"w<h1 id="一加载图片代码">一、加载图片代码</h1>
+<div class="language-java highlighter-rouge"><div class="highlight"><pre class="highlight"><code><table class="rouge-table"><tbody><tr><td class="rouge-gutter gl"><pre class="lineno">1
+</pre></td><td class="rouge-code"><pre><span class="nc">Glide</span><span class="o">.</span><span class="na">with</span><span class="o">(</span><span class="n">activity</span><span class="o">).</span><span class="na">load</span><span class="o">(</span><span class="n">url</span><span class="o">).</span><span class="na">into</span><span class="o">(</span><span class="n">imageView</span><span class="o">);</span>
+</pre></td></tr></tbody></table></code></pre></div></div>
+<h1 id="二流程图">二、流程图</h1>
+<p><img src="https://img-blog.csdnimg.cn/20210310215407519.png?x-oss-process=image/watermark,type_ZmFuZ3poZW5naGVpdGk,shadow_10,text_aHR0cHM6Ly9ibG9nLmNzZG4ubmV0L3FxXzI1Nzc4MzY5,size_16,color_FFFFFF,t_70" alt="在这里插入图片描述" /></p>
+<blockquote>
+  <ol>
+    <li>Glide.with 方法, 创建 RequestManager 实例</li>
+    <li>
+      <p>RequestManager.load 方法, 创建 GenericRequestBuilder 实例, 并打包编/解码, 转码, 图形转换, 下载等工具
+解码: File, InputStream 转换成 Bitmap, Drawable
+编码: 将数据写入缓存区</p>
+    </li>
+    <li>GenericRequestBuilder.into 方法, 使用 load 构建的参数构建一个 Request 实例</li>
+    <li>Request 实例, 执行下载, 解码, 图形变换, 数据转码, 生成 Resource 图片资源</li>
+    <li>onSourceReady 方法, 将处理好的 Resource 回调到 Target 并显示出来</li>
+  </ol>
+</blockquote>
+:ET
