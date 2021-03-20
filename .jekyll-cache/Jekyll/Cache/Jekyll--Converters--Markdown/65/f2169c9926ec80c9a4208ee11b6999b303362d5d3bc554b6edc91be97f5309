@@ -1,0 +1,13 @@
+I"�<h1 id="一流程图解">一、流程图解</h1>
+<p><img src="https://img-blog.csdnimg.cn/20210314175314605.png?x-oss-process=image/watermark,type_ZmFuZ3poZW5naGVpdGk,shadow_10,text_aHR0cHM6Ly9ibG9nLmNzZG4ubmV0L3FxXzI1Nzc4MzY5,size_16,color_FFFFFF,t_70" alt="在这里插入图片描述" /></p>
+<blockquote>
+  <p>注意:</p>
+  <ul>
+    <li>一个 Fragment / Activity 会对应生成一个 RequestManager</li>
+    <li>一个 Application 对应一个 applicationManager , 这是一个全局唯一的 RequestManager</li>
+    <li>每个 RequestManager 会有一个 Lifecycle 和 一个 RequestTracker</li>
+    <li>每个 RequestTracker 有个 List&lt; Request &gt;
+<img src="https://img-blog.csdnimg.cn/20210314182433256.png?x-oss-process=image/watermark,type_ZmFuZ3poZW5naGVpdGk,shadow_10,text_aHR0cHM6Ly9ibG9nLmNzZG4ubmV0L3FxXzI1Nzc4MzY5,size_16,color_FFFFFF,t_70" alt="在这里插入图片描述" /></li>
+  </ul>
+</blockquote>
+:ET

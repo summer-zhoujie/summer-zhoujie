@@ -1,0 +1,10 @@
+I"�<h1 id="一作用">一、作用</h1>
+<p><img src="https://img-blog.csdnimg.cn/20210317194500875.png?x-oss-process=image/watermark,type_ZmFuZ3poZW5naGVpdGk,shadow_10,text_aHR0cHM6Ly9ibG9nLmNzZG4ubmV0L3FxXzI1Nzc4MzY5,size_16,color_FFFFFF,t_70" alt="在这里插入图片描述" /></p>
+<ol>
+  <li>Android 中图片显示的实体其实是一个 Bitmap 对象, 每次图片显示时, 都会构建一个 Bitmap 对象, 不用时再销毁</li>
+  <li>假设: 一个长列表每项都有个图片需要显示, 我们在快速滑动长列表的时候, 会产生什么?
+  	Bitmap 对象被频繁的创建和释放, 导致 GC 频繁</li>
+  <li>如何解决上述问题?
+ BitmapPool , 一个 Bitmap 的对象池, 让一个新的图片资源复用在旧的 Bitmap对象上, 假设, 长列表一页有 20 个图片资源, BitmapPool 大小也刚好是 20 , 那么当滑动列表的时候, 我们一直在沿用最开始创建的 20 个 Bitmap 对象, 也就解决了频繁 GC 的问题(频繁的 GC 会导致卡顿)</li>
+</ol>
+:ET

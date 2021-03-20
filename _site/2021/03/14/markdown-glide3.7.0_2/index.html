@@ -34,7 +34,7 @@ Glide.with(activity).load(url).into(imageView);
     
     <meta property="article:tag" content="glide3.7.0">
     
-    <meta property="article:tag" content="三方源码">
+    <meta property="article:tag" content="源码">
     
     
     <meta property="og:image" content="https://summer-zhoujie.github.ioimg/root/head.jpg">
@@ -253,7 +253,7 @@ Glide.with(activity).load(url).into(imageView);
                         
                         <a class="tag" href="/archive/?tag=glide3.7.0" title="glide3.7.0">glide3.7.0</a>
                         
-                        <a class="tag" href="/archive/?tag=%E4%B8%89%E6%96%B9%E6%BA%90%E7%A0%81" title="三方源码">三方源码</a>
+                        <a class="tag" href="/archive/?tag=%E6%BA%90%E7%A0%81" title="源码">源码</a>
                         
                     </div>
                     <h1>Android Glide 3.7.0 源码解析 (二) , 从一次图片加载流程看源码</h1>
@@ -380,7 +380,7 @@ Glide.with(activity).load(url).into(imageView);
 </pre></td></tr></tbody></table></code></pre></div></div>
 <blockquote>
   <ul>
-    <li>RequestManagerFragment 是用来监测生命周期, 内存的, 另外网络状态 ConnectivityMonitor 也会将自己绑入生命周期, 不是主线这里不做赘述, 详细原理可以点击查看这篇文章, <a href="">Android Glide 3.7.0 源码解析(X), 生命周期(暂未编写,这里做个标记)</a></li>
+    <li>RequestManagerFragment 是用来监测生命周期, 内存的, 另外网络状态 ConnectivityMonitor 也会将自己绑入生命周期, 不是主线这里不做赘述, 详细原理可以点击查看这篇文章, <a href="/2021/03/20/markdown-glide3.7.0_3/index.html">Android Glide 3.7.0 源码解析(三), 生命周期绑定</a></li>
   </ul>
 </blockquote>
 
@@ -1859,7 +1859,7 @@ A == String.class</p>
 </pre></td></tr></tbody></table></code></pre></div></div>
 <blockquote>
   <p>Glide 会按照 ImageView 控件的大小来计算所需要的图片的大小, 尽量减少内存开支
-如果对于 异步计算界面 ImageView 组件大小感兴趣 , 可以看看这篇文章 <a href="">Android Glide 3.7.0 源码解析(X), 如何异步获取 ImageView 的组件长宽(暂未实现, 标记一下免得忘记)</a></p>
+如果对于 异步计算界面 ImageView 组件大小感兴趣 , 可以看看这篇文章 <a href="/2021/03/20/markdown-glide3.7.0_5/index.html">Android Glide 3.7.0 源码解析(五) , 如何获得ImageView的宽高</a></p>
 </blockquote>
 
 <p>下面进入 onSizeReady 继续</p>
@@ -3265,6 +3265,13 @@ A == String.class</p>
                     </li>
                     
                     
+                    <li class="next">
+                        <a href="/2021/03/20/markdown-glide3.7.0_3/" data-toggle="tooltip" data-placement="top" title="Android Glide 3.7.0 源码解析(三), 生命周期绑定">
+                        Next<br>
+                        <span>Android Glide 3.7.0 源码解析(三), 生命周期绑定</span>
+                        </a>
+                    </li>
+                    
                 </ul>
                 <hr style="visibility: hidden;">
 
@@ -3337,12 +3344,12 @@ gitalk.render('gitalk-container')
                 <a data-sort="0002" 
                     href="/archive/?tag=glide3.7.0"
                     title="glide3.7.0"
-                    rel="2">glide3.7.0</a>
+                    rel="5">glide3.7.0</a>
         
                 <a data-sort="0002" 
-                    href="/archive/?tag=%E4%B8%89%E6%96%B9%E6%BA%90%E7%A0%81"
-                    title="三方源码"
-                    rel="2">三方源码
+                    href="/archive/?tag=%E6%BA%90%E7%A0%81"
+                    title="源码"
+                    rel="5">源码
     </div>
 </section>
 

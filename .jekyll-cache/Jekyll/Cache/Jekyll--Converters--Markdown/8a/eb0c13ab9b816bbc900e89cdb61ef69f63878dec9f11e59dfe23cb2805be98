@@ -1,0 +1,819 @@
+I"��<h1 id="一作用">一、作用</h1>
+<p><img src="https://img-blog.csdnimg.cn/20210317194500875.png?x-oss-process=image/watermark,type_ZmFuZ3poZW5naGVpdGk,shadow_10,text_aHR0cHM6Ly9ibG9nLmNzZG4ubmV0L3FxXzI1Nzc4MzY5,size_16,color_FFFFFF,t_70" alt="在这里插入图片描述" /></p>
+<ol>
+  <li>Android 中图片显示的实体其实是一个 Bitmap 对象, 每次图片显示时, 都会构建一个 Bitmap 对象, 不用时再销毁</li>
+  <li>假设: 一个长列表每项都有个图片需要显示, 我们在快速滑动长列表的时候, 会产生什么?
+  	Bitmap 对象被频繁的创建和释放, 导致 GC 频繁</li>
+  <li>如何解决上述问题?
+ BitmapPool , 一个 Bitmap 的对象池, 让一个新的图片资源复用在旧的 Bitmap对象上, 假设, 长列表一页有 20 个图片资源, BitmapPool 大小也刚好是 20 , 那么当滑动列表的时候, 我们一直在沿用最开始创建的 20 个 Bitmap 对象, 也就解决了频繁 GC 的问题(频繁的 GC 会导致卡顿)</li>
+</ol>
+
+<h1 id="二原理">二、原理</h1>
+<p><img src="https://img-blog.csdnimg.cn/20210317200040202.png?x-oss-process=image/watermark,type_ZmFuZ3poZW5naGVpdGk,shadow_10,text_aHR0cHM6Ly9ibG9nLmNzZG4ubmV0L3FxXzI1Nzc4MzY5,size_16,color_FFFFFF,t_70" alt="在这里插入图片描述" /></p>
+
+<h2 id="框架结构">框架结构</h2>
+<p>如上图:</p>
+<ol>
+  <li>BitmapPool 一共有两种实现 <strong>BitmapPoolAdapter</strong> 和 <strong>LruBitmapPool</strong></li>
+  <li>其中, <strong>BitmapPoolAdapter</strong> 是<strong>空实现</strong></li>
+  <li><strong>LruBitmapPool</strong> 字面意思可猜: <strong>一个 LRU 算法实现的 Bitmap 缓存池</strong></li>
+  <li>LruBitmapPool 的 <strong>LRU 算法</strong>实现依赖于 <strong>LruPoolStrategy 提供功能支持</strong></li>
+  <li>又 , LruPoolStrategy 有三种实现方案 <strong>AttributeStrategy</strong> , <strong>SizeConfigStrategy</strong> 和 <strong>SizeStrategy</strong></li>
+</ol>
+
+<h2 id="接口抽象">接口抽象</h2>
+<p>先来看看 BitmapPool 接口是如何抽象的</p>
+<div class="language-java highlighter-rouge"><div class="highlight"><pre class="highlight"><code><table class="rouge-table"><tbody><tr><td class="rouge-gutter gl"><pre class="lineno">1
+2
+3
+4
+5
+6
+7
+8
+9
+10
+11
+12
+13
+14
+15
+16
+17
+18
+19
+20
+21
+22
+23
+24
+25
+26
+27
+28
+29
+30
+31
+32
+33
+34
+35
+36
+37
+38
+39
+40
+41
+42
+43
+44
+45
+46
+47
+48
+49
+50
+</pre></td><td class="rouge-code"><pre><span class="cm">/**
+ * 定义了一个允许复用 Bitmap 对象的池子的接口
+ */</span>
+<span class="kd">public</span> <span class="kd">interface</span> <span class="nc">BitmapPool</span> <span class="o">{</span>
+
+    <span class="cm">/**
+     * 返回当前 BitmapPool 的最大容量，单位是 byte 字节
+     */</span>
+    <span class="kt">int</span> <span class="nf">getMaxSize</span><span class="o">();</span>
+
+    <span class="cm">/**
+     * 可以通过此方法设置一个因子，此因子会乘以最开始设置的最大容量，将结果作为新的最大容量
+     *
+     * Note1: 上面计算完成以后，如果 BitmapPool 的当前实际容量比当前最大容量大，则会清除 BitampPool 中的对象，直到当前实际容量小于当前最大容量
+     * Note2: 开发者可以通过此方法动态地、同步地调整 BitmapPool 最大容量
+     */</span>
+    <span class="kt">void</span> <span class="nf">setSizeMultiplier</span><span class="o">(</span><span class="kt">float</span> <span class="n">sizeMultiplier</span><span class="o">);</span>
+
+    <span class="cm">/**
+     * 加入一个新的不用的 bitmap 实例到池子中, 如果加入失败返回 false 且 , 需要调用者自行执行 bitmap.recycle() 来释放资源
+     *
+     * 可能返回失败的情况:
+     * 1. bitmap.isMutable() 返回false
+     * 2. bitmap 加入之后就超过了池子的最大容量
+     */</span>
+    <span class="kt">boolean</span> <span class="nf">put</span><span class="o">(</span><span class="nc">Bitmap</span> <span class="n">bitmap</span><span class="o">);</span>
+
+    <span class="cm">/**
+     * 根据传入的条件返回合适的 bitmap 实例, 如果没有合适的则返回null
+     * 该方法会默认擦除原 bitmap 实例中存储的像素值, 赋值成透明
+     * 速度比 getDirty() 要慢些
+     */</span>
+    <span class="nc">Bitmap</span> <span class="nf">get</span><span class="o">(</span><span class="kt">int</span> <span class="n">width</span><span class="o">,</span> <span class="kt">int</span> <span class="n">height</span><span class="o">,</span> <span class="nc">Bitmap</span><span class="o">.</span><span class="na">Config</span> <span class="n">config</span><span class="o">);</span>
+
+    <span class="cm">/**
+     * 和 get() 方法语义一致, 区别是, 不会擦除旧的像素数据
+     * 速度比 get() 要快
+     */</span>
+    <span class="nc">Bitmap</span> <span class="nf">getDirty</span><span class="o">(</span><span class="kt">int</span> <span class="n">width</span><span class="o">,</span> <span class="kt">int</span> <span class="n">height</span><span class="o">,</span> <span class="nc">Bitmap</span><span class="o">.</span><span class="na">Config</span> <span class="n">config</span><span class="o">);</span>
+
+    <span class="cm">/**
+     * 清空池子中的缓存数据
+     */</span>
+    <span class="kt">void</span> <span class="nf">clearMemory</span><span class="o">();</span>
+
+    <span class="cm">/**
+     * 做指定级别的缓存数据清空 ( 意思是清除多少数据由 level 决定 )
+     */</span>
+    <span class="kt">void</span> <span class="nf">trimMemory</span><span class="o">(</span><span class="kt">int</span> <span class="n">level</span><span class="o">);</span>
+<span class="o">}</span>
+</pre></td></tr></tbody></table></code></pre></div></div>
+<p>看完上面的接口抽象, 大家应该对 BitmapPool 要实现的功能有所了解了, 下面来看看 BitmapPool 的具体实现</p>
+<ol>
+  <li><strong>BitmapPoolAdapter</strong>  空实现</li>
+  <li><strong>LruBitmapPool</strong> 遵循 LRU(least recently used) 算法的实现</li>
+</ol>
+
+<h2 id="bitmappooladapter-空实现">BitmapPoolAdapter 空实现</h2>
+<div class="language-java highlighter-rouge"><div class="highlight"><pre class="highlight"><code><table class="rouge-table"><tbody><tr><td class="rouge-gutter gl"><pre class="lineno">1
+2
+3
+4
+5
+6
+7
+8
+9
+10
+11
+12
+13
+14
+15
+16
+17
+18
+19
+20
+21
+22
+23
+24
+25
+26
+27
+28
+29
+30
+31
+32
+33
+34
+35
+36
+37
+</pre></td><td class="rouge-code"><pre><span class="kd">public</span> <span class="kd">class</span> <span class="nc">BitmapPoolAdapter</span> <span class="kd">implements</span> <span class="nc">BitmapPool</span> <span class="o">{</span>
+    <span class="nd">@Override</span>
+    <span class="kd">public</span> <span class="kt">int</span> <span class="nf">getMaxSize</span><span class="o">()</span> <span class="o">{</span>
+        <span class="k">return</span> <span class="mi">0</span><span class="o">;</span>
+    <span class="o">}</span>
+
+    <span class="nd">@Override</span>
+    <span class="kd">public</span> <span class="kt">void</span> <span class="nf">setSizeMultiplier</span><span class="o">(</span><span class="kt">float</span> <span class="n">sizeMultiplier</span><span class="o">)</span> <span class="o">{</span>
+        <span class="c1">// Do nothing.</span>
+    <span class="o">}</span>
+
+    <span class="nd">@Override</span>
+    <span class="kd">public</span> <span class="kt">boolean</span> <span class="nf">put</span><span class="o">(</span><span class="nc">Bitmap</span> <span class="n">bitmap</span><span class="o">)</span> <span class="o">{</span>
+    	<span class="c1">// 空实现, 谁来都返回 false</span>
+        <span class="k">return</span> <span class="kc">false</span><span class="o">;</span>
+    <span class="o">}</span>
+
+    <span class="nd">@Override</span>
+    <span class="kd">public</span> <span class="nc">Bitmap</span> <span class="nf">get</span><span class="o">(</span><span class="kt">int</span> <span class="n">width</span><span class="o">,</span> <span class="kt">int</span> <span class="n">height</span><span class="o">,</span> <span class="nc">Bitmap</span><span class="o">.</span><span class="na">Config</span> <span class="n">config</span><span class="o">)</span> <span class="o">{</span>
+        <span class="k">return</span> <span class="kc">null</span><span class="o">;</span>
+    <span class="o">}</span>
+
+    <span class="nd">@Override</span>
+    <span class="kd">public</span> <span class="nc">Bitmap</span> <span class="nf">getDirty</span><span class="o">(</span><span class="kt">int</span> <span class="n">width</span><span class="o">,</span> <span class="kt">int</span> <span class="n">height</span><span class="o">,</span> <span class="nc">Bitmap</span><span class="o">.</span><span class="na">Config</span> <span class="n">config</span><span class="o">)</span> <span class="o">{</span>
+        <span class="k">return</span> <span class="kc">null</span><span class="o">;</span>
+    <span class="o">}</span>
+
+    <span class="nd">@Override</span>
+    <span class="kd">public</span> <span class="kt">void</span> <span class="nf">clearMemory</span><span class="o">()</span> <span class="o">{</span>
+        <span class="c1">// Do nothing.</span>
+    <span class="o">}</span>
+
+    <span class="nd">@Override</span>
+    <span class="kd">public</span> <span class="kt">void</span> <span class="nf">trimMemory</span><span class="o">(</span><span class="kt">int</span> <span class="n">level</span><span class="o">)</span> <span class="o">{</span>
+        <span class="c1">// Do nothing.</span>
+    <span class="o">}</span>
+<span class="o">}</span>
+</pre></td></tr></tbody></table></code></pre></div></div>
+<p>可以直接看 put() 方法, 谁来都返回 false , 池子里不可能有数据, 所以很容易得出, 是个<strong>假实现</strong></p>
+<ul>
+  <li><strong>问题: 为啥需要这个假实现 ???</strong>
+追踪 Glide 中 BitmapPool 初始化的地方
+    <div class="language-java highlighter-rouge"><div class="highlight"><pre class="highlight"><code><table class="rouge-table"><tbody><tr><td class="rouge-gutter gl"><pre class="lineno">1
+2
+3
+4
+5
+6
+7
+8
+9
+10
+11
+12
+13
+14
+15
+</pre></td><td class="rouge-code"><pre><span class="c1">// GlideBuilder</span>
+  <span class="nc">Glide</span> <span class="nf">createGlide</span><span class="o">()</span> <span class="o">{</span>
+      <span class="o">...</span>
+      <span class="k">if</span> <span class="o">(</span><span class="n">bitmapPool</span> <span class="o">==</span> <span class="kc">null</span><span class="o">)</span> <span class="o">{</span>
+      	<span class="c1">// Build.VERSION_CODES.HONEYCOMB ( api: 11 , android 3.0)</span>
+          <span class="k">if</span> <span class="o">(</span><span class="nc">Build</span><span class="o">.</span><span class="na">VERSION</span><span class="o">.</span><span class="na">SDK_INT</span> <span class="o">&gt;=</span> <span class="nc">Build</span><span class="o">.</span><span class="na">VERSION_CODES</span><span class="o">.</span><span class="na">HONEYCOMB</span><span class="o">)</span> <span class="o">{</span>
+              <span class="kt">int</span> <span class="n">size</span> <span class="o">=</span> <span class="n">calculator</span><span class="o">.</span><span class="na">getBitmapPoolSize</span><span class="o">();</span>
+              <span class="n">bitmapPool</span> <span class="o">=</span> <span class="k">new</span> <span class="nc">LruBitmapPool</span><span class="o">(</span><span class="n">size</span><span class="o">);</span>
+          <span class="o">}</span> <span class="k">else</span> <span class="o">{</span>
+          	<span class="c1">// android 3.0 以下需要这个空实现</span>
+              <span class="n">bitmapPool</span> <span class="o">=</span> <span class="k">new</span> <span class="nc">BitmapPoolAdapter</span><span class="o">();</span>
+          <span class="o">}</span>
+      <span class="o">}</span>
+      <span class="o">...</span>
+  <span class="o">}</span>
+</pre></td></tr></tbody></table></code></pre></div>    </div>
+    <p>因为在3.0以前 Bitmap 的数据是存在 native 区域，3.0以后存在 Dalvik 内存区域，API11 后 系统提供了 Bitmap 复用的 API, <a href="https://developer.android.com/topic/performance/graphics/manage-memory.html">官方详细传送门</a>
+分析完 BitmapPoolAdapter 空实现存在的意义, 赶紧来看看正经实现长啥样</p>
+  </li>
+</ul>
+
+<h2 id="lrubitmappool-lru算法实现">LruBitmapPool LRU算法实现</h2>
+
+<h3 id="lrubitmappool-外壳">LruBitmapPool 外壳</h3>
+<p>先看构造函数</p>
+<div class="language-java highlighter-rouge"><div class="highlight"><pre class="highlight"><code><table class="rouge-table"><tbody><tr><td class="rouge-gutter gl"><pre class="lineno">1
+2
+3
+4
+5
+6
+7
+8
+9
+10
+11
+12
+</pre></td><td class="rouge-code"><pre><span class="c1">// LruBitmapPool</span>
+	<span class="kd">public</span> <span class="nf">LruBitmapPool</span><span class="o">(</span><span class="kt">int</span> <span class="n">maxSize</span><span class="o">)</span> <span class="o">{</span>
+        <span class="k">this</span><span class="o">(</span><span class="n">maxSize</span><span class="o">,</span> <span class="n">getDefaultStrategy</span><span class="o">(),</span> <span class="n">getDefaultAllowedConfigs</span><span class="o">());</span>
+    <span class="o">}</span>
+
+	<span class="nc">LruBitmapPool</span><span class="o">(</span><span class="kt">int</span> <span class="n">maxSize</span><span class="o">,</span> <span class="nc">LruPoolStrategy</span> <span class="n">strategy</span><span class="o">,</span> <span class="nc">Set</span><span class="o">&lt;</span><span class="nc">Bitmap</span><span class="o">.</span><span class="na">Config</span><span class="o">&gt;</span> <span class="n">allowedConfigs</span><span class="o">)</span> <span class="o">{</span>
+        <span class="k">this</span><span class="o">.</span><span class="na">initialMaxSize</span> <span class="o">=</span> <span class="n">maxSize</span><span class="o">;</span>
+        <span class="k">this</span><span class="o">.</span><span class="na">maxSize</span> <span class="o">=</span> <span class="n">maxSize</span><span class="o">;</span>
+        <span class="k">this</span><span class="o">.</span><span class="na">strategy</span> <span class="o">=</span> <span class="n">strategy</span><span class="o">;</span>
+        <span class="k">this</span><span class="o">.</span><span class="na">allowedConfigs</span> <span class="o">=</span> <span class="n">allowedConfigs</span><span class="o">;</span>
+        <span class="k">this</span><span class="o">.</span><span class="na">tracker</span> <span class="o">=</span> <span class="k">new</span> <span class="nc">NullBitmapTracker</span><span class="o">();</span>
+    <span class="o">}</span>
+</pre></td></tr></tbody></table></code></pre></div></div>
+<blockquote>
+  <p>有几个问题需要弄明白:</p>
+  <ol>
+    <li>size 传的多少, 在哪边计算的?
+默认4个屏幕大小, 在 MemorySizeCalculator 中可查找答案</li>
+    <li>strategy 是干嘛的?
+真正实现 LRU 策略的地方</li>
+    <li>allowedConfigs 又是干嘛的?
+约束缓存的 Bitmap 实例的 config, 要求必须是 allowedConfigs 中的一种</li>
+  </ol>
+</blockquote>
+
+<p>池子最主要是看 get() 和 put() 方法</p>
+<div class="language-java highlighter-rouge"><div class="highlight"><pre class="highlight"><code><table class="rouge-table"><tbody><tr><td class="rouge-gutter gl"><pre class="lineno">1
+2
+3
+4
+5
+6
+7
+8
+9
+10
+11
+12
+13
+14
+15
+16
+17
+18
+19
+20
+21
+22
+23
+24
+25
+26
+27
+28
+29
+30
+31
+32
+33
+34
+35
+36
+37
+38
+39
+40
+41
+42
+43
+44
+45
+46
+</pre></td><td class="rouge-code"><pre><span class="kd">public</span> <span class="kd">class</span> <span class="nc">LruBitmapPool</span> <span class="kd">implements</span> <span class="nc">BitmapPool</span> <span class="o">{</span>
+	<span class="nd">@Override</span>
+    <span class="kd">public</span> <span class="kd">synchronized</span> <span class="kt">boolean</span> <span class="nf">put</span><span class="o">(</span><span class="nc">Bitmap</span> <span class="n">bitmap</span><span class="o">)</span> <span class="o">{</span>
+        <span class="k">if</span> <span class="o">(</span><span class="n">bitmap</span> <span class="o">==</span> <span class="kc">null</span><span class="o">)</span> <span class="o">{</span>
+            <span class="k">throw</span> <span class="k">new</span> <span class="nf">NullPointerException</span><span class="o">(</span><span class="s">"Bitmap must not be null"</span><span class="o">);</span>
+        <span class="o">}</span>
+        <span class="k">if</span> <span class="o">(!</span><span class="n">bitmap</span><span class="o">.</span><span class="na">isMutable</span><span class="o">()</span> <span class="o">||</span> <span class="n">strategy</span><span class="o">.</span><span class="na">getSize</span><span class="o">(</span><span class="n">bitmap</span><span class="o">)</span> <span class="o">&gt;</span> <span class="n">maxSize</span> <span class="o">||</span> <span class="o">!</span><span class="n">allowedConfigs</span><span class="o">.</span><span class="na">contains</span><span class="o">(</span><span class="n">bitmap</span><span class="o">.</span><span class="na">getConfig</span><span class="o">()))</span> <span class="o">{</span>
+            <span class="c1">// bitmap.isMutable() == false;</span>
+            <span class="c1">// 加入这个 bitmap 实例, 会超出池子的最大存储容量</span>
+            <span class="c1">// 这个 bitmap 的 config 不在池子允许的范畴内</span>
+            <span class="k">return</span> <span class="kc">false</span><span class="o">;</span>
+        <span class="o">}</span>
+
+        <span class="kd">final</span> <span class="kt">int</span> <span class="n">size</span> <span class="o">=</span> <span class="n">strategy</span><span class="o">.</span><span class="na">getSize</span><span class="o">(</span><span class="n">bitmap</span><span class="o">);</span>
+        <span class="c1">// 加入真正的 LRU 缓存中</span>
+        <span class="n">strategy</span><span class="o">.</span><span class="na">put</span><span class="o">(</span><span class="n">bitmap</span><span class="o">);</span>
+        <span class="c1">// 修改当前池子的大小</span>
+        <span class="n">currentSize</span> <span class="o">+=</span> <span class="n">size</span><span class="o">;</span>
+		<span class="c1">// 检查当前池子大小, 如果大于最大容量, 就往外丢 bitmap 实例, 直到不超容量</span>
+        <span class="n">evict</span><span class="o">();</span>
+        <span class="k">return</span> <span class="kc">true</span><span class="o">;</span>
+    <span class="o">}</span>
+
+    <span class="nd">@Override</span>
+    <span class="kd">public</span> <span class="kd">synchronized</span> <span class="nc">Bitmap</span> <span class="nf">get</span><span class="o">(</span><span class="kt">int</span> <span class="n">width</span><span class="o">,</span> <span class="kt">int</span> <span class="n">height</span><span class="o">,</span> <span class="nc">Bitmap</span><span class="o">.</span><span class="na">Config</span> <span class="n">config</span><span class="o">)</span> <span class="o">{</span>
+        <span class="nc">Bitmap</span> <span class="n">result</span> <span class="o">=</span> <span class="n">getDirty</span><span class="o">(</span><span class="n">width</span><span class="o">,</span> <span class="n">height</span><span class="o">,</span> <span class="n">config</span><span class="o">);</span>
+        <span class="k">if</span> <span class="o">(</span><span class="n">result</span> <span class="o">!=</span> <span class="kc">null</span><span class="o">)</span> <span class="o">{</span>
+            <span class="c1">// 擦除原来 bitmap 实例的像素数据</span>
+            <span class="n">result</span><span class="o">.</span><span class="na">eraseColor</span><span class="o">(</span><span class="nc">Color</span><span class="o">.</span><span class="na">TRANSPARENT</span><span class="o">);</span>
+        <span class="o">}</span>
+
+        <span class="k">return</span> <span class="n">result</span><span class="o">;</span>
+    <span class="o">}</span>
+
+	<span class="kd">public</span> <span class="kd">synchronized</span> <span class="nc">Bitmap</span> <span class="nf">getDirty</span><span class="o">(</span><span class="kt">int</span> <span class="n">width</span><span class="o">,</span> <span class="kt">int</span> <span class="n">height</span><span class="o">,</span> <span class="nc">Bitmap</span><span class="o">.</span><span class="na">Config</span> <span class="n">config</span><span class="o">)</span> <span class="o">{</span>
+        <span class="c1">// 从 LRU 缓存中拿出一个符合条件的 bitmap 实例</span>
+        <span class="kd">final</span> <span class="nc">Bitmap</span> <span class="n">result</span> <span class="o">=</span> <span class="n">strategy</span><span class="o">.</span><span class="na">get</span><span class="o">(</span><span class="n">width</span><span class="o">,</span> <span class="n">height</span><span class="o">,</span> <span class="n">config</span> <span class="o">!=</span> <span class="kc">null</span> <span class="o">?</span> <span class="n">config</span> <span class="o">:</span> <span class="no">DEFAULT_CONFIG</span><span class="o">);</span>
+        <span class="k">if</span> <span class="o">(</span><span class="n">result</span> <span class="o">==</span> <span class="kc">null</span><span class="o">)</span> <span class="o">{</span>
+            <span class="c1">// 拿出失败, 返回 null</span>
+        <span class="o">}</span> <span class="k">else</span> <span class="o">{</span>
+            <span class="c1">// 拿出成功, 重新计算池子大小</span>
+            <span class="n">currentSize</span> <span class="o">-=</span> <span class="n">strategy</span><span class="o">.</span><span class="na">getSize</span><span class="o">(</span><span class="n">result</span><span class="o">);</span>
+        <span class="o">}</span>
+        <span class="k">return</span> <span class="n">result</span><span class="o">;</span>
+    <span class="o">}</span>
+<span class="o">}</span>
+</pre></td></tr></tbody></table></code></pre></div></div>
+<p>通过上面的代码可以看出:</p>
+<ol>
+  <li>核心的<strong>缓存功能</strong>都是 <strong>LruPoolStrategy</strong> 在实现</li>
+  <li>LruBitmapPool 主要负责 <strong>入口的条件判断</strong> ( put()时 ) 和 <strong>池子的大小管理</strong></li>
+</ol>
+
+<h3 id="lrupoolstrategy-核心">LruPoolStrategy 核心</h3>
+<p>下面追踪 LruPoolStrategy 的实现</p>
+<div class="language-java highlighter-rouge"><div class="highlight"><pre class="highlight"><code><table class="rouge-table"><tbody><tr><td class="rouge-gutter gl"><pre class="lineno">1
+2
+3
+4
+5
+6
+7
+8
+9
+10
+11
+12
+13
+14
+15
+</pre></td><td class="rouge-code"><pre><span class="c1">// LruBitmapPool</span>
+	<span class="kd">public</span> <span class="nf">LruBitmapPool</span><span class="o">(</span><span class="kt">int</span> <span class="n">maxSize</span><span class="o">)</span> <span class="o">{</span>
+        <span class="k">this</span><span class="o">(</span><span class="n">maxSize</span><span class="o">,</span> <span class="n">getDefaultStrategy</span><span class="o">(),</span> <span class="n">getDefaultAllowedConfigs</span><span class="o">());</span>
+    <span class="o">}</span>
+
+    <span class="kd">private</span> <span class="kd">static</span> <span class="nc">LruPoolStrategy</span> <span class="nf">getDefaultStrategy</span><span class="o">()</span> <span class="o">{</span>
+        <span class="kd">final</span> <span class="nc">LruPoolStrategy</span> <span class="n">strategy</span><span class="o">;</span>
+        <span class="c1">// KITKAT ( api: 19 , android 4.4 )</span>
+        <span class="k">if</span> <span class="o">(</span><span class="nc">Build</span><span class="o">.</span><span class="na">VERSION</span><span class="o">.</span><span class="na">SDK_INT</span> <span class="o">&gt;=</span> <span class="nc">Build</span><span class="o">.</span><span class="na">VERSION_CODES</span><span class="o">.</span><span class="na">KITKAT</span><span class="o">)</span> <span class="o">{</span>
+            <span class="n">strategy</span> <span class="o">=</span> <span class="k">new</span> <span class="nc">SizeConfigStrategy</span><span class="o">();</span>
+        <span class="o">}</span> <span class="k">else</span> <span class="o">{</span>
+            <span class="n">strategy</span> <span class="o">=</span> <span class="k">new</span> <span class="nc">AttributeStrategy</span><span class="o">();</span>
+        <span class="o">}</span>
+        <span class="k">return</span> <span class="n">strategy</span><span class="o">;</span>
+    <span class="o">}</span>
+</pre></td></tr></tbody></table></code></pre></div></div>
+<blockquote>
+  <p>问题:
+为啥 KITKAT 前后使用不同的实现方案? 这地方暂时还说明不了, 等到文章快结束时进行说明</p>
+</blockquote>
+
+<p><img src="https://img-blog.csdnimg.cn/20210317210215215.png?x-oss-process=image/watermark,type_ZmFuZ3poZW5naGVpdGk,shadow_10,text_aHR0cHM6Ly9ibG9nLmNzZG4ubmV0L3FxXzI1Nzc4MzY5,size_10,color_FFFFFF,t_10" alt="在这里插入图片描述" />
+这张图大家还有印象吧, 我们先来看看其中一个 <strong>AttributeStrategy 的数据结构</strong>, 其他的使用类推, 就会简单很多了
+<img src="https://img-blog.csdnimg.cn/20210320135643832.png?x-oss-process=image/watermark,type_ZmFuZ3poZW5naGVpdGk,shadow_10,text_aHR0cHM6Ly9ibG9nLmNzZG4ubmV0L3FxXzI1Nzc4MzY5,size_16,color_FFFFFF,t_70" alt="在这里插入图片描述" /></p>
+
+<p>下面来对各个属性进行说明</p>
+<ol>
+  <li><strong>Key</strong> 是<strong>查找条件</strong>, 用来唯一识别 <strong>一组Bitmaps</strong></li>
+  <li><strong>KeyPool</strong> 是用来<strong>缓存并复用 Key 实例</strong>的,  想想看: 上述案例, 长列表滑动, 频繁的从 BitmapPool 里面 get() put() 势必会频繁的创建和释放 Key 实例, 这里用个 Pool 把 Key 实例们缓存起来, 不必频繁创建了( 颇有套娃嫌疑! )</li>
+  <li><strong>GroupedLinkedMap</strong>里面封存了LRU缓存策略’</li>
+  <li><strong>HashMap结构</strong>是用来<strong>降低</strong>查找符合 Key 条件的<strong>算法时间复杂度的</strong>, 如果在<strong>LRU 单向循环列表</strong>里面执行查找, 是 O(n) , 而在 HashMap 中查找是 O(1) ~ O(n) ( <a href="">算法的时间复杂度/空间复杂度详解,暂未实现,标记一下</a> ), 这里是一个典型的<strong>以空间换时间</strong>的案例</li>
+  <li><strong>LRU 单向循环列表</strong> 是真正的 <strong>LRU 缓存</strong>
+    <blockquote>
+      <p>每个节点都是一个 LinkedEntry 实例;
+每个 LinkedEntry 实例又存储了<strong>符合 Key 条件的 一组 Bitmap</strong>;
+当往 BitmapPool put() 的时候: 1. 找到符合 Key 条件的 Entry, 插入Entry 的 values 队尾; 2. 找不到, 永远插入队尾, 代表着最近不常使用
+当往 BitmapPool get() 的时候: 1. 找到符合 Key 条件的 Entry, 移除 Entry 中 values 最后一条给外部使用; 2.  3. 找不到, 创建一个新的条件为 Key 的 Entry; 4.  移动 Entry 到队头, 代表最近最常使用</p>
+    </blockquote>
+  </li>
+</ol>
+
+<p>理论讲完来看看实践 ( 源码 )</p>
+<div class="language-java highlighter-rouge"><div class="highlight"><pre class="highlight"><code><table class="rouge-table"><tbody><tr><td class="rouge-gutter gl"><pre class="lineno">1
+2
+3
+4
+5
+6
+7
+8
+9
+10
+11
+12
+13
+14
+15
+16
+17
+18
+19
+20
+21
+22
+23
+24
+25
+26
+27
+28
+29
+30
+31
+32
+33
+34
+35
+36
+37
+38
+39
+40
+41
+42
+43
+44
+45
+46
+47
+48
+49
+50
+51
+52
+53
+54
+55
+56
+57
+58
+59
+</pre></td><td class="rouge-code"><pre><span class="c1">// AttributeStrategy</span>
+<span class="kd">class</span> <span class="nc">AttributeStrategy</span> <span class="kd">implements</span> <span class="nc">LruPoolStrategy</span> <span class="o">{</span>
+    <span class="kd">private</span> <span class="kd">final</span> <span class="nc">KeyPool</span> <span class="n">keyPool</span> <span class="o">=</span> <span class="k">new</span> <span class="nc">KeyPool</span><span class="o">();</span>
+    <span class="kd">private</span> <span class="kd">final</span> <span class="nc">GroupedLinkedMap</span><span class="o">&lt;</span><span class="nc">Key</span><span class="o">,</span> <span class="nc">Bitmap</span><span class="o">&gt;</span> <span class="n">groupedMap</span> <span class="o">=</span> <span class="k">new</span> <span class="nc">GroupedLinkedMap</span><span class="o">&lt;</span><span class="nc">Key</span><span class="o">,</span> <span class="nc">Bitmap</span><span class="o">&gt;();</span>
+
+    <span class="kd">public</span> <span class="kt">void</span> <span class="nf">put</span><span class="o">(</span><span class="nc">Bitmap</span> <span class="n">bitmap</span><span class="o">)</span> <span class="o">{</span>
+    	<span class="c1">// 从 keyPool 缓存中拿取 Key 实例进行复用</span>
+        <span class="kd">final</span> <span class="nc">Key</span> <span class="n">key</span> <span class="o">=</span> <span class="n">keyPool</span><span class="o">.</span><span class="na">get</span><span class="o">(</span><span class="n">bitmap</span><span class="o">.</span><span class="na">getWidth</span><span class="o">(),</span> <span class="n">bitmap</span><span class="o">.</span><span class="na">getHeight</span><span class="o">(),</span> <span class="n">bitmap</span><span class="o">.</span><span class="na">getConfig</span><span class="o">());</span>
+
+		<span class="c1">// 调用 GroupedLinkedMap 来进行 LRU 缓存</span>
+        <span class="n">groupedMap</span><span class="o">.</span><span class="na">put</span><span class="o">(</span><span class="n">key</span><span class="o">,</span> <span class="n">bitmap</span><span class="o">);</span>
+    <span class="o">}</span>
+
+    <span class="nd">@Override</span>
+    <span class="kd">public</span> <span class="nc">Bitmap</span> <span class="nf">get</span><span class="o">(</span><span class="kt">int</span> <span class="n">width</span><span class="o">,</span> <span class="kt">int</span> <span class="n">height</span><span class="o">,</span> <span class="nc">Bitmap</span><span class="o">.</span><span class="na">Config</span> <span class="n">config</span><span class="o">)</span> <span class="o">{</span>
+    	<span class="c1">// 从 keyPool 缓存中拿取 Key 实例进行复用</span>
+        <span class="kd">final</span> <span class="nc">Key</span> <span class="n">key</span> <span class="o">=</span> <span class="n">keyPool</span><span class="o">.</span><span class="na">get</span><span class="o">(</span><span class="n">width</span><span class="o">,</span> <span class="n">height</span><span class="o">,</span> <span class="n">config</span><span class="o">);</span>
+
+		<span class="c1">// 调用 GroupedLinkedMap 来进行 LRU 缓存的获取</span>
+        <span class="k">return</span> <span class="n">groupedMap</span><span class="o">.</span><span class="na">get</span><span class="o">(</span><span class="n">key</span><span class="o">);</span>
+    <span class="o">}</span>
+<span class="o">}</span>
+
+<span class="c1">// AttributeStrategy$KeyPool</span>
+    <span class="kd">static</span> <span class="kd">class</span> <span class="nc">KeyPool</span> <span class="kd">extends</span> <span class="nc">BaseKeyPool</span><span class="o">&lt;</span><span class="nc">Key</span><span class="o">&gt;</span> <span class="o">{</span>
+        <span class="kd">public</span> <span class="nc">Key</span> <span class="nf">get</span><span class="o">(</span><span class="kt">int</span> <span class="n">width</span><span class="o">,</span> <span class="kt">int</span> <span class="n">height</span><span class="o">,</span> <span class="nc">Bitmap</span><span class="o">.</span><span class="na">Config</span> <span class="n">config</span><span class="o">)</span> <span class="o">{</span>
+            <span class="nc">Key</span> <span class="n">result</span> <span class="o">=</span> <span class="n">get</span><span class="o">();</span>
+            <span class="n">result</span><span class="o">.</span><span class="na">init</span><span class="o">(</span><span class="n">width</span><span class="o">,</span> <span class="n">height</span><span class="o">,</span> <span class="n">config</span><span class="o">);</span>
+            <span class="k">return</span> <span class="n">result</span><span class="o">;</span>
+        <span class="o">}</span>
+
+        <span class="nd">@Override</span>
+        <span class="kd">protected</span> <span class="nc">Key</span> <span class="nf">create</span><span class="o">()</span> <span class="o">{</span>
+            <span class="k">return</span> <span class="k">new</span> <span class="nf">Key</span><span class="o">(</span><span class="k">this</span><span class="o">);</span>
+        <span class="o">}</span>
+    <span class="o">}</span>
+
+<span class="c1">// BaseKeyPool</span>
+<span class="kd">abstract</span> <span class="kd">class</span> <span class="nc">BaseKeyPool</span><span class="o">&lt;</span><span class="no">T</span> <span class="kd">extends</span> <span class="nc">Poolable</span><span class="o">&gt;</span> <span class="o">{</span>
+    <span class="kd">private</span> <span class="kd">static</span> <span class="kd">final</span> <span class="kt">int</span> <span class="no">MAX_SIZE</span> <span class="o">=</span> <span class="mi">20</span><span class="o">;</span>
+    <span class="c1">// 就是个简单的队列实现, 最大存储容量是20</span>
+    <span class="kd">private</span> <span class="kd">final</span> <span class="nc">Queue</span><span class="o">&lt;</span><span class="no">T</span><span class="o">&gt;</span> <span class="n">keyPool</span> <span class="o">=</span> <span class="nc">Util</span><span class="o">.</span><span class="na">createQueue</span><span class="o">(</span><span class="no">MAX_SIZE</span><span class="o">);</span>
+
+    <span class="kd">protected</span> <span class="no">T</span> <span class="nf">get</span><span class="o">()</span> <span class="o">{</span>
+        <span class="no">T</span> <span class="n">result</span> <span class="o">=</span> <span class="n">keyPool</span><span class="o">.</span><span class="na">poll</span><span class="o">();</span>
+        <span class="k">if</span> <span class="o">(</span><span class="n">result</span> <span class="o">==</span> <span class="kc">null</span><span class="o">)</span> <span class="o">{</span>
+            <span class="n">result</span> <span class="o">=</span> <span class="n">create</span><span class="o">();</span>
+        <span class="o">}</span>
+        <span class="k">return</span> <span class="n">result</span><span class="o">;</span>
+    <span class="o">}</span>
+
+    <span class="kd">public</span> <span class="kt">void</span> <span class="nf">offer</span><span class="o">(</span><span class="no">T</span> <span class="n">key</span><span class="o">)</span> <span class="o">{</span>
+        <span class="k">if</span> <span class="o">(</span><span class="n">keyPool</span><span class="o">.</span><span class="na">size</span><span class="o">()</span> <span class="o">&lt;</span> <span class="no">MAX_SIZE</span><span class="o">)</span> <span class="o">{</span>
+            <span class="n">keyPool</span><span class="o">.</span><span class="na">offer</span><span class="o">(</span><span class="n">key</span><span class="o">);</span>
+        <span class="o">}</span>
+    <span class="o">}</span>
+
+    <span class="kd">protected</span> <span class="kd">abstract</span> <span class="no">T</span> <span class="nf">create</span><span class="o">();</span>
+<span class="o">}</span>
+</pre></td></tr></tbody></table></code></pre></div></div>
+<p>可以看到</p>
+<ol>
+  <li>KeyPool, 就是一个容量为 20 的队列, 很简单,</li>
+  <li>put() 和 get() 还是通过 <strong>GroupedLinkedMap</strong>来实现功能</li>
+</ol>
+
+<p>追踪进去 GroupedLinkedMap</p>
+<div class="language-java highlighter-rouge"><div class="highlight"><pre class="highlight"><code><table class="rouge-table"><tbody><tr><td class="rouge-gutter gl"><pre class="lineno">1
+2
+3
+4
+5
+6
+7
+8
+9
+10
+11
+12
+13
+14
+15
+16
+17
+18
+19
+20
+21
+22
+23
+24
+25
+26
+27
+28
+29
+30
+31
+32
+33
+34
+35
+36
+37
+38
+39
+40
+41
+42
+43
+44
+45
+46
+47
+48
+49
+50
+51
+52
+53
+54
+55
+56
+57
+58
+59
+60
+</pre></td><td class="rouge-code"><pre><span class="kd">class</span> <span class="nc">GroupedLinkedMap</span><span class="o">&lt;</span><span class="no">K</span> <span class="kd">extends</span> <span class="nc">Poolable</span><span class="o">,</span> <span class="no">V</span><span class="o">&gt;</span> <span class="o">{</span>
+	<span class="c1">// 单向循环链表</span>
+    <span class="kd">private</span> <span class="kd">final</span> <span class="nc">LinkedEntry</span><span class="o">&lt;</span><span class="no">K</span><span class="o">,</span> <span class="no">V</span><span class="o">&gt;</span> <span class="n">head</span> <span class="o">=</span> <span class="k">new</span> <span class="nc">LinkedEntry</span><span class="o">&lt;</span><span class="no">K</span><span class="o">,</span> <span class="no">V</span><span class="o">&gt;();</span>
+    <span class="c1">// 空间换时间的 HashMap</span>
+    <span class="kd">private</span> <span class="kd">final</span> <span class="nc">Map</span><span class="o">&lt;</span><span class="no">K</span><span class="o">,</span> <span class="nc">LinkedEntry</span><span class="o">&lt;</span><span class="no">K</span><span class="o">,</span> <span class="no">V</span><span class="o">&gt;&gt;</span> <span class="n">keyToEntry</span> <span class="o">=</span> <span class="k">new</span> <span class="nc">HashMap</span><span class="o">&lt;</span><span class="no">K</span><span class="o">,</span> <span class="nc">LinkedEntry</span><span class="o">&lt;</span><span class="no">K</span><span class="o">,</span> <span class="no">V</span><span class="o">&gt;&gt;();</span>
+
+    <span class="kd">public</span> <span class="kt">void</span> <span class="nf">put</span><span class="o">(</span><span class="no">K</span> <span class="n">key</span><span class="o">,</span> <span class="no">V</span> <span class="n">value</span><span class="o">)</span> <span class="o">{</span>
+        <span class="nc">LinkedEntry</span><span class="o">&lt;</span><span class="no">K</span><span class="o">,</span> <span class="no">V</span><span class="o">&gt;</span> <span class="n">entry</span> <span class="o">=</span> <span class="n">keyToEntry</span><span class="o">.</span><span class="na">get</span><span class="o">(</span><span class="n">key</span><span class="o">);</span>
+
+        <span class="k">if</span> <span class="o">(</span><span class="n">entry</span> <span class="o">==</span> <span class="kc">null</span><span class="o">)</span> <span class="o">{</span>
+            <span class="n">entry</span> <span class="o">=</span> <span class="k">new</span> <span class="nc">LinkedEntry</span><span class="o">&lt;</span><span class="no">K</span><span class="o">,</span> <span class="no">V</span><span class="o">&gt;(</span><span class="n">key</span><span class="o">);</span>
+            <span class="c1">// 插入新的, 直接插入到循环链表队尾, 代表最近不常使用</span>
+            <span class="n">makeTail</span><span class="o">(</span><span class="n">entry</span><span class="o">);</span>
+            <span class="n">keyToEntry</span><span class="o">.</span><span class="na">put</span><span class="o">(</span><span class="n">key</span><span class="o">,</span> <span class="n">entry</span><span class="o">);</span>
+        <span class="o">}</span> <span class="k">else</span> <span class="o">{</span>
+            <span class="n">key</span><span class="o">.</span><span class="na">offer</span><span class="o">();</span>
+        <span class="o">}</span>
+
+		<span class="c1">// 插入旧的(匹配到Key条件), 直接插入</span>
+        <span class="n">entry</span><span class="o">.</span><span class="na">add</span><span class="o">(</span><span class="n">value</span><span class="o">);</span>
+    <span class="o">}</span>
+
+    <span class="kd">public</span> <span class="no">V</span> <span class="nf">get</span><span class="o">(</span><span class="no">K</span> <span class="n">key</span><span class="o">)</span> <span class="o">{</span>
+        <span class="nc">LinkedEntry</span><span class="o">&lt;</span><span class="no">K</span><span class="o">,</span> <span class="no">V</span><span class="o">&gt;</span> <span class="n">entry</span> <span class="o">=</span> <span class="n">keyToEntry</span><span class="o">.</span><span class="na">get</span><span class="o">(</span><span class="n">key</span><span class="o">);</span>
+        <span class="k">if</span> <span class="o">(</span><span class="n">entry</span> <span class="o">==</span> <span class="kc">null</span><span class="o">)</span> <span class="o">{</span>
+            <span class="n">entry</span> <span class="o">=</span> <span class="k">new</span> <span class="nc">LinkedEntry</span><span class="o">&lt;</span><span class="no">K</span><span class="o">,</span> <span class="no">V</span><span class="o">&gt;(</span><span class="n">key</span><span class="o">);</span>
+            <span class="c1">// 找不到符合 Key 条件的, 创建一个符合 Key 条件的 Entry</span>
+            <span class="n">keyToEntry</span><span class="o">.</span><span class="na">put</span><span class="o">(</span><span class="n">key</span><span class="o">,</span> <span class="n">entry</span><span class="o">);</span>
+        <span class="o">}</span> <span class="k">else</span> <span class="o">{</span>
+            <span class="n">key</span><span class="o">.</span><span class="na">offer</span><span class="o">();</span>
+        <span class="o">}</span>
+
+		<span class="c1">// 移动 Entry 到队头, 代表最近最常使用</span>
+        <span class="n">makeHead</span><span class="o">(</span><span class="n">entry</span><span class="o">);</span>
+
+		<span class="c1">// 移除 Entry 的 values 里的一个 Bitmap 对象供外部使用</span>
+        <span class="k">return</span> <span class="n">entry</span><span class="o">.</span><span class="na">removeLast</span><span class="o">();</span>
+    <span class="o">}</span>
+
+	<span class="c1">// 内存不足的时候需要清理了</span>
+	<span class="kd">public</span> <span class="no">V</span> <span class="nf">removeLast</span><span class="o">()</span> <span class="o">{</span>
+		<span class="c1">// 从队尾开始清除, 清除最近不常使用</span>
+        <span class="nc">LinkedEntry</span><span class="o">&lt;</span><span class="no">K</span><span class="o">,</span> <span class="no">V</span><span class="o">&gt;</span> <span class="n">last</span> <span class="o">=</span> <span class="n">head</span><span class="o">.</span><span class="na">prev</span><span class="o">;</span>
+
+        <span class="k">while</span> <span class="o">(!</span><span class="n">last</span><span class="o">.</span><span class="na">equals</span><span class="o">(</span><span class="n">head</span><span class="o">))</span> <span class="o">{</span>
+            <span class="no">V</span> <span class="n">removed</span> <span class="o">=</span> <span class="n">last</span><span class="o">.</span><span class="na">removeLast</span><span class="o">();</span>
+            <span class="k">if</span> <span class="o">(</span><span class="n">removed</span> <span class="o">!=</span> <span class="kc">null</span><span class="o">)</span> <span class="o">{</span>
+                <span class="k">return</span> <span class="n">removed</span><span class="o">;</span>
+            <span class="o">}</span> <span class="k">else</span> <span class="o">{</span>
+                <span class="n">removeEntry</span><span class="o">(</span><span class="n">last</span><span class="o">);</span>
+                <span class="n">keyToEntry</span><span class="o">.</span><span class="na">remove</span><span class="o">(</span><span class="n">last</span><span class="o">.</span><span class="na">key</span><span class="o">);</span>
+                <span class="n">last</span><span class="o">.</span><span class="na">key</span><span class="o">.</span><span class="na">offer</span><span class="o">();</span>
+            <span class="o">}</span>
+
+            <span class="n">last</span> <span class="o">=</span> <span class="n">last</span><span class="o">.</span><span class="na">prev</span><span class="o">;</span>
+        <span class="o">}</span>
+
+        <span class="k">return</span> <span class="kc">null</span><span class="o">;</span>
+    <span class="o">}</span>
+<span class="o">}</span>
+</pre></td></tr></tbody></table></code></pre></div></div>
+<p>以上 AttributeStrategy 的原理讲完了, 下面来看看另外一个实现 SizeConfigStrategy,</p>
+<ol>
+  <li>它和 AttributeStrategy 的区别在于存储的Key值条件不一样, <strong>SizeConfigStrategy 的 Key 是 size (w*h) 和 config 组成</strong>, 之所以能这么做完全依赖于 Bitmap 的一个方法 reconfigure()</li>
+  <li>还记得前文提到 KITKAT 前后 LruPoolStrategy 的不同实现, <strong>reconfigure()</strong> 方法就是在 KITKAT 之后才支持的</li>
+  <li><strong>reconfigure()</strong> 作用很简单就是修改已存在的 Bitmap 的大小配置, 这样才能让缓存以比较模糊的 Size 维度进行, 而不是 width 和 height 的强制匹配</li>
+</ol>
+
+<p>下面来看看 <strong>SizeConfigStrategy</strong> 与 <strong>AttributeStrategy</strong> 不同的地方</p>
+<div class="language-java highlighter-rouge"><div class="highlight"><pre class="highlight"><code><table class="rouge-table"><tbody><tr><td class="rouge-gutter gl"><pre class="lineno">1
+2
+3
+4
+5
+6
+7
+8
+9
+10
+11
+12
+13
+14
+15
+16
+17
+18
+19
+20
+21
+22
+23
+24
+25
+26
+27
+28
+29
+30
+31
+32
+33
+34
+35
+36
+37
+38
+39
+40
+41
+42
+43
+44
+45
+46
+47
+48
+49
+50
+51
+52
+</pre></td><td class="rouge-code"><pre><span class="c1">// SizeConfigStrategy</span>
+
+	<span class="nd">@Override</span>
+    <span class="kd">public</span> <span class="nc">Bitmap</span> <span class="nf">get</span><span class="o">(</span><span class="kt">int</span> <span class="n">width</span><span class="o">,</span> <span class="kt">int</span> <span class="n">height</span><span class="o">,</span> <span class="nc">Bitmap</span><span class="o">.</span><span class="na">Config</span> <span class="n">config</span><span class="o">)</span> <span class="o">{</span>
+        <span class="kt">int</span> <span class="n">size</span> <span class="o">=</span> <span class="nc">Util</span><span class="o">.</span><span class="na">getBitmapByteSize</span><span class="o">(</span><span class="n">width</span><span class="o">,</span> <span class="n">height</span><span class="o">,</span> <span class="n">config</span><span class="o">);</span>
+        <span class="nc">Key</span> <span class="n">targetKey</span> <span class="o">=</span> <span class="n">keyPool</span><span class="o">.</span><span class="na">get</span><span class="o">(</span><span class="n">size</span><span class="o">,</span> <span class="n">config</span><span class="o">);</span>
+        <span class="c1">// 关键代码在这里, 找到一个合适的 size 的 Bitmap 缓存实例</span>
+        <span class="nc">Key</span> <span class="n">bestKey</span> <span class="o">=</span> <span class="n">findBestKey</span><span class="o">(</span><span class="n">targetKey</span><span class="o">,</span> <span class="n">size</span><span class="o">,</span> <span class="n">config</span><span class="o">);</span>
+
+        <span class="nc">Bitmap</span> <span class="n">result</span> <span class="o">=</span> <span class="n">groupedMap</span><span class="o">.</span><span class="na">get</span><span class="o">(</span><span class="n">bestKey</span><span class="o">);</span>
+        <span class="k">if</span> <span class="o">(</span><span class="n">result</span> <span class="o">!=</span> <span class="kc">null</span><span class="o">)</span> <span class="o">{</span>
+            <span class="c1">// Decrement must be called before reconfigure.</span>
+            <span class="n">decrementBitmapOfSize</span><span class="o">(</span><span class="nc">Util</span><span class="o">.</span><span class="na">getBitmapByteSize</span><span class="o">(</span><span class="n">result</span><span class="o">),</span> <span class="n">result</span><span class="o">.</span><span class="na">getConfig</span><span class="o">());</span>
+            <span class="c1">// 将缓存的 Bitmap 宽高和配置重行修改, 返回给下张图用</span>
+            <span class="n">result</span><span class="o">.</span><span class="na">reconfigure</span><span class="o">(</span><span class="n">width</span><span class="o">,</span> <span class="n">height</span><span class="o">,</span>
+                    <span class="n">result</span><span class="o">.</span><span class="na">getConfig</span><span class="o">()</span> <span class="o">!=</span> <span class="kc">null</span> <span class="o">?</span> <span class="n">result</span><span class="o">.</span><span class="na">getConfig</span><span class="o">()</span> <span class="o">:</span> <span class="nc">Bitmap</span><span class="o">.</span><span class="na">Config</span><span class="o">.</span><span class="na">ARGB_8888</span><span class="o">);</span>
+        <span class="o">}</span>
+        <span class="k">return</span> <span class="n">result</span><span class="o">;</span>
+    <span class="o">}</span>
+
+    <span class="kd">private</span> <span class="nc">Key</span> <span class="nf">findBestKey</span><span class="o">(</span><span class="nc">Key</span> <span class="n">key</span><span class="o">,</span> <span class="kt">int</span> <span class="n">size</span><span class="o">,</span> <span class="nc">Bitmap</span><span class="o">.</span><span class="na">Config</span> <span class="n">config</span><span class="o">)</span> <span class="o">{</span>
+        <span class="nc">Key</span> <span class="n">result</span> <span class="o">=</span> <span class="n">key</span><span class="o">;</span>
+        <span class="k">for</span> <span class="o">(</span><span class="nc">Bitmap</span><span class="o">.</span><span class="na">Config</span> <span class="n">possibleConfig</span> <span class="o">:</span> <span class="n">getInConfigs</span><span class="o">(</span><span class="n">config</span><span class="o">))</span> <span class="o">{</span>
+        	<span class="c1">// 找到符合 config 的一组 size</span>
+            <span class="nc">NavigableMap</span><span class="o">&lt;</span><span class="nc">Integer</span><span class="o">,</span> <span class="nc">Integer</span><span class="o">&gt;</span> <span class="n">sizesForPossibleConfig</span> <span class="o">=</span> <span class="n">getSizesForConfig</span><span class="o">(</span><span class="n">possibleConfig</span><span class="o">);</span>
+            <span class="c1">// 从 size 里面比当前需要的大的所有size中, 找到最小的那个 返回给外面</span>
+            <span class="nc">Integer</span> <span class="n">possibleSize</span> <span class="o">=</span> <span class="n">sizesForPossibleConfig</span><span class="o">.</span><span class="na">ceilingKey</span><span class="o">(</span><span class="n">size</span><span class="o">);</span>
+            <span class="k">if</span> <span class="o">(</span><span class="n">possibleSize</span> <span class="o">!=</span> <span class="kc">null</span> <span class="o">&amp;&amp;</span> <span class="n">possibleSize</span> <span class="o">&lt;=</span> <span class="n">size</span> <span class="o">*</span> <span class="no">MAX_SIZE_MULTIPLE</span><span class="o">)</span> <span class="o">{</span>
+                <span class="k">if</span> <span class="o">(</span><span class="n">possibleSize</span> <span class="o">!=</span> <span class="n">size</span>
+                        <span class="o">||</span> <span class="o">(</span><span class="n">possibleConfig</span> <span class="o">==</span> <span class="kc">null</span> <span class="o">?</span> <span class="n">config</span> <span class="o">!=</span> <span class="kc">null</span> <span class="o">:</span> <span class="o">!</span><span class="n">possibleConfig</span><span class="o">.</span><span class="na">equals</span><span class="o">(</span><span class="n">config</span><span class="o">)))</span> <span class="o">{</span>
+                    <span class="n">keyPool</span><span class="o">.</span><span class="na">offer</span><span class="o">(</span><span class="n">key</span><span class="o">);</span>
+                    <span class="n">result</span> <span class="o">=</span> <span class="n">keyPool</span><span class="o">.</span><span class="na">get</span><span class="o">(</span><span class="n">possibleSize</span><span class="o">,</span> <span class="n">possibleConfig</span><span class="o">);</span>
+                <span class="o">}</span>
+                <span class="k">break</span><span class="o">;</span>
+            <span class="o">}</span>
+        <span class="o">}</span>
+        <span class="k">return</span> <span class="n">result</span><span class="o">;</span>
+    <span class="o">}</span>
+
+	<span class="kd">private</span> <span class="nc">NavigableMap</span><span class="o">&lt;</span><span class="nc">Integer</span><span class="o">,</span> <span class="nc">Integer</span><span class="o">&gt;</span> <span class="nf">getSizesForConfig</span><span class="o">(</span><span class="nc">Bitmap</span><span class="o">.</span><span class="na">Config</span> <span class="n">config</span><span class="o">)</span> <span class="o">{</span>
+		<span class="c1">// 找到符合 config 的一组 size</span>
+        <span class="nc">NavigableMap</span><span class="o">&lt;</span><span class="nc">Integer</span><span class="o">,</span> <span class="nc">Integer</span><span class="o">&gt;</span> <span class="n">sizes</span> <span class="o">=</span> <span class="n">sortedSizes</span><span class="o">.</span><span class="na">get</span><span class="o">(</span><span class="n">config</span><span class="o">);</span>
+        <span class="k">if</span> <span class="o">(</span><span class="n">sizes</span> <span class="o">==</span> <span class="kc">null</span><span class="o">)</span> <span class="o">{</span>
+            <span class="n">sizes</span> <span class="o">=</span> <span class="k">new</span> <span class="nc">TreeMap</span><span class="o">&lt;</span><span class="nc">Integer</span><span class="o">,</span> <span class="nc">Integer</span><span class="o">&gt;();</span>
+            <span class="n">sortedSizes</span><span class="o">.</span><span class="na">put</span><span class="o">(</span><span class="n">config</span><span class="o">,</span> <span class="n">sizes</span><span class="o">);</span>
+        <span class="o">}</span>
+        <span class="k">return</span> <span class="n">sizes</span><span class="o">;</span>
+    <span class="o">}</span>
+
+	<span class="c1">// 缓存, 按照 config 为 Key 的方式存储一组 Bitmap 的 size</span>
+	<span class="kd">private</span> <span class="kd">final</span> <span class="nc">Map</span><span class="o">&lt;</span><span class="nc">Bitmap</span><span class="o">.</span><span class="na">Config</span><span class="o">,</span> <span class="nc">NavigableMap</span><span class="o">&lt;</span><span class="nc">Integer</span><span class="o">,</span> <span class="nc">Integer</span><span class="o">&gt;&gt;</span> <span class="n">sortedSizes</span> <span class="o">=</span>
+            <span class="k">new</span> <span class="nc">HashMap</span><span class="o">&lt;</span><span class="nc">Bitmap</span><span class="o">.</span><span class="na">Config</span><span class="o">,</span> <span class="nc">NavigableMap</span><span class="o">&lt;</span><span class="nc">Integer</span><span class="o">,</span> <span class="nc">Integer</span><span class="o">&gt;&gt;();</span>
+</pre></td></tr></tbody></table></code></pre></div></div>
+<ol>
+  <li>关于 sortedSizes 还是为了 <strong>空间换时间</strong> , 主要赚取一个遍历的时间成本差价</li>
+  <li>get 方法会先找到 config 相关的一组size; 然后找出这一组 size 中比当前需要 size 大的全部 size; 最后, 在筛选之后的 size 组中, 找到一个最小的, 返回给外面使用 ( 总之: <strong>找一个比需要 size 大的,并且最贴近需要 size 的 Bitmap 缓存实例</strong> )</li>
+</ol>
+
+<h2 id="回顾">回顾</h2>
+<p>至此, BitmapPool 相关的就讲完了, 下面回顾下这张图
+<img src="https://img-blog.csdnimg.cn/2021032013563065.png?x-oss-process=image/watermark,type_ZmFuZ3poZW5naGVpdGk,shadow_10,text_aHR0cHM6Ly9ibG9nLmNzZG4ubmV0L3FxXzI1Nzc4MzY5,size_16,color_FFFFFF,t_70" alt="在这里插入图片描述" /></p>
+
+<p>核心原理都在这里了, 就是一个<strong>遵循 LRU 算法的 对象池子</strong>, 或者再精确些, 就是一个<strong>单向循环链表</strong>, 列表的每个元素都存着一组 Bitmap 缓存实例, 以备外面使用</p>
+:ET

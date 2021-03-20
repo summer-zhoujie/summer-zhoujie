@@ -1,0 +1,12 @@
+I"�<h1 id="前言">前言</h1>
+<p>通过前面的 <a href="https://blog.csdn.net/qq_25778369/article/details/114577763">Android Glide 3.7.0 源码解析 (二) , 从一次图片加载流程看源码</a> 我们知道
+Request(真实) 只有在图片组件的大小准备好了才会开始真正的加载
+```java
+// GenericRequest
+	public void begin() {
+        startTime = LogTime.getLogTime();
+        if (model == null) {
+            onException(null);
+            return;
+        }</p>
+:ET

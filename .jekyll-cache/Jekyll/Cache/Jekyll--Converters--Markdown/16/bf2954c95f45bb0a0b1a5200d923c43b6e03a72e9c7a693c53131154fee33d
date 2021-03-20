@@ -1,4 +1,4 @@
-I"Ӯ<h1 id="一加载图片代码">一、加载图片代码</h1>
+I"߮<h1 id="一加载图片代码">一、加载图片代码</h1>
 <div class="language-java highlighter-rouge"><div class="highlight"><pre class="highlight"><code><table class="rouge-table"><tbody><tr><td class="rouge-gutter gl"><pre class="lineno">1
 </pre></td><td class="rouge-code"><pre><span class="nc">Glide</span><span class="o">.</span><span class="na">with</span><span class="o">(</span><span class="n">activity</span><span class="o">).</span><span class="na">load</span><span class="o">(</span><span class="n">url</span><span class="o">).</span><span class="na">into</span><span class="o">(</span><span class="n">imageView</span><span class="o">);</span>
 </pre></td></tr></tbody></table></code></pre></div></div>
@@ -85,7 +85,7 @@
 </pre></td></tr></tbody></table></code></pre></div></div>
 <blockquote>
   <ul>
-    <li>RequestManagerFragment 是用来监测生命周期, 内存的, 另外网络状态 ConnectivityMonitor 也会将自己绑入生命周期, 不是主线这里不做赘述, 详细原理可以点击查看这篇文章, <a href="">Android Glide 3.7.0 源码解析(X), 生命周期(暂未编写,这里做个标记)</a></li>
+    <li>RequestManagerFragment 是用来监测生命周期, 内存的, 另外网络状态 ConnectivityMonitor 也会将自己绑入生命周期, 不是主线这里不做赘述, 详细原理可以点击查看这篇文章, <a href="/2021/03/20/markdown-glide3.7.0_3/index.html">Android Glide 3.7.0 源码解析(三), 生命周期绑定</a></li>
   </ul>
 </blockquote>
 
@@ -1564,7 +1564,7 @@ A == String.class</p>
 </pre></td></tr></tbody></table></code></pre></div></div>
 <blockquote>
   <p>Glide 会按照 ImageView 控件的大小来计算所需要的图片的大小, 尽量减少内存开支
-如果对于 异步计算界面 ImageView 组件大小感兴趣 , 可以看看这篇文章 <a href="">Android Glide 3.7.0 源码解析(X), 如何异步获取 ImageView 的组件长宽(暂未实现, 标记一下免得忘记)</a></p>
+如果对于 异步计算界面 ImageView 组件大小感兴趣 , 可以看看这篇文章 <a href="/2021/03/20/markdown-glide3.7.0_5/index.html">Android Glide 3.7.0 源码解析(五) , 如何获得ImageView的宽高</a></p>
 </blockquote>
 
 <p>下面进入 onSizeReady 继续</p>

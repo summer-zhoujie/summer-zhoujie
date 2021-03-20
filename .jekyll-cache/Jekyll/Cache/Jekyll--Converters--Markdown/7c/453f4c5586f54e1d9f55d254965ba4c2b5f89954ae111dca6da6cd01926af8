@@ -1,0 +1,1034 @@
+I"��<h1 id="一流程图解">一、流程图解</h1>
+<p><img src="https://img-blog.csdnimg.cn/20210314175314605.png?x-oss-process=image/watermark,type_ZmFuZ3poZW5naGVpdGk,shadow_10,text_aHR0cHM6Ly9ibG9nLmNzZG4ubmV0L3FxXzI1Nzc4MzY5,size_16,color_FFFFFF,t_70" alt="在这里插入图片描述" /></p>
+<blockquote>
+  <p>注意:</p>
+  <ul>
+    <li>一个 Fragment / Activity 会对应生成一个 RequestManager</li>
+    <li>一个 Application 对应一个 applicationManager , 这是一个全局唯一的 RequestManager</li>
+    <li>每个 RequestManager 会有一个 Lifecycle 和 一个 RequestTracker</li>
+    <li>每个 RequestTracker 有个 List&lt; Request &gt;
+<img src="https://img-blog.csdnimg.cn/20210314182433256.png?x-oss-process=image/watermark,type_ZmFuZ3poZW5naGVpdGk,shadow_10,text_aHR0cHM6Ly9ibG9nLmNzZG4ubmV0L3FxXzI1Nzc4MzY5,size_16,color_FFFFFF,t_70" alt="在这里插入图片描述" /></li>
+  </ul>
+</blockquote>
+
+<ol>
+  <li>如果是主线程就注册创建一个<strong>无界面的 Fragment</strong> 加到 Fragment / Activity , 依赖这个Fragment 来监听生命周期</li>
+  <li>如果是非主线程 , 就创建一个 Application 级别的 Lifecycle , 模拟生命周期</li>
+  <li>在 1. 中创建的 Fragment 可以反馈 <strong>内存</strong> 和 <strong>界面</strong> 的 生命周期 , 这就完成了对内存和界面的监听</li>
+  <li>可以根据 1. 中 Fragment , 来决定是否监控 <strong>网络状态</strong> ( 如果界面都没了, 那自然也就没必要监控网络状态了 )</li>
+</ol>
+
+<h1 id="二源码分析">二、源码分析</h1>
+
+<h2 id="生命周期创建">生命周期创建</h2>
+<p><img src="https://img-blog.csdnimg.cn/2021031418002898.png?x-oss-process=image/watermark,type_ZmFuZ3poZW5naGVpdGk,shadow_10,text_aHR0cHM6Ly9ibG9nLmNzZG4ubmV0L3FxXzI1Nzc4MzY5,size_16,color_FFFFFF,t_70" alt="在这里插入图片描述" />
+Glide 的 5 个 with 方法最终都对应的是 RequestManagerRetriever 的 5 个 get()
+<img src="https://img-blog.csdnimg.cn/2021031418023553.png?x-oss-process=image/watermark,type_ZmFuZ3poZW5naGVpdGk,shadow_10,text_aHR0cHM6Ly9ibG9nLmNzZG4ubmV0L3FxXzI1Nzc4MzY5,size_16,color_FFFFFF,t_70" alt="在这里插入图片描述" />
+而 RequestManagerRetriever 的 5 个 get() 最终对应 RequestManagerRetriever 的三个方法</p>
+<ul>
+  <li><strong>非主线程时</strong> : get(activity.getApplicationContext())</li>
+  <li><strong>主线程 + Activity 时</strong> : fragmentGet(activity, activity.getFragmentManager())</li>
+  <li><strong>主线程 + Fragment 时</strong> : supportFragmentGet(fragment.getActivity(), fragment.getChildFragmentManager())</li>
+</ul>
+
+<p>先来看看简单点的, <strong>非主线时</strong></p>
+<div class="language-java highlighter-rouge"><div class="highlight"><pre class="highlight"><code><table class="rouge-table"><tbody><tr><td class="rouge-gutter gl"><pre class="lineno">1
+2
+3
+4
+5
+6
+7
+8
+9
+10
+11
+12
+13
+14
+15
+16
+17
+18
+19
+20
+21
+22
+23
+24
+25
+26
+27
+28
+29
+30
+31
+32
+33
+34
+35
+36
+37
+38
+39
+40
+41
+</pre></td><td class="rouge-code"><pre><span class="c1">// RequestManagerRetriever</span>
+	<span class="kd">public</span> <span class="nc">RequestManager</span> <span class="nf">get</span><span class="o">(</span><span class="nc">Context</span> <span class="n">context</span><span class="o">)</span> <span class="o">{</span>
+        <span class="k">if</span> <span class="o">(</span><span class="n">context</span> <span class="o">==</span> <span class="kc">null</span><span class="o">)</span> <span class="o">{</span>
+            <span class="k">throw</span> <span class="k">new</span> <span class="nf">IllegalArgumentException</span><span class="o">(</span><span class="s">"You cannot start a load on a null Context"</span><span class="o">);</span>
+        <span class="o">}</span> <span class="k">else</span> <span class="k">if</span> <span class="o">(</span><span class="nc">Util</span><span class="o">.</span><span class="na">isOnMainThread</span><span class="o">()</span> <span class="o">&amp;&amp;</span> <span class="o">!(</span><span class="n">context</span> <span class="k">instanceof</span> <span class="nc">Application</span><span class="o">))</span> <span class="o">{</span>
+            <span class="k">if</span> <span class="o">(</span><span class="n">context</span> <span class="k">instanceof</span> <span class="nc">FragmentActivity</span><span class="o">)</span> <span class="o">{</span>
+                <span class="k">return</span> <span class="nf">get</span><span class="o">((</span><span class="nc">FragmentActivity</span><span class="o">)</span> <span class="n">context</span><span class="o">);</span>
+            <span class="o">}</span> <span class="k">else</span> <span class="k">if</span> <span class="o">(</span><span class="n">context</span> <span class="k">instanceof</span> <span class="nc">Activity</span><span class="o">)</span> <span class="o">{</span>
+                <span class="k">return</span> <span class="nf">get</span><span class="o">((</span><span class="nc">Activity</span><span class="o">)</span> <span class="n">context</span><span class="o">);</span>
+            <span class="o">}</span> <span class="k">else</span> <span class="k">if</span> <span class="o">(</span><span class="n">context</span> <span class="k">instanceof</span> <span class="nc">ContextWrapper</span><span class="o">)</span> <span class="o">{</span>
+                <span class="k">return</span> <span class="nf">get</span><span class="o">(((</span><span class="nc">ContextWrapper</span><span class="o">)</span> <span class="n">context</span><span class="o">).</span><span class="na">getBaseContext</span><span class="o">());</span>
+            <span class="o">}</span>
+        <span class="o">}</span>
+
+		<span class="c1">// 最终走到这里</span>
+        <span class="k">return</span> <span class="nf">getApplicationManager</span><span class="o">(</span><span class="n">context</span><span class="o">);</span>
+    <span class="o">}</span>
+
+	<span class="kd">private</span> <span class="nc">RequestManager</span> <span class="nf">getApplicationManager</span><span class="o">(</span><span class="nc">Context</span> <span class="n">context</span><span class="o">)</span> <span class="o">{</span>
+        <span class="k">if</span> <span class="o">(</span><span class="n">applicationManager</span> <span class="o">==</span> <span class="kc">null</span><span class="o">)</span> <span class="o">{</span>
+            <span class="kd">synchronized</span> <span class="o">(</span><span class="k">this</span><span class="o">)</span> <span class="o">{</span>
+                <span class="k">if</span> <span class="o">(</span><span class="n">applicationManager</span> <span class="o">==</span> <span class="kc">null</span><span class="o">)</span> <span class="o">{</span>
+                    <span class="n">applicationManager</span> <span class="o">=</span> <span class="k">new</span> <span class="nc">RequestManager</span><span class="o">(</span>
+                    		<span class="n">context</span><span class="o">.</span><span class="na">getApplicationContext</span><span class="o">(),</span>
+                            <span class="k">new</span> <span class="nf">ApplicationLifecycle</span><span class="o">(),</span>
+                            <span class="k">new</span> <span class="nf">EmptyRequestManagerTreeNode</span><span class="o">());</span>
+                <span class="o">}</span>
+            <span class="o">}</span>
+        <span class="o">}</span>
+        <span class="c1">// applicationManager 全局唯一</span>
+        <span class="k">return</span> <span class="n">applicationManager</span><span class="o">;</span>
+    <span class="o">}</span>
+
+<span class="c1">// ApplicationLifecycle</span>
+	<span class="kd">class</span> <span class="nc">ApplicationLifecycle</span> <span class="kd">implements</span> <span class="nc">Lifecycle</span> <span class="o">{</span>
+    	<span class="nd">@Override</span>
+    	<span class="kd">public</span> <span class="kt">void</span> <span class="nf">addListener</span><span class="o">(</span><span class="nc">LifecycleListener</span> <span class="n">listener</span><span class="o">)</span> <span class="o">{</span>
+    		<span class="c1">// 这里模拟了一个假的生命周期, 只有start</span>
+        	<span class="n">listener</span><span class="o">.</span><span class="na">onStart</span><span class="o">();</span>
+    	<span class="o">}</span>
+	<span class="o">}</span>
+</pre></td></tr></tbody></table></code></pre></div></div>
+<p>小结:</p>
+<ul>
+  <li>创建了一个 <strong>ApplicationLifecycle</strong> ( 模拟生命周期 / 全局生命周期 )</li>
+  <li>放进一个全局唯一 <strong>applicationManager</strong> ( RequestManager 实例 ) 中</li>
+</ul>
+
+<p><strong>主线程 + Activity 时</strong></p>
+
+<div class="language-java highlighter-rouge"><div class="highlight"><pre class="highlight"><code><table class="rouge-table"><tbody><tr><td class="rouge-gutter gl"><pre class="lineno">1
+2
+3
+4
+5
+6
+7
+8
+9
+10
+11
+12
+13
+14
+15
+16
+17
+18
+19
+20
+21
+22
+23
+24
+25
+26
+27
+28
+29
+30
+31
+32
+33
+34
+35
+36
+37
+38
+39
+40
+41
+42
+43
+44
+45
+46
+47
+48
+49
+50
+51
+52
+53
+54
+55
+56
+57
+58
+59
+60
+61
+62
+63
+64
+65
+66
+67
+68
+69
+70
+71
+72
+73
+74
+75
+76
+77
+78
+79
+80
+81
+82
+83
+84
+85
+86
+87
+</pre></td><td class="rouge-code"><pre><span class="c1">// RequestManagerRetriever</span>
+	<span class="nc">RequestManager</span> <span class="nf">fragmentGet</span><span class="o">(</span><span class="nc">Context</span> <span class="n">context</span><span class="o">,</span> <span class="n">android</span><span class="o">.</span><span class="na">app</span><span class="o">.</span><span class="na">FragmentManager</span> <span class="n">fm</span><span class="o">)</span> <span class="o">{</span>
+		<span class="c1">// 这里应该就是生成空白 Fragment 的步骤</span>
+        <span class="nc">RequestManagerFragment</span> <span class="n">current</span> <span class="o">=</span> <span class="n">getRequestManagerFragment</span><span class="o">(</span><span class="n">fm</span><span class="o">);</span>
+        <span class="o">...</span>
+        <span class="n">requestManager</span> <span class="o">=</span> <span class="k">new</span> <span class="nc">RequestManager</span><span class="o">(</span><span class="n">context</span><span class="o">,</span>
+        						<span class="c1">// 这里就是创建生命周期的地方了</span>
+        						<span class="n">current</span><span class="o">.</span><span class="na">getLifecycle</span><span class="o">(),</span>
+        						<span class="n">current</span><span class="o">.</span><span class="na">getRequestManagerTreeNode</span><span class="o">());</span>
+        <span class="n">current</span><span class="o">.</span><span class="na">setRequestManager</span><span class="o">(</span><span class="n">requestManager</span><span class="o">);</span>
+        <span class="o">...</span>
+        <span class="k">return</span> <span class="n">requestManager</span><span class="o">;</span>
+    <span class="o">}</span>
+
+	<span class="nc">RequestManagerFragment</span> <span class="nf">getRequestManagerFragment</span><span class="o">(</span><span class="kd">final</span> <span class="n">android</span><span class="o">.</span><span class="na">app</span><span class="o">.</span><span class="na">FragmentManager</span> <span class="n">fm</span><span class="o">)</span> <span class="o">{</span>
+
+		<span class="c1">// 一系列验证当前界面是否绑定过 Glide 的空白 Fragment</span>
+        <span class="nc">RequestManagerFragment</span> <span class="n">current</span> <span class="o">=</span> <span class="o">(</span><span class="nc">RequestManagerFragment</span><span class="o">)</span> <span class="n">fm</span><span class="o">.</span><span class="na">findFragmentByTag</span><span class="o">(</span><span class="no">FRAGMENT_TAG</span><span class="o">);</span>
+        <span class="k">if</span> <span class="o">(</span><span class="n">current</span> <span class="o">==</span> <span class="kc">null</span><span class="o">)</span> <span class="o">{</span>
+            <span class="n">current</span> <span class="o">=</span> <span class="n">pendingRequestManagerFragments</span><span class="o">.</span><span class="na">get</span><span class="o">(</span><span class="n">fm</span><span class="o">);</span>
+            <span class="k">if</span> <span class="o">(</span><span class="n">current</span> <span class="o">==</span> <span class="kc">null</span><span class="o">)</span> <span class="o">{</span>
+
+            	<span class="c1">// 未绑定过 , 创建一个新的</span>
+                <span class="n">current</span> <span class="o">=</span> <span class="k">new</span> <span class="nc">RequestManagerFragment</span><span class="o">();</span>
+                <span class="n">pendingRequestManagerFragments</span><span class="o">.</span><span class="na">put</span><span class="o">(</span><span class="n">fm</span><span class="o">,</span> <span class="n">current</span><span class="o">);</span>
+                <span class="n">fm</span><span class="o">.</span><span class="na">beginTransaction</span><span class="o">().</span><span class="na">add</span><span class="o">(</span><span class="n">current</span><span class="o">,</span><span class="no">FRAGMENT_TAG</span><span class="o">)</span>
+                					 <span class="o">.</span><span class="na">commitAllowingStateLoss</span><span class="o">();</span>
+                <span class="n">handler</span><span class="o">.</span><span class="na">obtainMessage</span><span class="o">(</span><span class="no">ID_REMOVE_FRAGMENT_MANAGER</span><span class="o">,</span> <span class="n">fm</span><span class="o">).</span><span class="na">sendToTarget</span><span class="o">();</span>
+            <span class="o">}</span>
+        <span class="o">}</span>
+        <span class="k">return</span> <span class="n">current</span><span class="o">;</span>
+    <span class="o">}</span>
+
+<span class="c1">// RequestManagerFragment</span>
+	<span class="nc">ActivityFragmentLifecycle</span> <span class="nf">getLifecycle</span><span class="o">()</span> <span class="o">{</span>
+		<span class="c1">// 根据上面的代码, 应该是在构造函数里创建了, 跟进去看看</span>
+        <span class="k">return</span> <span class="n">lifecycle</span><span class="o">;</span>
+    <span class="o">}</span>
+
+	<span class="kd">public</span> <span class="nf">RequestManagerFragment</span><span class="o">()</span> <span class="o">{</span>
+		<span class="c1">// 最终创建了一个 ActivityFragmentLifecycle 实例 , 来看看它是如何工作的</span>
+        <span class="k">this</span><span class="o">(</span><span class="k">new</span> <span class="nc">ActivityFragmentLifecycle</span><span class="o">());</span>
+    <span class="o">}</span>
+
+	<span class="nc">RequestManagerFragment</span><span class="o">(</span><span class="nc">ActivityFragmentLifecycle</span> <span class="n">lifecycle</span><span class="o">)</span> <span class="o">{</span>
+        <span class="k">this</span><span class="o">.</span><span class="na">lifecycle</span> <span class="o">=</span> <span class="n">lifecycle</span><span class="o">;</span>
+    <span class="o">}</span>
+
+	<span class="nd">@Override</span>
+    <span class="kd">public</span> <span class="kt">void</span> <span class="nf">onStart</span><span class="o">()</span> <span class="o">{</span>
+        <span class="kd">super</span><span class="o">.</span><span class="na">onStart</span><span class="o">();</span>
+        <span class="n">lifecycle</span><span class="o">.</span><span class="na">onStart</span><span class="o">();</span>
+    <span class="o">}</span>
+
+    <span class="nd">@Override</span>
+    <span class="kd">public</span> <span class="kt">void</span> <span class="nf">onStop</span><span class="o">()</span> <span class="o">{</span>
+        <span class="kd">super</span><span class="o">.</span><span class="na">onStop</span><span class="o">();</span>
+        <span class="n">lifecycle</span><span class="o">.</span><span class="na">onStop</span><span class="o">();</span>
+    <span class="o">}</span>
+
+    <span class="nd">@Override</span>
+    <span class="kd">public</span> <span class="kt">void</span> <span class="nf">onDestroy</span><span class="o">()</span> <span class="o">{</span>
+        <span class="kd">super</span><span class="o">.</span><span class="na">onDestroy</span><span class="o">();</span>
+        <span class="n">lifecycle</span><span class="o">.</span><span class="na">onDestroy</span><span class="o">();</span>
+    <span class="o">}</span>
+
+<span class="c1">// ActivityFragmentLifecycle</span>
+	<span class="kt">void</span> <span class="nf">onStart</span><span class="o">()</span> <span class="o">{</span>
+        <span class="n">isStarted</span> <span class="o">=</span> <span class="kc">true</span><span class="o">;</span>
+        <span class="k">for</span> <span class="o">(</span><span class="nc">LifecycleListener</span> <span class="n">lifecycleListener</span> <span class="o">:</span> <span class="nc">Util</span><span class="o">.</span><span class="na">getSnapshot</span><span class="o">(</span><span class="n">lifecycleListeners</span><span class="o">))</span> <span class="o">{</span>
+            <span class="n">lifecycleListener</span><span class="o">.</span><span class="na">onStart</span><span class="o">();</span>
+        <span class="o">}</span>
+    <span class="o">}</span>
+
+    <span class="kt">void</span> <span class="nf">onStop</span><span class="o">()</span> <span class="o">{</span>
+        <span class="n">isStarted</span> <span class="o">=</span> <span class="kc">false</span><span class="o">;</span>
+        <span class="k">for</span> <span class="o">(</span><span class="nc">LifecycleListener</span> <span class="n">lifecycleListener</span> <span class="o">:</span> <span class="nc">Util</span><span class="o">.</span><span class="na">getSnapshot</span><span class="o">(</span><span class="n">lifecycleListeners</span><span class="o">))</span> <span class="o">{</span>
+            <span class="n">lifecycleListener</span><span class="o">.</span><span class="na">onStop</span><span class="o">();</span>
+        <span class="o">}</span>
+    <span class="o">}</span>
+
+    <span class="kt">void</span> <span class="nf">onDestroy</span><span class="o">()</span> <span class="o">{</span>
+        <span class="n">isDestroyed</span> <span class="o">=</span> <span class="kc">true</span><span class="o">;</span>
+        <span class="k">for</span> <span class="o">(</span><span class="nc">LifecycleListener</span> <span class="n">lifecycleListener</span> <span class="o">:</span> <span class="nc">Util</span><span class="o">.</span><span class="na">getSnapshot</span><span class="o">(</span><span class="n">lifecycleListeners</span><span class="o">))</span> <span class="o">{</span>
+            <span class="n">lifecycleListener</span><span class="o">.</span><span class="na">onDestroy</span><span class="o">();</span>
+        <span class="o">}</span>
+    <span class="o">}</span>
+</pre></td></tr></tbody></table></code></pre></div></div>
+<p>很简单,</p>
+<ul>
+  <li>往 <strong>Activity</strong> 插入一个没界面的 <strong>RequestManagerFragment</strong></li>
+  <li>创建了一个 <strong>ActivityFragmentLifecycle 实例</strong>, 在 <strong>RequestManagerFragment</strong> 生命周期函数被调用时调用</li>
+</ul>
+
+<p><strong>主线程 + Fragment 时</strong></p>
+
+<p>我们就不看了, 结果差不多</p>
+<ul>
+  <li>往 <strong>Fragment</strong> 插入一个没界面的 <strong>SupportRequestManagerFragment</strong></li>
+  <li>创建了一个 <strong>ActivityFragmentLifecycle 实例</strong>, 在 <strong>SupportRequestManagerFragment</strong> 生命周期函数被调用时调用</li>
+</ul>
+
+<h2 id="内存监听">内存监听</h2>
+<ul>
+  <li>在 SupportRequestManagerFragment 的 onLowMemory()</li>
+  <li>在 RequestManagerFragment  的 onTrimMemory() / onLowMemory()</li>
+</ul>
+
+<div class="language-java highlighter-rouge"><div class="highlight"><pre class="highlight"><code><table class="rouge-table"><tbody><tr><td class="rouge-gutter gl"><pre class="lineno">1
+2
+3
+4
+5
+6
+7
+8
+9
+10
+11
+12
+13
+14
+15
+16
+17
+18
+19
+20
+21
+22
+23
+24
+25
+26
+27
+28
+29
+30
+31
+32
+33
+34
+35
+36
+37
+38
+39
+40
+41
+42
+43
+44
+45
+46
+47
+48
+49
+50
+51
+52
+53
+54
+55
+</pre></td><td class="rouge-code"><pre><span class="c1">// SupportRequestManagerFragment</span>
+	<span class="nd">@Override</span>
+    <span class="kd">public</span> <span class="kt">void</span> <span class="nf">onLowMemory</span><span class="o">()</span> <span class="o">{</span>
+        <span class="o">...</span>
+        <span class="n">requestManager</span><span class="o">.</span><span class="na">onLowMemory</span><span class="o">();</span>
+    <span class="o">}</span>
+
+<span class="c1">// RequestManagerFragment</span>
+	<span class="nd">@Override</span>
+    <span class="kd">public</span> <span class="kt">void</span> <span class="nf">onTrimMemory</span><span class="o">(</span><span class="kt">int</span> <span class="n">level</span><span class="o">)</span> <span class="o">{</span>
+        <span class="o">...</span>
+        <span class="n">requestManager</span><span class="o">.</span><span class="na">onTrimMemory</span><span class="o">(</span><span class="n">level</span><span class="o">);</span>
+    <span class="o">}</span>
+
+    <span class="nd">@Override</span>
+    <span class="kd">public</span> <span class="kt">void</span> <span class="nf">onLowMemory</span><span class="o">()</span> <span class="o">{</span>
+        <span class="o">...</span>
+        <span class="n">requestManager</span><span class="o">.</span><span class="na">onLowMemory</span><span class="o">();</span>
+    <span class="o">}</span>
+
+<span class="c1">// requestManager 是啥? 还记得 RequestManagerFragment 创建的代码 ?</span>
+<span class="c1">// RequestManagerRetriever</span>
+	<span class="nc">RequestManager</span> <span class="nf">fragmentGet</span><span class="o">(</span><span class="nc">Context</span> <span class="n">context</span><span class="o">,</span> <span class="n">android</span><span class="o">.</span><span class="na">app</span><span class="o">.</span><span class="na">FragmentManager</span> <span class="n">fm</span><span class="o">)</span> <span class="o">{</span>
+        <span class="nc">RequestManagerFragment</span> <span class="n">current</span> <span class="o">=</span> <span class="n">getRequestManagerFragment</span><span class="o">(</span><span class="n">fm</span><span class="o">);</span>
+        <span class="o">...</span>
+        <span class="n">requestManager</span> <span class="o">=</span> <span class="k">new</span> <span class="nc">RequestManager</span><span class="o">(</span><span class="n">context</span><span class="o">,</span>
+        						<span class="n">current</span><span class="o">.</span><span class="na">getLifecycle</span><span class="o">(),</span>
+        						<span class="n">current</span><span class="o">.</span><span class="na">getRequestManagerTreeNode</span><span class="o">());</span>
+        <span class="c1">// 这里这里这里</span>
+        <span class="n">current</span><span class="o">.</span><span class="na">setRequestManager</span><span class="o">(</span><span class="n">requestManager</span><span class="o">);</span>
+        <span class="o">...</span>
+        <span class="k">return</span> <span class="n">requestManager</span><span class="o">;</span>
+    <span class="o">}</span>
+
+<span class="c1">// RequestManager</span>
+	<span class="kd">public</span> <span class="kt">void</span> <span class="nf">onTrimMemory</span><span class="o">(</span><span class="kt">int</span> <span class="n">level</span><span class="o">)</span> <span class="o">{</span>
+        <span class="n">glide</span><span class="o">.</span><span class="na">trimMemory</span><span class="o">(</span><span class="n">level</span><span class="o">);</span>
+    <span class="o">}</span>
+
+    <span class="kd">public</span> <span class="kt">void</span> <span class="nf">onLowMemory</span><span class="o">()</span> <span class="o">{</span>
+        <span class="n">glide</span><span class="o">.</span><span class="na">clearMemory</span><span class="o">();</span>
+    <span class="o">}</span>
+
+<span class="c1">// Glide 单例</span>
+	<span class="kd">public</span> <span class="kt">void</span> <span class="nf">clearMemory</span><span class="o">()</span> <span class="o">{</span>
+		<span class="o">...</span>
+        <span class="n">memoryCache</span><span class="o">.</span><span class="na">clearMemory</span><span class="o">();</span>
+        <span class="n">bitmapPool</span><span class="o">.</span><span class="na">clearMemory</span><span class="o">();</span>
+    <span class="o">}</span>
+
+    <span class="kd">public</span> <span class="kt">void</span> <span class="nf">trimMemory</span><span class="o">(</span><span class="kt">int</span> <span class="n">level</span><span class="o">)</span> <span class="o">{</span>
+        <span class="o">...</span>
+        <span class="n">memoryCache</span><span class="o">.</span><span class="na">trimMemory</span><span class="o">(</span><span class="n">level</span><span class="o">);</span>
+        <span class="n">bitmapPool</span><span class="o">.</span><span class="na">trimMemory</span><span class="o">(</span><span class="n">level</span><span class="o">);</span>
+    <span class="o">}</span>
+</pre></td></tr></tbody></table></code></pre></div></div>
+<p>小结:</p>
+<ul>
+  <li>空白 Fragment 返回存储吃紧的时候, 交由 Glide 处理去了</li>
+  <li>memoryCache 清理内存缓存</li>
+  <li>bitmapPool 清理内存缓存
+    <blockquote>
+      <p>memoryCache 很容易就能猜出来是 Glide 的用来做内存缓存的;
+那么 bitmapPool 是个啥? <a href="/2021/03/20/markdown-glide3.7.0_4/index.html">Android Glide 3.7.0 源码解析(四), BitmapPool作用及原理</a></p>
+      <ol>
+        <li>在 Android 中图片的显示实体是一个 Bitmap 对象, 每一次图片显示都会先将图片资源构建成一个 Bitmap 对象, 而创建和销毁 Bitmap 的过程比较耗系统资源, 严重时还会引起GC频繁, 界面卡顿</li>
+        <li>举个例子: 列表显示头像, 一页10个头像展示, 假定GC的阈值就是10张图
+ 普通方案: 创建10个 Bitmap 再释放, 再创建10个 Bitmap 用来展示下一页, 这样没滑动一页就是触发一次GC
+ Glide 方案: 创建一个 BitmapPool 参照线程池理解, 创建好10个 bitmap 不释放, 下一页的10个图像, 借用已有的 Bitmap 的内存空间, 不论滑动多少页, 都不会触发 GC 了</li>
+      </ol>
+    </blockquote>
+  </li>
+</ul>
+
+<h2 id="请求任务监听">请求任务监听</h2>
+<p>来看看 RequestManager 的构造函数</p>
+<div class="language-java highlighter-rouge"><div class="highlight"><pre class="highlight"><code><table class="rouge-table"><tbody><tr><td class="rouge-gutter gl"><pre class="lineno">1
+2
+3
+4
+5
+6
+7
+8
+9
+10
+11
+12
+13
+14
+15
+16
+17
+18
+19
+20
+21
+22
+23
+24
+25
+26
+27
+28
+29
+30
+31
+32
+33
+34
+35
+36
+37
+38
+39
+40
+41
+42
+43
+44
+45
+46
+47
+48
+49
+50
+51
+52
+53
+54
+55
+56
+57
+58
+59
+60
+61
+62
+63
+64
+65
+</pre></td><td class="rouge-code"><pre><span class="c1">// RequestManager</span>
+	<span class="kd">public</span> <span class="nf">RequestManager</span><span class="o">(</span><span class="nc">Context</span> <span class="n">context</span><span class="o">,</span> <span class="nc">Lifecycle</span> <span class="n">lifecycle</span><span class="o">,</span> <span class="nc">RequestManagerTreeNode</span> <span class="n">treeNode</span><span class="o">)</span> <span class="o">{</span>
+        <span class="k">this</span><span class="o">(</span><span class="n">context</span><span class="o">,</span> <span class="n">lifecycle</span><span class="o">,</span> <span class="n">treeNode</span><span class="o">,</span> <span class="k">new</span> <span class="nc">RequestTracker</span><span class="o">(),</span> <span class="k">new</span> <span class="nc">ConnectivityMonitorFactory</span><span class="o">());</span>
+    <span class="o">}</span>
+
+	<span class="nc">RequestManager</span><span class="o">(</span><span class="nc">Context</span> <span class="n">context</span><span class="o">,</span> <span class="kd">final</span> <span class="nc">Lifecycle</span> <span class="n">lifecycle</span><span class="o">,</span> <span class="nc">RequestManagerTreeNode</span> <span class="n">treeNode</span><span class="o">,</span>
+            <span class="nc">RequestTracker</span> <span class="n">requestTracker</span><span class="o">,</span> <span class="nc">ConnectivityMonitorFactory</span> <span class="n">factory</span><span class="o">)</span> <span class="o">{</span>
+        <span class="k">this</span><span class="o">.</span><span class="na">context</span> <span class="o">=</span> <span class="n">context</span><span class="o">.</span><span class="na">getApplicationContext</span><span class="o">();</span>
+        <span class="k">this</span><span class="o">.</span><span class="na">lifecycle</span> <span class="o">=</span> <span class="n">lifecycle</span><span class="o">;</span>
+        <span class="k">this</span><span class="o">.</span><span class="na">treeNode</span> <span class="o">=</span> <span class="n">treeNode</span><span class="o">;</span>
+        <span class="k">this</span><span class="o">.</span><span class="na">requestTracker</span> <span class="o">=</span> <span class="n">requestTracker</span><span class="o">;</span>
+        <span class="k">this</span><span class="o">.</span><span class="na">glide</span> <span class="o">=</span> <span class="nc">Glide</span><span class="o">.</span><span class="na">get</span><span class="o">(</span><span class="n">context</span><span class="o">);</span>
+        <span class="k">this</span><span class="o">.</span><span class="na">optionsApplier</span> <span class="o">=</span> <span class="k">new</span> <span class="nc">OptionsApplier</span><span class="o">();</span>
+
+        <span class="nc">ConnectivityMonitor</span> <span class="n">connectivityMonitor</span> <span class="o">=</span> <span class="n">factory</span><span class="o">.</span><span class="na">build</span><span class="o">(</span><span class="n">context</span><span class="o">,</span>
+                <span class="k">new</span> <span class="nf">RequestManagerConnectivityListener</span><span class="o">(</span><span class="n">requestTracker</span><span class="o">));</span>
+
+        <span class="k">if</span> <span class="o">(</span><span class="nc">Util</span><span class="o">.</span><span class="na">isOnBackgroundThread</span><span class="o">())</span> <span class="o">{</span>
+            <span class="k">new</span> <span class="nf">Handler</span><span class="o">(</span><span class="nc">Looper</span><span class="o">.</span><span class="na">getMainLooper</span><span class="o">()).</span><span class="na">post</span><span class="o">(</span><span class="k">new</span> <span class="nc">Runnable</span><span class="o">()</span> <span class="o">{</span>
+                <span class="nd">@Override</span>
+                <span class="kd">public</span> <span class="kt">void</span> <span class="nf">run</span><span class="o">()</span> <span class="o">{</span>
+                    <span class="n">lifecycle</span><span class="o">.</span><span class="na">addListener</span><span class="o">(</span><span class="nc">RequestManager</span><span class="o">.</span><span class="na">this</span><span class="o">);</span>
+                <span class="o">}</span>
+            <span class="o">});</span>
+        <span class="o">}</span> <span class="k">else</span> <span class="o">{</span>
+        	<span class="c1">// 把 RequestManager 自身注册进入 lifecycle</span>
+            <span class="n">lifecycle</span><span class="o">.</span><span class="na">addListener</span><span class="o">(</span><span class="k">this</span><span class="o">);</span>
+        <span class="o">}</span>
+        <span class="c1">// 这里是网络状态的生命周期注册, 下一小节讲</span>
+        <span class="n">lifecycle</span><span class="o">.</span><span class="na">addListener</span><span class="o">(</span><span class="n">connectivityMonitor</span><span class="o">);</span>
+    <span class="o">}</span>
+
+<span class="c1">// RequestManager 的 LifecycleListener 实现</span>
+	<span class="nd">@Override</span>
+    <span class="kd">public</span> <span class="kt">void</span> <span class="nf">onStart</span><span class="o">()</span> <span class="o">{</span>
+        <span class="c1">// onStart might not be called because this object may be created after the fragment/activity's onStart method.</span>
+        <span class="n">resumeRequests</span><span class="o">();</span>
+    <span class="o">}</span>
+
+	<span class="kd">public</span> <span class="kt">void</span> <span class="nf">resumeRequests</span><span class="o">()</span> <span class="o">{</span>
+        <span class="nc">Util</span><span class="o">.</span><span class="na">assertMainThread</span><span class="o">();</span>
+        <span class="n">requestTracker</span><span class="o">.</span><span class="na">resumeRequests</span><span class="o">();</span>
+    <span class="o">}</span>
+
+    <span class="cm">/**
+     * Lifecycle callback that unregisters for connectivity events (if the android.permission.ACCESS_NETWORK_STATE
+     * permission is present) and pauses in progress loads.
+     */</span>
+    <span class="nd">@Override</span>
+    <span class="kd">public</span> <span class="kt">void</span> <span class="nf">onStop</span><span class="o">()</span> <span class="o">{</span>
+        <span class="n">pauseRequests</span><span class="o">();</span>
+    <span class="o">}</span>
+
+	<span class="kd">public</span> <span class="kt">void</span> <span class="nf">pauseRequests</span><span class="o">()</span> <span class="o">{</span>
+        <span class="nc">Util</span><span class="o">.</span><span class="na">assertMainThread</span><span class="o">();</span>
+        <span class="n">requestTracker</span><span class="o">.</span><span class="na">pauseRequests</span><span class="o">();</span>
+    <span class="o">}</span>
+    <span class="cm">/**
+     * Lifecycle callback that cancels all in progress requests and clears and recycles resources for all completed
+     * requests.
+     */</span>
+    <span class="nd">@Override</span>
+    <span class="kd">public</span> <span class="kt">void</span> <span class="nf">onDestroy</span><span class="o">()</span> <span class="o">{</span>
+        <span class="n">requestTracker</span><span class="o">.</span><span class="na">clearRequests</span><span class="o">();</span>
+    <span class="o">}</span>
+</pre></td></tr></tbody></table></code></pre></div></div>
+<ol>
+  <li>RequestManager 在初始化的时候, 把自己注册进入 Lifecycle</li>
+  <li>而通过 RequestManager 对 LifecycleListener 的 实现可得, 最终都是调用 <strong>RequestManager.requestTracker</strong> 来实现功能</li>
+</ol>
+
+<p>现在我们来追踪 requestTracker 看看</p>
+<div class="language-java highlighter-rouge"><div class="highlight"><pre class="highlight"><code><table class="rouge-table"><tbody><tr><td class="rouge-gutter gl"><pre class="lineno">1
+2
+3
+4
+5
+6
+7
+8
+9
+10
+11
+12
+13
+14
+15
+16
+17
+18
+19
+20
+21
+22
+23
+24
+25
+26
+27
+28
+29
+30
+31
+32
+33
+34
+35
+36
+37
+</pre></td><td class="rouge-code"><pre><span class="c1">// RequestManager</span>
+	<span class="kd">public</span> <span class="nf">RequestManager</span><span class="o">(</span><span class="nc">Context</span> <span class="n">context</span><span class="o">,</span> <span class="nc">Lifecycle</span> <span class="n">lifecycle</span><span class="o">,</span> <span class="nc">RequestManagerTreeNode</span> <span class="n">treeNode</span><span class="o">)</span> <span class="o">{</span>
+		<span class="c1">// 这里直接 new 了一个对象</span>
+        <span class="k">this</span><span class="o">(</span><span class="n">context</span><span class="o">,</span> <span class="n">lifecycle</span><span class="o">,</span> <span class="n">treeNode</span><span class="o">,</span> <span class="k">new</span> <span class="nc">RequestTracker</span><span class="o">(),</span> <span class="k">new</span> <span class="nc">ConnectivityMonitorFactory</span><span class="o">());</span>
+    <span class="o">}</span>
+
+<span class="c1">// RequestTracker</span>
+
+	<span class="c1">// LifecycleListener.onStart</span>
+	<span class="kd">public</span> <span class="kt">void</span> <span class="nf">resumeRequests</span><span class="o">()</span> <span class="o">{</span>
+        <span class="n">isPaused</span> <span class="o">=</span> <span class="kc">false</span><span class="o">;</span>
+        <span class="k">for</span> <span class="o">(</span><span class="nc">Request</span> <span class="n">request</span> <span class="o">:</span> <span class="nc">Util</span><span class="o">.</span><span class="na">getSnapshot</span><span class="o">(</span><span class="n">requests</span><span class="o">))</span> <span class="o">{</span>
+            <span class="k">if</span> <span class="o">(!</span><span class="n">request</span><span class="o">.</span><span class="na">isComplete</span><span class="o">()</span> <span class="o">&amp;&amp;</span> <span class="o">!</span><span class="n">request</span><span class="o">.</span><span class="na">isCancelled</span><span class="o">()</span> <span class="o">&amp;&amp;</span> <span class="o">!</span><span class="n">request</span><span class="o">.</span><span class="na">isRunning</span><span class="o">())</span> <span class="o">{</span>
+                <span class="n">request</span><span class="o">.</span><span class="na">begin</span><span class="o">();</span>
+            <span class="o">}</span>
+        <span class="o">}</span>
+        <span class="n">pendingRequests</span><span class="o">.</span><span class="na">clear</span><span class="o">();</span>
+    <span class="o">}</span>
+
+	<span class="c1">// LifecycleListener.onStop</span>
+	<span class="kd">public</span> <span class="kt">void</span> <span class="nf">pauseRequests</span><span class="o">()</span> <span class="o">{</span>
+        <span class="n">isPaused</span> <span class="o">=</span> <span class="kc">true</span><span class="o">;</span>
+        <span class="k">for</span> <span class="o">(</span><span class="nc">Request</span> <span class="n">request</span> <span class="o">:</span> <span class="nc">Util</span><span class="o">.</span><span class="na">getSnapshot</span><span class="o">(</span><span class="n">requests</span><span class="o">))</span> <span class="o">{</span>
+            <span class="k">if</span> <span class="o">(</span><span class="n">request</span><span class="o">.</span><span class="na">isRunning</span><span class="o">())</span> <span class="o">{</span>
+                <span class="n">request</span><span class="o">.</span><span class="na">pause</span><span class="o">();</span>
+                <span class="n">pendingRequests</span><span class="o">.</span><span class="na">add</span><span class="o">(</span><span class="n">request</span><span class="o">);</span>
+            <span class="o">}</span>
+        <span class="o">}</span>
+    <span class="o">}</span>
+
+	<span class="c1">// LifecycleListener.onDestroy</span>
+	<span class="kd">public</span> <span class="kt">void</span> <span class="nf">clearRequests</span><span class="o">()</span> <span class="o">{</span>
+        <span class="k">for</span> <span class="o">(</span><span class="nc">Request</span> <span class="n">request</span> <span class="o">:</span> <span class="nc">Util</span><span class="o">.</span><span class="na">getSnapshot</span><span class="o">(</span><span class="n">requests</span><span class="o">))</span> <span class="o">{</span>
+            <span class="n">request</span><span class="o">.</span><span class="na">clear</span><span class="o">();</span>
+        <span class="o">}</span>
+        <span class="n">pendingRequests</span><span class="o">.</span><span class="na">clear</span><span class="o">();</span>
+    <span class="o">}</span>
+</pre></td></tr></tbody></table></code></pre></div></div>
+<ol>
+  <li>可以看到这里最终调用的是 Request(真实) 的 begin() , pause() , clear()</li>
+  <li>这里的 Request(真实) 是一个 GenericRequest 对象 (详细参考: <a href="https://blog.csdn.net/qq_25778369/article/details/114577763">Android Glide 3.7.0 源码解析(二), 从一次图片加载流程看源码</a>)</li>
+</ol>
+
+<p>继续追踪 GenericRequest</p>
+<div class="language-java highlighter-rouge"><div class="highlight"><pre class="highlight"><code><table class="rouge-table"><tbody><tr><td class="rouge-gutter gl"><pre class="lineno">1
+2
+3
+4
+5
+6
+7
+8
+9
+10
+11
+12
+13
+14
+15
+16
+17
+18
+19
+20
+21
+22
+23
+24
+25
+26
+27
+28
+29
+30
+31
+32
+33
+34
+35
+36
+37
+38
+39
+40
+41
+42
+43
+44
+45
+46
+47
+48
+49
+50
+51
+52
+53
+54
+55
+56
+57
+58
+59
+60
+61
+62
+63
+64
+65
+66
+67
+68
+69
+70
+71
+72
+73
+74
+75
+76
+</pre></td><td class="rouge-code"><pre><span class="c1">// GenericRequest</span>
+
+	<span class="c1">// LifecycleListener.onStart</span>
+    <span class="kd">public</span> <span class="kt">void</span> <span class="nf">begin</span><span class="o">()</span> <span class="o">{</span>
+        <span class="n">startTime</span> <span class="o">=</span> <span class="nc">LogTime</span><span class="o">.</span><span class="na">getLogTime</span><span class="o">();</span>
+        <span class="k">if</span> <span class="o">(</span><span class="n">model</span> <span class="o">==</span> <span class="kc">null</span><span class="o">)</span> <span class="o">{</span>
+            <span class="n">onException</span><span class="o">(</span><span class="kc">null</span><span class="o">);</span>
+            <span class="k">return</span><span class="o">;</span>
+        <span class="o">}</span>
+
+        <span class="n">status</span> <span class="o">=</span> <span class="nc">Status</span><span class="o">.</span><span class="na">WAITING_FOR_SIZE</span><span class="o">;</span>
+        <span class="k">if</span> <span class="o">(</span><span class="nc">Util</span><span class="o">.</span><span class="na">isValidDimensions</span><span class="o">(</span><span class="n">overrideWidth</span><span class="o">,</span> <span class="n">overrideHeight</span><span class="o">))</span> <span class="o">{</span>
+        	<span class="c1">// 就是调用这个方法开始新一次的下载任务</span>
+            <span class="n">onSizeReady</span><span class="o">(</span><span class="n">overrideWidth</span><span class="o">,</span> <span class="n">overrideHeight</span><span class="o">);</span>
+        <span class="o">}</span> <span class="k">else</span> <span class="o">{</span>
+            <span class="n">target</span><span class="o">.</span><span class="na">getSize</span><span class="o">(</span><span class="k">this</span><span class="o">);</span>
+        <span class="o">}</span>
+
+        <span class="k">if</span> <span class="o">(!</span><span class="n">isComplete</span><span class="o">()</span> <span class="o">&amp;&amp;</span> <span class="o">!</span><span class="n">isFailed</span><span class="o">()</span> <span class="o">&amp;&amp;</span> <span class="n">canNotifyStatusChanged</span><span class="o">())</span> <span class="o">{</span>
+            <span class="n">target</span><span class="o">.</span><span class="na">onLoadStarted</span><span class="o">(</span><span class="n">getPlaceholderDrawable</span><span class="o">());</span>
+        <span class="o">}</span>
+        <span class="k">if</span> <span class="o">(</span><span class="nc">Log</span><span class="o">.</span><span class="na">isLoggable</span><span class="o">(</span><span class="no">TAG</span><span class="o">,</span> <span class="nc">Log</span><span class="o">.</span><span class="na">VERBOSE</span><span class="o">))</span> <span class="o">{</span>
+            <span class="n">logV</span><span class="o">(</span><span class="s">"finished run method in "</span> <span class="o">+</span> <span class="nc">LogTime</span><span class="o">.</span><span class="na">getElapsedMillis</span><span class="o">(</span><span class="n">startTime</span><span class="o">));</span>
+        <span class="o">}</span>
+    <span class="o">}</span>
+
+	<span class="c1">// LifecycleListener.onStop</span>
+	<span class="kd">public</span> <span class="kt">void</span> <span class="nf">pause</span><span class="o">()</span> <span class="o">{</span>
+		<span class="c1">// 看来 onStop 和 onDestroy  是调用的相同的逻辑</span>
+        <span class="n">clear</span><span class="o">();</span>
+        <span class="n">status</span> <span class="o">=</span> <span class="nc">Status</span><span class="o">.</span><span class="na">PAUSED</span><span class="o">;</span>
+    <span class="o">}</span>
+
+	<span class="c1">// LifecycleListener.onDestroy</span>
+	<span class="kd">public</span> <span class="kt">void</span> <span class="nf">clear</span><span class="o">()</span> <span class="o">{</span>
+        <span class="nc">Util</span><span class="o">.</span><span class="na">assertMainThread</span><span class="o">();</span>
+        <span class="k">if</span> <span class="o">(</span><span class="n">status</span> <span class="o">==</span> <span class="nc">Status</span><span class="o">.</span><span class="na">CLEARED</span><span class="o">)</span> <span class="o">{</span>
+            <span class="k">return</span><span class="o">;</span>
+        <span class="o">}</span>
+        <span class="c1">// 任务的停止都是在这边控制</span>
+        <span class="n">cancel</span><span class="o">();</span>
+        <span class="c1">// Resource must be released before canNotifyStatusChanged is called.</span>
+        <span class="k">if</span> <span class="o">(</span><span class="n">resource</span> <span class="o">!=</span> <span class="kc">null</span><span class="o">)</span> <span class="o">{</span>
+        	<span class="c1">// 此处就是一些资源的释放, 过滤不看</span>
+            <span class="n">releaseResource</span><span class="o">(</span><span class="n">resource</span><span class="o">);</span>
+        <span class="o">}</span>
+        <span class="k">if</span> <span class="o">(</span><span class="n">canNotifyStatusChanged</span><span class="o">())</span> <span class="o">{</span>
+            <span class="n">target</span><span class="o">.</span><span class="na">onLoadCleared</span><span class="o">(</span><span class="n">getPlaceholderDrawable</span><span class="o">());</span>
+        <span class="o">}</span>
+        <span class="c1">// Must be after cancel().</span>
+        <span class="n">status</span> <span class="o">=</span> <span class="nc">Status</span><span class="o">.</span><span class="na">CLEARED</span><span class="o">;</span>
+    <span class="o">}</span>
+
+	<span class="kt">void</span> <span class="nf">cancel</span><span class="o">()</span> <span class="o">{</span>
+        <span class="n">status</span> <span class="o">=</span> <span class="nc">Status</span><span class="o">.</span><span class="na">CANCELLED</span><span class="o">;</span>
+        <span class="k">if</span> <span class="o">(</span><span class="n">loadStatus</span> <span class="o">!=</span> <span class="kc">null</span><span class="o">)</span> <span class="o">{</span>
+            <span class="n">loadStatus</span><span class="o">.</span><span class="na">cancel</span><span class="o">();</span>
+            <span class="n">loadStatus</span> <span class="o">=</span> <span class="kc">null</span><span class="o">;</span>
+        <span class="o">}</span>
+    <span class="o">}</span>
+
+<span class="c1">// LoadStatus</span>
+	<span class="kd">public</span> <span class="kd">static</span> <span class="kd">class</span> <span class="nc">LoadStatus</span> <span class="o">{</span>
+        <span class="kd">private</span> <span class="kd">final</span> <span class="nc">EngineJob</span> <span class="n">engineJob</span><span class="o">;</span>
+        <span class="kd">private</span> <span class="kd">final</span> <span class="nc">ResourceCallback</span> <span class="n">cb</span><span class="o">;</span>
+
+        <span class="kd">public</span> <span class="nf">LoadStatus</span><span class="o">(</span><span class="nc">ResourceCallback</span> <span class="n">cb</span><span class="o">,</span> <span class="nc">EngineJob</span> <span class="n">engineJob</span><span class="o">)</span> <span class="o">{</span>
+            <span class="k">this</span><span class="o">.</span><span class="na">cb</span> <span class="o">=</span> <span class="n">cb</span><span class="o">;</span>
+            <span class="k">this</span><span class="o">.</span><span class="na">engineJob</span> <span class="o">=</span> <span class="n">engineJob</span><span class="o">;</span>
+        <span class="o">}</span>
+
+        <span class="kd">public</span> <span class="kt">void</span> <span class="nf">cancel</span><span class="o">()</span> <span class="o">{</span>
+        	<span class="c1">// 最终调用这个 EngineJob 来实现任务的取消的</span>
+            <span class="n">engineJob</span><span class="o">.</span><span class="na">removeCallback</span><span class="o">(</span><span class="n">cb</span><span class="o">);</span>
+        <span class="o">}</span>
+    <span class="o">}</span>
+</pre></td></tr></tbody></table></code></pre></div></div>
+<ol>
+  <li>生命周期方法 onStart() 最终通过 Request 的 begin() 来发起一个请求</li>
+  <li>而 onStop() 和 onDestroy() 则是通过 EngineJob 的 removeCallback() 来实现</li>
+  <li>这个 EngineJob 其实是管理下载时 Request 的线程调度的(具体参见: <a href="https://editor.csdn.net/md/?articleId=114577763">Android Glide 3.7.0 源码解析(二), 从一次图片加载流程看源码</a>)
+<img src="https://img-blog.csdnimg.cn/20210315105844940.png?x-oss-process=image/watermark,type_ZmFuZ3poZW5naGVpdGk,shadow_10,text_aHR0cHM6Ly9ibG9nLmNzZG4ubmV0L3FxXzI1Nzc4MzY5,size_16,color_FFFFFF,t_70" alt="在这里插入图片描述" /></li>
+</ol>
+
+<p>继续追踪 EngineJob 来看看</p>
+<div class="language-java highlighter-rouge"><div class="highlight"><pre class="highlight"><code><table class="rouge-table"><tbody><tr><td class="rouge-gutter gl"><pre class="lineno">1
+2
+3
+4
+5
+6
+7
+8
+9
+10
+11
+12
+13
+14
+15
+16
+17
+18
+19
+20
+21
+22
+23
+24
+25
+26
+27
+28
+</pre></td><td class="rouge-code"><pre><span class="c1">// EngineJob</span>
+	<span class="kd">public</span> <span class="kt">void</span> <span class="nf">removeCallback</span><span class="o">(</span><span class="nc">ResourceCallback</span> <span class="n">cb</span><span class="o">)</span> <span class="o">{</span>
+        <span class="nc">Util</span><span class="o">.</span><span class="na">assertMainThread</span><span class="o">();</span>
+        <span class="k">if</span> <span class="o">(</span><span class="n">hasResource</span> <span class="o">||</span> <span class="n">hasException</span><span class="o">)</span> <span class="o">{</span>
+            <span class="n">addIgnoredCallback</span><span class="o">(</span><span class="n">cb</span><span class="o">);</span>
+        <span class="o">}</span> <span class="k">else</span> <span class="o">{</span>
+        	<span class="c1">// 先移除监听回调</span>
+            <span class="n">cbs</span><span class="o">.</span><span class="na">remove</span><span class="o">(</span><span class="n">cb</span><span class="o">);</span>
+            <span class="k">if</span> <span class="o">(</span><span class="n">cbs</span><span class="o">.</span><span class="na">isEmpty</span><span class="o">())</span> <span class="o">{</span>
+            	<span class="c1">// 都移除完毕之后, 看看它做了啥</span>
+                <span class="n">cancel</span><span class="o">();</span>
+            <span class="o">}</span>
+        <span class="o">}</span>
+    <span class="o">}</span>
+
+	<span class="kt">void</span> <span class="nf">cancel</span><span class="o">()</span> <span class="o">{</span>
+        <span class="k">if</span> <span class="o">(</span><span class="n">hasException</span> <span class="o">||</span> <span class="n">hasResource</span> <span class="o">||</span> <span class="n">isCancelled</span><span class="o">)</span> <span class="o">{</span>
+            <span class="k">return</span><span class="o">;</span>
+        <span class="o">}</span>
+        <span class="n">engineRunnable</span><span class="o">.</span><span class="na">cancel</span><span class="o">();</span>
+        <span class="nc">Future</span> <span class="n">currentFuture</span> <span class="o">=</span> <span class="n">future</span><span class="o">;</span>
+        <span class="k">if</span> <span class="o">(</span><span class="n">currentFuture</span> <span class="o">!=</span> <span class="kc">null</span><span class="o">)</span> <span class="o">{</span>
+        	<span class="c1">// 这里的 future 是一个 ExecutorService.submit 返回的最终到这里终止任务</span>
+            <span class="n">currentFuture</span><span class="o">.</span><span class="na">cancel</span><span class="o">(</span><span class="kc">true</span><span class="o">);</span>
+        <span class="o">}</span>
+        <span class="n">isCancelled</span> <span class="o">=</span> <span class="kc">true</span><span class="o">;</span>
+        <span class="n">listener</span><span class="o">.</span><span class="na">onEngineJobCancelled</span><span class="o">(</span><span class="k">this</span><span class="o">,</span> <span class="n">key</span><span class="o">);</span>
+    <span class="o">}</span>
+</pre></td></tr></tbody></table></code></pre></div></div>
+<p>说明:</p>
+<ol>
+  <li>Glide 单例在实例化的时候, 会创建一个 diskCacheService ( ExecutorService 类型 ) 和 Engine 对象, 并把 diskCacheService 封装进 Engine</li>
+  <li>调用 Engine.load() 来执行一个 Request(真实) 的任务</li>
+  <li>Engine.load() 会 创建一个 EngineJob 实例, 并把 diskCacheService 传递进去</li>
+  <li>EngineJob.start() 来开始一个任务, 其实就是调用 diskCacheService.submit()</li>
+  <li>所以, 上面的 cancel() 其实就是 Future.cancel()
+<img src="https://img-blog.csdnimg.cn/20210315111813772.png?x-oss-process=image/watermark,type_ZmFuZ3poZW5naGVpdGk,shadow_10,text_aHR0cHM6Ly9ibG9nLmNzZG4ubmV0L3FxXzI1Nzc4MzY5,size_16,color_FFFFFF,t_70" alt="在这里插入图片描述" /></li>
+  <li>每个 Request(真实) 对应一个 EngineJob 实例</li>
+</ol>
+
+<p>还剩下最后一个没有看了, 网络状态变化的监听</p>
+
+<h2 id="网络状态变化的监听">网络状态变化的监听</h2>
+<p>还记得 RequestManager 的构造函数?</p>
+<div class="language-java highlighter-rouge"><div class="highlight"><pre class="highlight"><code><table class="rouge-table"><tbody><tr><td class="rouge-gutter gl"><pre class="lineno">1
+2
+3
+4
+5
+6
+7
+8
+9
+10
+11
+12
+13
+14
+15
+16
+17
+18
+19
+20
+21
+22
+23
+24
+25
+26
+27
+28
+29
+30
+31
+32
+33
+34
+35
+36
+37
+38
+39
+40
+41
+42
+43
+44
+45
+46
+47
+48
+49
+50
+51
+52
+53
+54
+55
+56
+57
+58
+59
+60
+61
+62
+63
+64
+</pre></td><td class="rouge-code"><pre><span class="c1">// RequestManager</span>
+
+	<span class="kd">public</span> <span class="nf">RequestManager</span><span class="o">(</span><span class="nc">Context</span> <span class="n">context</span><span class="o">,</span> <span class="nc">Lifecycle</span> <span class="n">lifecycle</span><span class="o">,</span> <span class="nc">RequestManagerTreeNode</span> <span class="n">treeNode</span><span class="o">)</span> <span class="o">{</span>
+        <span class="k">this</span><span class="o">(</span><span class="n">context</span><span class="o">,</span> <span class="n">lifecycle</span><span class="o">,</span> <span class="n">treeNode</span><span class="o">,</span> <span class="k">new</span> <span class="nc">RequestTracker</span><span class="o">(),</span> <span class="k">new</span> <span class="nc">ConnectivityMonitorFactory</span><span class="o">());</span>
+    <span class="o">}</span>
+
+    <span class="nc">RequestManager</span><span class="o">(</span><span class="nc">Context</span> <span class="n">context</span><span class="o">,</span> <span class="kd">final</span> <span class="nc">Lifecycle</span> <span class="n">lifecycle</span><span class="o">,</span> <span class="nc">RequestManagerTreeNode</span> <span class="n">treeNode</span><span class="o">,</span>
+            <span class="nc">RequestTracker</span> <span class="n">requestTracker</span><span class="o">,</span> <span class="nc">ConnectivityMonitorFactory</span> <span class="n">factory</span><span class="o">)</span> <span class="o">{</span>
+        <span class="k">this</span><span class="o">.</span><span class="na">context</span> <span class="o">=</span> <span class="n">context</span><span class="o">.</span><span class="na">getApplicationContext</span><span class="o">();</span>
+        <span class="k">this</span><span class="o">.</span><span class="na">lifecycle</span> <span class="o">=</span> <span class="n">lifecycle</span><span class="o">;</span>
+        <span class="k">this</span><span class="o">.</span><span class="na">treeNode</span> <span class="o">=</span> <span class="n">treeNode</span><span class="o">;</span>
+        <span class="k">this</span><span class="o">.</span><span class="na">requestTracker</span> <span class="o">=</span> <span class="n">requestTracker</span><span class="o">;</span>
+        <span class="k">this</span><span class="o">.</span><span class="na">glide</span> <span class="o">=</span> <span class="nc">Glide</span><span class="o">.</span><span class="na">get</span><span class="o">(</span><span class="n">context</span><span class="o">);</span>
+        <span class="k">this</span><span class="o">.</span><span class="na">optionsApplier</span> <span class="o">=</span> <span class="k">new</span> <span class="nc">OptionsApplier</span><span class="o">();</span>
+
+        <span class="nc">ConnectivityMonitor</span> <span class="n">connectivityMonitor</span> <span class="o">=</span> <span class="n">factory</span><span class="o">.</span><span class="na">build</span><span class="o">(</span><span class="n">context</span><span class="o">,</span>
+                <span class="k">new</span> <span class="nf">RequestManagerConnectivityListener</span><span class="o">(</span><span class="n">requestTracker</span><span class="o">));</span>
+
+        <span class="c1">// If we're the application level request manager, we may be created on a background thread. In that case we</span>
+        <span class="c1">// cannot risk synchronously pausing or resuming requests, so we hack around the issue by delaying adding</span>
+        <span class="c1">// ourselves as a lifecycle listener by posting to the main thread. This should be entirely safe.</span>
+        <span class="k">if</span> <span class="o">(</span><span class="nc">Util</span><span class="o">.</span><span class="na">isOnBackgroundThread</span><span class="o">())</span> <span class="o">{</span>
+            <span class="k">new</span> <span class="nf">Handler</span><span class="o">(</span><span class="nc">Looper</span><span class="o">.</span><span class="na">getMainLooper</span><span class="o">()).</span><span class="na">post</span><span class="o">(</span><span class="k">new</span> <span class="nc">Runnable</span><span class="o">()</span> <span class="o">{</span>
+                <span class="nd">@Override</span>
+                <span class="kd">public</span> <span class="kt">void</span> <span class="nf">run</span><span class="o">()</span> <span class="o">{</span>
+                    <span class="n">lifecycle</span><span class="o">.</span><span class="na">addListener</span><span class="o">(</span><span class="nc">RequestManager</span><span class="o">.</span><span class="na">this</span><span class="o">);</span>
+                <span class="o">}</span>
+            <span class="o">});</span>
+        <span class="o">}</span> <span class="k">else</span> <span class="o">{</span>
+            <span class="n">lifecycle</span><span class="o">.</span><span class="na">addListener</span><span class="o">(</span><span class="k">this</span><span class="o">);</span>
+        <span class="o">}</span>
+        <span class="c1">// 就是这里 创建了一个 connectivityMonitor 实例, 并注册进监听</span>
+        <span class="n">lifecycle</span><span class="o">.</span><span class="na">addListener</span><span class="o">(</span><span class="n">connectivityMonitor</span><span class="o">);</span>
+    <span class="o">}</span>
+
+<span class="c1">//DefaultConnectivityMonitor ConnectivityMonitor 子类</span>
+	<span class="nd">@Override</span>
+    <span class="kd">public</span> <span class="kt">void</span> <span class="nf">onStart</span><span class="o">()</span> <span class="o">{</span>
+        <span class="n">register</span><span class="o">();</span>
+    <span class="o">}</span>
+
+    <span class="nd">@Override</span>
+    <span class="kd">public</span> <span class="kt">void</span> <span class="nf">onStop</span><span class="o">()</span> <span class="o">{</span>
+        <span class="n">unregister</span><span class="o">();</span>
+    <span class="o">}</span>
+
+	<span class="kd">private</span> <span class="kt">void</span> <span class="nf">register</span><span class="o">()</span> <span class="o">{</span>
+        <span class="k">if</span> <span class="o">(</span><span class="n">isRegistered</span><span class="o">)</span> <span class="o">{</span>
+            <span class="k">return</span><span class="o">;</span>
+        <span class="o">}</span>
+
+        <span class="n">isConnected</span> <span class="o">=</span> <span class="n">isConnected</span><span class="o">(</span><span class="n">context</span><span class="o">);</span>
+        <span class="n">context</span><span class="o">.</span><span class="na">registerReceiver</span><span class="o">(</span><span class="n">connectivityReceiver</span><span class="o">,</span> <span class="k">new</span> <span class="nc">IntentFilter</span><span class="o">(</span><span class="nc">ConnectivityManager</span><span class="o">.</span><span class="na">CONNECTIVITY_ACTION</span><span class="o">));</span>
+        <span class="n">isRegistered</span> <span class="o">=</span> <span class="kc">true</span><span class="o">;</span>
+    <span class="o">}</span>
+
+    <span class="kd">private</span> <span class="kt">void</span> <span class="nf">unregister</span><span class="o">()</span> <span class="o">{</span>
+        <span class="k">if</span> <span class="o">(!</span><span class="n">isRegistered</span><span class="o">)</span> <span class="o">{</span>
+            <span class="k">return</span><span class="o">;</span>
+        <span class="o">}</span>
+
+        <span class="n">context</span><span class="o">.</span><span class="na">unregisterReceiver</span><span class="o">(</span><span class="n">connectivityReceiver</span><span class="o">);</span>
+        <span class="n">isRegistered</span> <span class="o">=</span> <span class="kc">false</span><span class="o">;</span>
+    <span class="o">}</span>
+</pre></td></tr></tbody></table></code></pre></div></div>
+<p>很简单 ,  就是界面活着的时候去监听网络状态变换, 界面销毁的时候, 解注册对网络状态变化的监测</p>
+
+:ET
