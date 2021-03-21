@@ -1,0 +1,8 @@
+I"(<h1 id="1-修改-hosts-文件">1. 修改 Hosts 文件</h1>
+<p>利用 <a href="https://www.ipaddress.com/">https://www.ipaddress.com/</a> 链接查询以下三个链接的DNS解析地址</p>
+<ol>
+  <li>github.com</li>
+  <li>assets-cdn.github.com</li>
+  <li>github.global.ssl.fastly.net</li>
+</ol>
+:ET

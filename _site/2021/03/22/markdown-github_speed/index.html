@@ -14,17 +14,16 @@
     <meta property="og:title" content="github clone 提速 - 周杰的博客 | Zhoujie Blog">
     
     <meta property="og:type" content="article">
-    <meta property="og:description" content="一、正常下载 Glide 源代码
-1
- git clone https://github.com/bumptech/glide.git
+    <meta property="og:description" content="1. 修改 Hosts 文件
+利用 https://www.ipaddress.com/ 链接查询以下三个链接的DNS解析地址
 
-二、提速方案下载 Glide
-1. 下载
-我们将原本的网站中的 github.com 进行替换为 github.com.cnpmjs.org
-1
- git clone https://github.com.cnpmjs.org/bumptech/glide...">
+  github.com
+  assets-cdn.github.com
+  github.global.ssl.fastly.net
+
+">
     
-    <meta property="article:published_time" content="2021-03-14T02:26:06Z">
+    <meta property="article:published_time" content="2021-03-22T01:55:13Z">
     
     
     <meta property="article:author" content="zhoujie">
@@ -36,7 +35,7 @@
     
     
     <meta property="og:image" content="https://summer-zhoujie.github.ioimg/root/head.jpg">
-    <meta property="og:url" content="https://summer-zhoujie.github.io/2021/03/14/markdown-github_speed/">
+    <meta property="og:url" content="https://summer-zhoujie.github.io/2021/03/22/markdown-github_speed/">
     <meta property="og:site_name" content="周杰的博客 | Zhoujie Blog">
     
     <title>github clone 提速 - 周杰的博客 | Zhoujie Blog</title>
@@ -48,7 +47,7 @@
     <link rel="shortcut icon" href="/img/root/favicon.ico">
     
     <!-- Canonical URL -->
-    <link rel="canonical" href="https://summer-zhoujie.github.io/2021/03/14/markdown-github_speed/">
+    <link rel="canonical" href="https://summer-zhoujie.github.io/2021/03/22/markdown-github_speed/">
 
     <!-- Bootstrap Core CSS -->
     <link rel="stylesheet" href="/css/bootstrap.min.css">
@@ -257,7 +256,7 @@
                     <h1>github clone 提速</h1>
                     
                     <h2 class="subheading">github clone 准备搭载火箭~</h2>
-                    <span class="meta">Posted by zhoujie on March 14, 2021</span>
+                    <span class="meta">Posted by zhoujie on March 22, 2021</span>
                 </div>
             </div>
         </div>
@@ -291,28 +290,67 @@
                 <!-- Multi-Lingual -->
                 
 
-				<h1 id="一正常下载-glide-源代码">一、正常下载 Glide 源代码</h1>
+				<h1 id="1-修改-hosts-文件">1. 修改 Hosts 文件</h1>
+<p>利用 <a href="https://www.ipaddress.com/">https://www.ipaddress.com/</a> 链接查询以下三个链接的DNS解析地址</p>
+<ol>
+  <li>github.com</li>
+  <li>assets-cdn.github.com</li>
+  <li>github.global.ssl.fastly.net</li>
+</ol>
+
+<p>打开系统的 Hosts 文件进行修改</p>
+
+<ul>
+  <li>windows
+修改C:\Windows\System32\drivers\etc\hosts文件的权限，指定可写入：右击-&gt;hosts-&gt;属性-&gt;安全-&gt;编辑-&gt;点击Users-&gt;在Users的权限“写入”后面打勾。如下：
+<img src="https://img-blog.csdnimg.cn/20210321174757732.png?x-oss-process=image/watermark,type_ZmFuZ3poZW5naGVpdGk,shadow_10,text_aHR0cHM6Ly9ibG9nLmNzZG4ubmV0L3FxXzI1Nzc4MzY5,size_16,color_FFFFFF,t_70" alt="在这里插入图片描述" />
+右击-&gt;hosts-&gt;打开方式-&gt;选定记事本（或者你喜欢的编辑器）-&gt;在末尾处添加以下内容：</li>
+</ul>
+
+<div class="language-java highlighter-rouge"><div class="highlight"><pre class="highlight"><code><table class="rouge-table"><tbody><tr><td class="rouge-gutter gl"><pre class="lineno">1
+2
+3
+</pre></td><td class="rouge-code"><pre><span class="mf">199.232</span><span class="o">.</span><span class="mf">69.194</span> <span class="n">github</span><span class="o">.</span><span class="na">global</span><span class="o">.</span><span class="na">ssl</span><span class="o">.</span><span class="na">fastly</span><span class="o">.</span><span class="na">Net</span>
+<span class="mf">140.82</span><span class="o">.</span><span class="mf">114.3</span> <span class="n">github</span><span class="o">.</span><span class="na">com</span>
+<span class="mf">185.199</span><span class="o">.</span><span class="mf">109.153</span> <span class="n">assets</span><span class="o">-</span><span class="n">cdn</span><span class="o">.</span><span class="na">github</span><span class="o">.</span><span class="na">com</span>
+</pre></td></tr></tbody></table></code></pre></div></div>
+
+<ul>
+  <li>mac</li>
+</ul>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code><table class="rouge-table"><tbody><tr><td class="rouge-gutter gl"><pre class="lineno">1
+</pre></td><td class="rouge-code"><pre><span class="nb">sudo </span>vim /ect/hosts
+</pre></td></tr></tbody></table></code></pre></div></div>
+<p>文末添加如下内容</p>
+<div class="language-java highlighter-rouge"><div class="highlight"><pre class="highlight"><code><table class="rouge-table"><tbody><tr><td class="rouge-gutter gl"><pre class="lineno">1
+2
+3
+</pre></td><td class="rouge-code"><pre><span class="mf">199.232</span><span class="o">.</span><span class="mf">69.194</span> <span class="n">github</span><span class="o">.</span><span class="na">global</span><span class="o">.</span><span class="na">ssl</span><span class="o">.</span><span class="na">fastly</span><span class="o">.</span><span class="na">Net</span>
+<span class="mf">140.82</span><span class="o">.</span><span class="mf">114.3</span> <span class="n">github</span><span class="o">.</span><span class="na">com</span>
+<span class="mf">185.199</span><span class="o">.</span><span class="mf">109.153</span> <span class="n">assets</span><span class="o">-</span><span class="n">cdn</span><span class="o">.</span><span class="na">github</span><span class="o">.</span><span class="na">com</span>
+</pre></td></tr></tbody></table></code></pre></div></div>
+
+<p><strong>注意</strong>: CDN 地址会因为地域, 时间而变化, 每个人都是不一样的, 而且要定时刷新, 否则可能会失效 ( 又回到原来低速的github了 )</p>
+
+<h1 id="2-镜像下载">2. 镜像下载</h1>
+<blockquote>
+  <p>主要用来提速 git clone</p>
+</blockquote>
+
+<p>我们将原本的 clone 地址中的 <strong>github.com</strong> 进行<strong>替换为 github.com.cnpmjs.org</strong></p>
 <div class="language-powershell highlighter-rouge"><div class="highlight"><pre class="highlight"><code><table class="rouge-table"><tbody><tr><td class="rouge-gutter gl"><pre class="lineno">1
-</pre></td><td class="rouge-code"><pre><span class="w"> </span><span class="n">git</span><span class="w"> </span><span class="nx">clone</span><span class="w"> </span><span class="nx">https://github.com/bumptech/glide.git</span><span class="w">
+</pre></td><td class="rouge-code"><pre><span class="n">git</span><span class="w"> </span><span class="nx">clone</span><span class="w"> </span><span class="nx">https://github.com.cnpmjs.org/bumptech/glide.git</span><span class="w">
 </span></pre></td></tr></tbody></table></code></pre></div></div>
-<h1 id="二提速方案下载-glide">二、提速方案下载 Glide</h1>
-<h2 id="1-下载">1. 下载</h2>
-<p>我们将原本的网站中的 github.com 进行替换为 github.com.cnpmjs.org</p>
-<div class="language-powershell highlighter-rouge"><div class="highlight"><pre class="highlight"><code><table class="rouge-table"><tbody><tr><td class="rouge-gutter gl"><pre class="lineno">1
-</pre></td><td class="rouge-code"><pre><span class="w"> </span><span class="n">git</span><span class="w"> </span><span class="nx">clone</span><span class="w"> </span><span class="nx">https://github.com.cnpmjs.org/bumptech/glide.git</span><span class="w">
-</span></pre></td></tr></tbody></table></code></pre></div></div>
-<h2 id="2-查看-origin-配置">2. 查看 origin 配置</h2>
-<div class="language-powershell highlighter-rouge"><div class="highlight"><pre class="highlight"><code><table class="rouge-table"><tbody><tr><td class="rouge-gutter gl"><pre class="lineno">1
-</pre></td><td class="rouge-code"><pre><span class="w"> </span><span class="n">git</span><span class="w"> </span><span class="nx">config</span><span class="w"> </span><span class="nt">--list</span><span class="w">
-</span></pre></td></tr></tbody></table></code></pre></div></div>
-<p>发现:
- remote.origin.url=https://github.com.cnpmjs.org/bumptech/glide.git</p>
-<h2 id="3-修改-origin-配置">3. 修改 origin 配置</h2>
+<p>再<strong>恢复 origin 远程仓库配置</strong></p>
 <div class="language-powershell highlighter-rouge"><div class="highlight"><pre class="highlight"><code><table class="rouge-table"><tbody><tr><td class="rouge-gutter gl"><pre class="lineno">1
 2
 </pre></td><td class="rouge-code"><pre><span class="w"> </span><span class="n">git</span><span class="w"> </span><span class="nx">remote</span><span class="w"> </span><span class="nx">rm</span><span class="w"> </span><span class="nx">origin</span><span class="w">
  </span><span class="n">git</span><span class="w"> </span><span class="nx">remote</span><span class="w"> </span><span class="nx">add</span><span class="w"> </span><span class="nx">origin</span><span class="w"> </span><span class="nx">https://github.com/bumptech/glide.git</span><span class="w">
 </span></pre></td></tr></tbody></table></code></pre></div></div>
+
+<h1 id="参考">参考</h1>
+<p><a href="https://cloud.tencent.com/developer/article/1686178">https://cloud.tencent.com/developer/article/1686178</a></p>
 
 
 
@@ -342,19 +380,12 @@
                 <ul class="pager">
                     
                     <li class="previous">
-                        <a href="/2016/03/07/markdown-demo/" data-toggle="tooltip" data-placement="top" title="Markdown介绍">
+                        <a href="/2021/03/20/markdown-glide3.7.0_5/" data-toggle="tooltip" data-placement="top" title="Android Glide 3.7.0 源码解析(五) , 如何获得ImageView的宽高">
                         Previous<br>
-                        <span>Markdown介绍</span>
+                        <span>Android Glide 3.7.0 源码解析(五) , 如何获得ImageView的宽高</span>
                         </a>
                     </li>
                     
-                    
-                    <li class="next">
-                        <a href="/2021/03/14/markdown-glide3.7.0_1/" data-toggle="tooltip" data-placement="top" title="Android Glide 3.7.0 源码解析(一), 准备工作">
-                        Next<br>
-                        <span>Android Glide 3.7.0 源码解析(一), 准备工作</span>
-                        </a>
-                    </li>
                     
                 </ul>
                 <hr style="visibility: hidden;">
@@ -371,7 +402,7 @@
 <script src="https://unpkg.com/gitalk/dist/gitalk.min.js"></script>
 <script>
 var gitalk = new Gitalk({
-    id: '2021-03-14 02:26:06 +0800',
+    id: '2021-03-22 01:55:13 +0800',
     clientID: 'd116f826bbd61e1744fc',
     clientSecret: '1c68303842916d566cb9855acf2d5124d1747703',
     repo: 'summer-zhoujie.github.io',
