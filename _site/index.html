@@ -244,6 +244,34 @@
 
 
 <div class="post-preview">
+    <a href="/2021/03/28/markdown-glide3.7.0_6/">
+        <h2 class="post-title">
+            Android Glide 3.7.0 源码解析(六) , 缓存结构详述
+        </h2>
+        
+        <h3 class="post-subtitle">
+            
+        </h3>
+        
+        <div class="post-content-preview">
+            
+                结构总览
+
+
+
+  内存缓存是由 LruResourceCache 和 activeResources 组成, 缓存的是 EngineResource 类型
+第一级缓存: LruResourceCache 是一个最终是一个 LinkedHashMap 来实现 Lru , 存储的是没有被界面使用的缓存资源, 并由LRU控制缓存大小
+第二级缓存: activeResources 是由一个 Map...
+            
+        </div>
+    </a>
+    <p class="post-meta">
+        Posted by zhoujie on March 28, 2021
+    </p>
+</div>
+<hr>
+
+<div class="post-preview">
     <a href="/2021/03/22/markdown-github_speed/">
         <h2 class="post-title">
             github clone 提速
@@ -525,12 +553,12 @@ Markdown也可以理解为将以MARKDOWN语法编写的语言转换成HTML内容
                 <a data-sort="0002" 
                     href="/archive/?tag=glide3.7.0"
                     title="glide3.7.0"
-                    rel="5">glide3.7.0</a>
+                    rel="6">glide3.7.0</a>
         
                 <a data-sort="0002" 
                     href="/archive/?tag=%E6%BA%90%E7%A0%81"
                     title="源码"
-                    rel="5">源码
+                    rel="6">源码
     </div>
 </section>
 

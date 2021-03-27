@@ -43,6 +43,7 @@ git checkout v3.7.0 -b v3.7.0
 3. [Android Glide 3.7.0 源码解析(三), 生命周期绑定](/2021/03/20/markdown-glide3.7.0_3/index.html)
 4. [Android Glide 3.7.0 源码解析(四), BitmapPool作用及原理](/2021/03/20/markdown-glide3.7.0_4/index.html)
 5. [Android Glide 3.7.0 源码解析(五) , 如何获得ImageView的宽高](/2021/03/20/markdown-glide3.7.0_5/index.html)
+5. [Android Glide 3.7.0 源码解析(六) , 缓存结构详述](/2021/03/27/markdown-glide3.7.0_6/index.html)
 
 # 四、参考
 

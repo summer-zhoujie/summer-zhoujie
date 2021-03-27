@@ -370,7 +370,7 @@ Glide 的 5 个 with 方法最终都对应的是 RequestManagerRetriever 的 5 �
     }
 ```
 1. 可以看到这里最终调用的是 Request(真实) 的 begin() , pause() , clear()
-2. 这里的 Request(真实) 是一个 GenericRequest 对象 (详细参考: [Android Glide 3.7.0 源码解析(二), 从一次图片加载流程看源码](https://blog.csdn.net/qq_25778369/article/details/114577763))
+2. 这里的 Request(真实) 是一个 GenericRequest 对象 (详细参考: [Android Glide 3.7.0 源码解析(二), 从一次图片加载流程看源码](/2021/03/14/markdown-glide3.7.0_2/index.html))
 
 继续追踪 GenericRequest
 ```java
@@ -453,7 +453,7 @@ Glide 的 5 个 with 方法最终都对应的是 RequestManagerRetriever 的 5 �
 ```
 1. 生命周期方法 onStart() 最终通过 Request 的 begin() 来发起一个请求
 2. 而 onStop() 和 onDestroy() 则是通过 EngineJob 的 removeCallback() 来实现
-3. 这个 EngineJob 其实是管理下载时 Request 的线程调度的(具体参见: [Android Glide 3.7.0 源码解析(二), 从一次图片加载流程看源码](https://editor.csdn.net/md/?articleId=114577763))
+3. 这个 EngineJob 其实是管理下载时 Request 的线程调度的(具体参见: [Android Glide 3.7.0 源码解析(二), 从一次图片加载流程看源码](/2021/03/14/markdown-glide3.7.0_2/index.html))
 ![在这里插入图片描述](https://img-blog.csdnimg.cn/20210315105844940.png?x-oss-process=image/watermark,type_ZmFuZ3poZW5naGVpdGk,shadow_10,text_aHR0cHM6Ly9ibG9nLmNzZG4ubmV0L3FxXzI1Nzc4MzY5,size_16,color_FFFFFF,t_70)
 
 继续追踪 EngineJob 来看看
