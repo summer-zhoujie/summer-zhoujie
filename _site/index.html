@@ -244,6 +244,29 @@
 
 
 <div class="post-preview">
+    <a href="/2021/03/31/markdown-bitmap_1/">
+        <h2 class="post-title">
+            Android Bitmap(一), 资源重用
+        </h2>
+        
+        <h3 class="post-subtitle">
+            
+        </h3>
+        
+        <div class="post-content-preview">
+            
+                一、为什么Bitmap需要资源重用
+Android 中图片显示的实体其实是一个 Bitmap 对象, 每次图片显示时, 都会构建一个 Bitmap 对象, 不用时再销毁, 假设, 在一个长列表且列表的每项都有一个图片显示, 持续滑动这个列表, 内存中的行为就是, 持续的创建 Bitmap 对象和产生不用的 Bitmap 对象, 当量级到达一定程度, 会触发 GC, 这样持续滑动界面, 势必会...
+            
+        </div>
+    </a>
+    <p class="post-meta">
+        Posted by zhoujie on March 31, 2021
+    </p>
+</div>
+<hr>
+
+<div class="post-preview">
     <a href="/2021/03/28/markdown-glide3.7.0_6/">
         <h2 class="post-title">
             Android Glide 3.7.0 源码解析(六) , 缓存结构详述
@@ -550,12 +573,12 @@ Markdown也可以理解为将以MARKDOWN语法编写的语言转换成HTML内容
         </a>
         
         
-                <a data-sort="0002" 
+                <a data-sort="0003" 
                     href="/archive/?tag=glide3.7.0"
                     title="glide3.7.0"
                     rel="6">glide3.7.0</a>
         
-                <a data-sort="0002" 
+                <a data-sort="0003" 
                     href="/archive/?tag=%E6%BA%90%E7%A0%81"
                     title="源码"
                     rel="6">源码
