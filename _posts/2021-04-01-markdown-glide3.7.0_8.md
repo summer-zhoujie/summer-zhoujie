@@ -10,7 +10,7 @@ tags:
     - 源码
 ---
 
-[个人博客传送门](http://summer-zhoujie.github.io/)
+
 # 一、mark / reset 的作用
  [Android Glide 3.7.0 源码解析(七) , 细说图形变换和解码](/2021/03/31/markdown-glide3.7.0_7/index.html)有提到过RecyclableBufferedInputStream 对于 `mark(int marklimit)` 和 `reset()` 方法的作用, 本文则是探讨具体的实现思路
 
