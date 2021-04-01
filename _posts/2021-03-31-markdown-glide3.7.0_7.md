@@ -149,7 +149,7 @@ Glide 3.7.0 里面涉及的解码/图形变换主要是 **大小缩放**, **Cent
 > * 在**读取位置是 readPos_1** 时 , 调用 reset 回溯有效( readPos_1 <= limitPos ), 没有超出 limit 的限制, 会回到 markPos 再读一遍流
 > * 在**读取位置是 readPos_2** 时, 调用 reset  无效 (readPos_1 > limitPos ), 超出 limit 限制
 >
-> 关于 RecyclableBufferedInputStream 如何实现 mark 和 reset 方法的, 后面会再弄一篇文章解释, 这里就不展开了(标记一下, 免得忘记)
+> 关于 RecyclableBufferedInputStream 如何实现 mark 和 reset 方法的, 参考 [Android Glide 3.7.0 源码解析(八) , RecyclableBufferedInputStream 的 mark/reset 实现](/2021/04/01/markdown-glide3.7.0_8/index.html)
 
 ```java
 // DownSampler.decode
