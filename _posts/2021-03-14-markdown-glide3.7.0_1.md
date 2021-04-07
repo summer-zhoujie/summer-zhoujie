@@ -46,6 +46,7 @@ git checkout v3.7.0 -b v3.7.0
 6. [Android Glide 3.7.0 源码解析(六) , 缓存结构详述](/2021/03/27/markdown-glide3.7.0_6/index.html)
 7. [Android Glide 3.7.0 源码解析(七) , 细说图形变换和解码](/2021/03/31/markdown-glide3.7.0_7/index.html)
 8. [Android Glide 3.7.0 源码解析(八) , RecyclableBufferedInputStream 的 mark/reset 实现](/2021/04/01/markdown-glide3.7.0_8/index.html)
+9. [Android Glide 3.7.0 源码解析(九) ,  gif 的加载实现](/2021/04/07/markdown-glide3.7.0_9/index.html)
 
 # 四、参考
 

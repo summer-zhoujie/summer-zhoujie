@@ -246,6 +246,42 @@
 
 
 <div class="post-preview">
+    <a href="/2021/04/08/markdown-glide3.7.0_9/">
+        <h2 class="post-title">
+            Android Glide 3.7.0 源码解析(九) ,  gif 的加载实现
+        </h2>
+        
+        <h3 class="post-subtitle">
+            
+        </h3>
+        
+        <div class="post-content-preview">
+            
+                一、涉及类目
+GlideDrawableImageViewTarget.java
+GifDrawable.java
+GifFrameLoader.java
+GifDecoder.java
+
+二、原理概述
+
+老规矩先介绍原理的框架,免得看源代码迷路
+
+
+
+
+  GlideDrawableImageViewTarget 会调用加载的 GifDrawable 来启动动画
+  GifDrawable...
+            
+        </div>
+    </a>
+    <p class="post-meta">
+        Posted by zhoujie on April 8, 2021
+    </p>
+</div>
+<hr>
+
+<div class="post-preview">
     <a href="/2021/04/01/markdown-glide3.7.0_8/">
         <h2 class="post-title">
             Android Glide 3.7.0 源码解析(八) , RecyclableBufferedInputStream 的 mark/reset 实现
@@ -257,12 +293,11 @@
         
         <div class="post-content-preview">
             
-                个人博客传送门
-一、mark / reset 的作用
+                一、mark / reset 的作用
 Android Glide 3.7.0 源码解析(七) , 细说图形变换和解码有提到过RecyclableBufferedInputStream 对于 mark(int marklimit) 和 reset() 方法的作用, 本文则是探讨具体的实现思路
 
 
-mark(int marklimit) 的作用是在流中创建一段起点是 markPo...
+mark(int marklimit) 的作用是在流中创建一段起点是 markPos 长度是 ma...
             
         </div>
     </a>
@@ -532,43 +567,6 @@ Glide.with(activity).load(url).into(imageView);
 </div>
 <hr>
 
-<div class="post-preview">
-    <a href="/2021/03/14/markdown-glide3.7.0_1/">
-        <h2 class="post-title">
-            Android Glide 3.7.0 源码解析(一), 准备工作
-        </h2>
-        
-        <h3 class="post-subtitle">
-            
-        </h3>
-        
-        <div class="post-content-preview">
-            
-                一、前言
-
-1. 关于源码阅读
-
-  不要妄图一下子窥得全貌, 一个开源项目是由很多人同时维护, 一个人不可能一下子掌握每个细节, 可以先从一个特定流程入手, 这样会使得源码阅读事半功倍.
-  阅读的过程中尽量不要过分纠结主线之外的细节, 可能会给整个主线的分析带来极大难度
-
-
-2. 关于Glide的使用
-
-  官方文档中文版传送门
-官方文档英文版传送门
-github地址
-
-
-二、源代码准备...
-            
-        </div>
-    </a>
-    <p class="post-meta">
-        Posted by zhoujie on March 14, 2021
-    </p>
-</div>
-<hr>
-
 
 <!-- Pager -->
 
@@ -608,12 +606,12 @@ github地址
                 <a data-sort="0003" 
                     href="/archive/?tag=glide3.7.0"
                     title="glide3.7.0"
-                    rel="8">glide3.7.0</a>
+                    rel="9">glide3.7.0</a>
         
                 <a data-sort="0003" 
                     href="/archive/?tag=%E6%BA%90%E7%A0%81"
                     title="源码"
-                    rel="8">源码
+                    rel="9">源码
     </div>
 </section>
 
