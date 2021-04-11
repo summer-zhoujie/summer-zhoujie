@@ -246,6 +246,142 @@
 
 
 <div class="post-preview">
+    <a href="/2021/04/12/markdown-datastructure_3/">
+        <h2 class="post-title">
+            数据结构(三), RBTree红黑树(多图警告!!!)
+        </h2>
+        
+        <h3 class="post-subtitle">
+            
+        </h3>
+        
+        <div class="post-content-preview">
+            
+                红黑树 &amp;&amp; BST
+
+红黑树就是在 BST 的基础上加入了一些自己的特征
+
+一、特征
+
+
+  符合 BST 所有特征
+  节点有两色, 红, 黑
+  根是黑
+  所有叶子节点是黑 (叶子是NIL节点)
+  每个红色节点必须有两个黑节点
+  任意节点到每个叶子节点的路径都包含相同数量的黑节点
+
+
+
+这些特征保证了, 根到叶子节点的最长路径, 最长不会超过最短路径的 2 倍
+因...
+            
+        </div>
+    </a>
+    <p class="post-meta">
+        Posted by zhoujie on April 12, 2021
+    </p>
+</div>
+<hr>
+
+<div class="post-preview">
+    <a href="/2021/04/12/markdown-datastructure_2/">
+        <h2 class="post-title">
+            数据结构(二), AVL平衡二叉树
+        </h2>
+        
+        <h3 class="post-subtitle">
+            
+        </h3>
+        
+        <div class="post-content-preview">
+            
+                一、须知须会
+
+
+  
+    平衡因子: 二叉树的 左子树 - 右子树 = 高度的差值,在平衡树中可能的值(-1 ,0 ,1)
+  
+  
+    平衡: 平衡因子 的绝对值小于 2 (下图第一张为平衡树, 第二张为不平衡树)
+  
+
+
+
+  平衡树且平衡因子==0
+
+
+
+
+
+  非平衡树且平衡因子==-2
+
+
+
+
+
+  树的旋转: 参考维基百科 树的旋转
+
+
+
+
+转轴的移动方向来决定它是...
+            
+        </div>
+    </a>
+    <p class="post-meta">
+        Posted by zhoujie on April 12, 2021
+    </p>
+</div>
+<hr>
+
+<div class="post-preview">
+    <a href="/2021/04/12/markdown-datastrcuture_1/">
+        <h2 class="post-title">
+            数据结构(一), 二叉查找树BST
+        </h2>
+        
+        <h3 class="post-subtitle">
+            
+        </h3>
+        
+        <div class="post-content-preview">
+            
+                一、别名
+二叉搜索树, 有序二叉树, 排序二叉树, Binary Search Tree
+
+二、特征
+
+  左子树的所有节点的值均小于根节点
+  右子树下所有节点的值均大于更节点
+  所有节点的值都不相同
+  任意节点的左子树和右子树也都是BST
+
+
+
+
+三、节点结构
+
+1
+2
+3
+4
+5
+6
+7
+8
+    public static class Node {
+        // 数据区...
+            
+        </div>
+    </a>
+    <p class="post-meta">
+        Posted by zhoujie on April 12, 2021
+    </p>
+</div>
+<hr>
+
+<div class="post-preview">
     <a href="/2021/04/08/markdown-glide3.7.0_9/">
         <h2 class="post-title">
             Android Glide 3.7.0 源码解析(九) ,  gif 的加载实现
@@ -476,97 +612,6 @@ Request(真实) 只有在图片组件的大小准备好了才会开始真正的�
 </div>
 <hr>
 
-<div class="post-preview">
-    <a href="/2021/03/20/markdown-glide3.7.0_4/">
-        <h2 class="post-title">
-            Android Glide 3.7.0 源码解析(四), BitmapPool作用及原理
-        </h2>
-        
-        <h3 class="post-subtitle">
-            
-        </h3>
-        
-        <div class="post-content-preview">
-            
-                一、作用
-
-
-  Android 中图片显示的实体其实是一个 Bitmap 对象, 每次图片显示时, 都会构建一个 Bitmap 对象, 不用时再销毁
-  假设: 一个长列表每项都有个图片需要显示, 我们在快速滑动长列表的时候, 会产生什么?
-  	Bitmap 对象被频繁的创建和释放, 导致 GC 频繁
-  如何解决上述问题?
- BitmapPool , 一个 Bitmap 的对象池, 让...
-            
-        </div>
-    </a>
-    <p class="post-meta">
-        Posted by zhoujie on March 20, 2021
-    </p>
-</div>
-<hr>
-
-<div class="post-preview">
-    <a href="/2021/03/20/markdown-glide3.7.0_3/">
-        <h2 class="post-title">
-            Android Glide 3.7.0 源码解析(三), 生命周期绑定
-        </h2>
-        
-        <h3 class="post-subtitle">
-            
-        </h3>
-        
-        <div class="post-content-preview">
-            
-                一、流程图解
-
-
-  注意:
-  
-    一个 Fragment / Activity 会对应生成一个 RequestManager
-    一个 Application 对应一个 applicationManager , 这是一个全局唯一的 RequestManager
-    每个 RequestManager 会有一个 Lifecycle 和 一个 RequestTracker
-  ...
-            
-        </div>
-    </a>
-    <p class="post-meta">
-        Posted by zhoujie on March 20, 2021
-    </p>
-</div>
-<hr>
-
-<div class="post-preview">
-    <a href="/2021/03/14/markdown-glide3.7.0_2/">
-        <h2 class="post-title">
-            Android Glide 3.7.0 源码解析 (二) , 从一次图片加载流程看源码
-        </h2>
-        
-        <h3 class="post-subtitle">
-            
-        </h3>
-        
-        <div class="post-content-preview">
-            
-                一、加载图片代码
-1
-Glide.with(activity).load(url).into(imageView);
-
-二、流程图
-
-
-  
-    Glide.with 方法, 创建 RequestManager 实例
-    
-      RequestManager.load 方法, 创建 GenericRequestBuilder 实例, 并打包编/解码, 转码, 图形转换, 下载等...
-            
-        </div>
-    </a>
-    <p class="post-meta">
-        Posted by zhoujie on March 14, 2021
-    </p>
-</div>
-<hr>
-
 
 <!-- Pager -->
 
@@ -603,15 +648,25 @@ Glide.with(activity).load(url).into(imageView);
         </a>
         
         
-                <a data-sort="0003" 
+                <a data-sort="0006" 
                     href="/archive/?tag=glide3.7.0"
                     title="glide3.7.0"
                     rel="9">glide3.7.0</a>
         
-                <a data-sort="0003" 
+                <a data-sort="0006" 
                     href="/archive/?tag=%E6%BA%90%E7%A0%81"
                     title="源码"
-                    rel="9">源码
+                    rel="9">源码</a>
+        
+                <a data-sort="0012" 
+                    href="/archive/?tag=%E4%BA%8C%E5%8F%89%E6%A0%91"
+                    title="二叉树"
+                    rel="3">二叉树</a>
+        
+                <a data-sort="0012" 
+                    href="/archive/?tag=%E6%95%B0%E6%8D%AE%E7%BB%93%E6%9E%84"
+                    title="数据结构"
+                    rel="3">数据结构
     </div>
 </section>
 
