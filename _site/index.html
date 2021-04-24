@@ -122,6 +122,8 @@
                     
                     
                     
+                    
+                    
                 </ul>    
             </div>
         </div>
@@ -246,9 +248,9 @@
 
 
 <div class="post-preview">
-    <a href="/2021/04/12/markdown-datastructure_3/">
+    <a href="/2021/04/24/markdown-sort_10/">
         <h2 class="post-title">
-            数据结构(三), RBTree红黑树(多图警告!!!)
+            十大排序算法(十), 基数排序
         </h2>
         
         <h3 class="post-subtitle">
@@ -257,326 +259,17 @@
         
         <div class="post-content-preview">
             
-                红黑树 &amp;&amp; BST
+                算法图解
 
-红黑树就是在 BST 的基础上加入了一些自己的特征
 
-一、特征
 
 
-  符合 BST 所有特征
-  节点有两色, 红, 黑
-  根是黑
-  所有叶子节点是黑 (叶子是NIL节点)
-  每个红色节点必须有两个黑节点
-  任意节点到每个叶子节点的路径都包含相同数量的黑节点
+  将数切割成个位, 十位, 百位, 千位…
+  按位放置进入长度为10的数组
+  先进先出规则回填入数组
+  重复1~3,直到所有位数都比较完毕
 
 
-
-这些特征保证了, 根到叶子节点的最长路径, 最长不会超过最短路径的 2 倍
-因...
-            
-        </div>
-    </a>
-    <p class="post-meta">
-        Posted by zhoujie on April 12, 2021
-    </p>
-</div>
-<hr>
-
-<div class="post-preview">
-    <a href="/2021/04/12/markdown-datastructure_2/">
-        <h2 class="post-title">
-            数据结构(二), AVL平衡二叉树
-        </h2>
-        
-        <h3 class="post-subtitle">
-            
-        </h3>
-        
-        <div class="post-content-preview">
-            
-                一、须知须会
-
-
-  
-    平衡因子: 二叉树的 左子树 - 右子树 = 高度的差值,在平衡树中可能的值(-1 ,0 ,1)
-  
-  
-    平衡: 平衡因子 的绝对值小于 2 (下图第一张为平衡树, 第二张为不平衡树)
-  
-
-
-
-  平衡树且平衡因子==0
-
-
-
-
-
-  非平衡树且平衡因子==-2
-
-
-
-
-
-  树的旋转: 参考维基百科 树的旋转
-
-
-
-
-转轴的移动方向来决定它是...
-            
-        </div>
-    </a>
-    <p class="post-meta">
-        Posted by zhoujie on April 12, 2021
-    </p>
-</div>
-<hr>
-
-<div class="post-preview">
-    <a href="/2021/04/12/markdown-datastrcuture_1/">
-        <h2 class="post-title">
-            数据结构(一), 二叉查找树BST
-        </h2>
-        
-        <h3 class="post-subtitle">
-            
-        </h3>
-        
-        <div class="post-content-preview">
-            
-                一、别名
-二叉搜索树, 有序二叉树, 排序二叉树, Binary Search Tree
-
-二、特征
-
-  左子树的所有节点的值均小于根节点
-  右子树下所有节点的值均大于更节点
-  所有节点的值都不相同
-  任意节点的左子树和右子树也都是BST
-
-
-
-
-三、节点结构
-
-1
-2
-3
-4
-5
-6
-7
-8
-    public static class Node {
-        // 数据区...
-            
-        </div>
-    </a>
-    <p class="post-meta">
-        Posted by zhoujie on April 12, 2021
-    </p>
-</div>
-<hr>
-
-<div class="post-preview">
-    <a href="/2021/04/08/markdown-glide3.7.0_9/">
-        <h2 class="post-title">
-            Android Glide 3.7.0 源码解析(九) ,  gif 的加载实现
-        </h2>
-        
-        <h3 class="post-subtitle">
-            
-        </h3>
-        
-        <div class="post-content-preview">
-            
-                一、涉及类目
-GlideDrawableImageViewTarget.java
-GifDrawable.java
-GifFrameLoader.java
-GifDecoder.java
-
-二、原理概述
-
-老规矩先介绍原理的框架,免得看源代码迷路
-
-
-
-
-  GlideDrawableImageViewTarget 会调用加载的 GifDrawable 来启动动画
-  GifDrawable...
-            
-        </div>
-    </a>
-    <p class="post-meta">
-        Posted by zhoujie on April 8, 2021
-    </p>
-</div>
-<hr>
-
-<div class="post-preview">
-    <a href="/2021/04/01/markdown-glide3.7.0_8/">
-        <h2 class="post-title">
-            Android Glide 3.7.0 源码解析(八) , RecyclableBufferedInputStream 的 mark/reset 实现
-        </h2>
-        
-        <h3 class="post-subtitle">
-            
-        </h3>
-        
-        <div class="post-content-preview">
-            
-                一、mark / reset 的作用
-Android Glide 3.7.0 源码解析(七) , 细说图形变换和解码有提到过RecyclableBufferedInputStream 对于 mark(int marklimit) 和 reset() 方法的作用, 本文则是探讨具体的实现思路
-
-
-mark(int marklimit) 的作用是在流中创建一段起点是 markPos 长度是 ma...
-            
-        </div>
-    </a>
-    <p class="post-meta">
-        Posted by zhoujie on April 1, 2021
-    </p>
-</div>
-<hr>
-
-<div class="post-preview">
-    <a href="/2021/04/01/markdown-glide3.7.0_7/">
-        <h2 class="post-title">
-            Android Glide 3.7.0 源码解析(七) , 细说图形变换和解码
-        </h2>
-        
-        <h3 class="post-subtitle">
-            
-        </h3>
-        
-        <div class="post-content-preview">
-            
-                一、概览
-
-
-Glide 3.7.0 里面涉及的解码/图形变换主要是 大小缩放, CenterCrop , FitCenter, 其中大小缩放是基于Downsampler(解码工具) 实现的, 而剩余两个则是 Transformation(图形变换) 接口的两个实现类.
-所以本文主要介绍3点:
-
-  CenterCrop
-  FitCenter
-  大小缩放
-
-
-
-  Android Gli...
-            
-        </div>
-    </a>
-    <p class="post-meta">
-        Posted by zhoujie on April 1, 2021
-    </p>
-</div>
-<hr>
-
-<div class="post-preview">
-    <a href="/2021/03/31/markdown-bitmap_1/">
-        <h2 class="post-title">
-            Android Bitmap(一), 资源重用
-        </h2>
-        
-        <h3 class="post-subtitle">
-            
-        </h3>
-        
-        <div class="post-content-preview">
-            
-                一、为什么Bitmap需要资源重用
-Android 中图片显示的实体其实是一个 Bitmap 对象, 每次图片显示时, 都会构建一个 Bitmap 对象, 不用时再销毁, 假设, 在一个长列表且列表的每项都有一个图片显示, 持续滑动这个列表, 内存中的行为就是, 持续的创建 Bitmap 对象和产生不用的 Bitmap 对象, 当量级到达一定程度, 会触发 GC, 这样持续滑动界面, 势必会...
-            
-        </div>
-    </a>
-    <p class="post-meta">
-        Posted by zhoujie on March 31, 2021
-    </p>
-</div>
-<hr>
-
-<div class="post-preview">
-    <a href="/2021/03/28/markdown-glide3.7.0_6/">
-        <h2 class="post-title">
-            Android Glide 3.7.0 源码解析(六) , 缓存结构详述
-        </h2>
-        
-        <h3 class="post-subtitle">
-            
-        </h3>
-        
-        <div class="post-content-preview">
-            
-                结构总览
-
-
-
-  内存缓存是由 LruResourceCache 和 activeResources 组成, 缓存的是 EngineResource 类型
-第一级缓存: LruResourceCache 是一个最终是一个 LinkedHashMap 来实现 Lru , 存储的是没有被界面使用的缓存资源, 并由LRU控制缓存大小
-第二级缓存: activeResources 是由一个 Map...
-            
-        </div>
-    </a>
-    <p class="post-meta">
-        Posted by zhoujie on March 28, 2021
-    </p>
-</div>
-<hr>
-
-<div class="post-preview">
-    <a href="/2021/03/22/markdown-github_speed/">
-        <h2 class="post-title">
-            github clone 提速
-        </h2>
-        
-        <h3 class="post-subtitle">
-            github clone 准备搭载火箭~
-        </h3>
-        
-        <div class="post-content-preview">
-            
-                1. 修改 Hosts 文件
-利用 https://www.ipaddress.com/ 链接查询以下三个链接的DNS解析地址
-
-  github.com
-  assets-cdn.github.com
-  github.global.ssl.fastly.net
-
-
-打开系统的 Hosts 文件进行修改
-
-
-  windows
-修改C:\Windows\System32\drivers\e...
-            
-        </div>
-    </a>
-    <p class="post-meta">
-        Posted by zhoujie on March 22, 2021
-    </p>
-</div>
-<hr>
-
-<div class="post-preview">
-    <a href="/2021/03/20/markdown-glide3.7.0_5/">
-        <h2 class="post-title">
-            Android Glide 3.7.0 源码解析(五) , 如何获得ImageView的宽高
-        </h2>
-        
-        <h3 class="post-subtitle">
-            
-        </h3>
-        
-        <div class="post-content-preview">
-            
-                前言
-通过前面的 Android Glide 3.7.0 源码解析 (二) , 从一次图片加载流程看源码 我们知道
-Request(真实) 只有在图片组件的大小准备好了才会开始真正的加载
 1
 2
 3
@@ -601,13 +294,483 @@ Request(真实) 只有在图片组件的大小准备好了才会开始真正的�
 22
 23
 24
-// GenericRequest
-	public void begin() {...
+25
+26
+27
+28
+29
+30
+31
+32
+33
+34
+35
+36
+37
+38
+39
+40
+4...
             
         </div>
     </a>
     <p class="post-meta">
-        Posted by zhoujie on March 20, 2021
+        Posted by zhoujie on April 24, 2021
+    </p>
+</div>
+<hr>
+
+<div class="post-preview">
+    <a href="/2021/04/24/markdown-sort_9/">
+        <h2 class="post-title">
+            十大排序算法(九), 桶排序
+        </h2>
+        
+        <h3 class="post-subtitle">
+            
+        </h3>
+        
+        <div class="post-content-preview">
+            
+                算法图示
+
+元素分配到桶中
+
+
+
+对桶中的元素进行排序
+
+
+
+
+  設置一個定量的陣列當作空桶子。
+  尋訪序列，並且把項目一個一個放到對應的桶子去。
+  對每個不是空的桶子進行排序。
+  從不是空的桶子裡把項目再放回原來的序列中。
+
+
+
+  如果桶足够小就变成了计数排序, 计数排序是桶排序的一个特例
+
+
+1
+2
+3
+4
+5
+6
+7
+8
+9
+10
+11
+12
+13
+14
+15
+16
+17
+1...
+            
+        </div>
+    </a>
+    <p class="post-meta">
+        Posted by zhoujie on April 24, 2021
+    </p>
+</div>
+<hr>
+
+<div class="post-preview">
+    <a href="/2021/04/24/markdown-sort_8/">
+        <h2 class="post-title">
+            十大排序算法(八), 计数排序
+        </h2>
+        
+        <h3 class="post-subtitle">
+            
+        </h3>
+        
+        <div class="post-content-preview">
+            
+                简介
+
+用来排序0~100数字最好的算法, 可以在基数排序中更有效的排序范围较大的数组
+
+算法实现
+
+思路图示
+
+
+
+具体步骤
+
+
+  最大/小值: 找出Arr(待排序的数组)中最大(max)和最小(min)的元素；
+  创建计数数组C, 长度是 K (K = max - min + 1)
+  计数: 统计数组中每个值为i的元素出现的次数，存入数组C的第i项；
+  累加 C中数据进行累加(c...
+            
+        </div>
+    </a>
+    <p class="post-meta">
+        Posted by zhoujie on April 24, 2021
+    </p>
+</div>
+<hr>
+
+<div class="post-preview">
+    <a href="/2021/04/24/markdown-sort_7/">
+        <h2 class="post-title">
+            十大排序算法(七), 归并排序
+        </h2>
+        
+        <h3 class="post-subtitle">
+            
+        </h3>
+        
+        <div class="post-content-preview">
+            
+                算法图解
+
+
+
+典型的分治法, 分是把排序问题分解到最小单位(即: 1个数排序), 治把子树的排序结果向上合成上一层级父亲的排序结果, 下图描述的是治的过程
+
+
+
+
+
+
+  先递归对序列进行分解成最小单元
+  逐级计算治的结果
+
+
+实现
+
+1
+2
+3
+4
+5
+6
+7
+8
+9
+10
+11
+12
+13
+14
+15
+16
+17
+18
+19
+20
+21
+22
+23
+24
+25
+26
+27
+28
+29...
+            
+        </div>
+    </a>
+    <p class="post-meta">
+        Posted by zhoujie on April 24, 2021
+    </p>
+</div>
+<hr>
+
+<div class="post-preview">
+    <a href="/2021/04/24/markdown-sort_6/">
+        <h2 class="post-title">
+            十大排序算法(六), 堆排序
+        </h2>
+        
+        <h3 class="post-subtitle">
+            
+        </h3>
+        
+        <div class="post-content-preview">
+            
+                须知须会
+
+数据结构-堆
+
+分为最大堆和最小堆
+
+  最大堆, 父节点的值大于子节点
+  最小堆, 父节点的值小于子节点
+
+
+
+  本文采用最大堆解决问题
+
+
+父子节点的对应索引关系推导
+
+假定我们拿到这样一个数组, 并且把它表示成以下的树结构
+
+
+
+设:
+
+  P 是父节点对应数组的索引
+  C 是左子节点对应数组的索引
+  i 是子节点所在二叉树的层次
+  j 是子节点所在层次的偏移量
+...
+            
+        </div>
+    </a>
+    <p class="post-meta">
+        Posted by zhoujie on April 24, 2021
+    </p>
+</div>
+<hr>
+
+<div class="post-preview">
+    <a href="/2021/04/24/markdown-sort_5/">
+        <h2 class="post-title">
+            十大排序算法(四), 希尔排序
+        </h2>
+        
+        <h3 class="post-subtitle">
+            
+        </h3>
+        
+        <div class="post-content-preview">
+            
+                算法图解
+
+
+  选择 一个最大/小的数, 排到最前面
+
+
+
+
+假设数组长度为 n
+
+  i = 0 , 遍历 [i,n] 个数字, 选择 一个最小的, 和 i 交换
+  i + 1
+  重复 1 2 步骤, 直到 i == n
+
+
+实现
+
+1
+2
+3
+4
+5
+6
+7
+8
+9
+10
+        int n = array.length;
+        int curMin;
+
+    ...
+            
+        </div>
+    </a>
+    <p class="post-meta">
+        Posted by zhoujie on April 24, 2021
+    </p>
+</div>
+<hr>
+
+<div class="post-preview">
+    <a href="/2021/04/24/markdown-sort_4/">
+        <h2 class="post-title">
+            十大排序算法(四), 希尔排序
+        </h2>
+        
+        <h3 class="post-subtitle">
+            
+        </h3>
+        
+        <div class="post-content-preview">
+            
+                简介
+
+插入排序的优化, 也叫缩小增量排序
+
+算法思路
+
+分组排序
+
+  步长, 同组中2个元素在数组中的间隔数
+
+
+
+  定义分组的步长, step = arrLength / 2
+  对每个分组进行插入排序
+  step = step / 2
+  重复 1~2 直到 step &lt;= 0 (step == 1, 是最后一次分组)
+
+
+第一次分组, step = 4
+
+
+
+第一次分组,...
+            
+        </div>
+    </a>
+    <p class="post-meta">
+        Posted by zhoujie on April 24, 2021
+    </p>
+</div>
+<hr>
+
+<div class="post-preview">
+    <a href="/2021/04/24/markdown-sort_3/">
+        <h2 class="post-title">
+            十大排序算法(三), 插入排序
+        </h2>
+        
+        <h3 class="post-subtitle">
+            
+        </h3>
+        
+        <div class="post-content-preview">
+            
+                算法图解
+
+
+  插入 第 i(范围0~length)个数,到有序队列的合适位置
+
+
+
+
+假设数组长度 n , i(代表有序数组的长度) = 0
+
+  取第 i+1 个数, 插入到长度 i 有序数组的合适位置
+  i+1
+  重复 1~2, 直到 i = n
+
+
+实现
+
+1
+2
+3
+4
+5
+6
+7
+8
+9
+10
+11
+12
+        int n = array.length;
+
+   ...
+            
+        </div>
+    </a>
+    <p class="post-meta">
+        Posted by zhoujie on April 24, 2021
+    </p>
+</div>
+<hr>
+
+<div class="post-preview">
+    <a href="/2021/04/24/markdown-sort_2/">
+        <h2 class="post-title">
+            十大排序算法(二), 快速排序
+        </h2>
+        
+        <h3 class="post-subtitle">
+            
+        </h3>
+        
+        <div class="post-content-preview">
+            
+                算法图解
+
+  冒泡排序 的优化
+
+
+
+
+分治的思想,
+
+  随机找到第一个数字 6, 将比6小的挪到6左边, 比6大的挪到6右边, 分成两堆
+  递归6的左边和右边
+  重复1~2直到分解成最小单元(左右两边只有1个/0个元素)
+
+
+如何实现 将比6小的挪到6左边, 比6大的挪到6右边 , 参考 1.挖坑法 2.双指针法, 本文采用挖坑法实现
+
+  挖坑法 &amp;&amp; 双指针法讲...
+            
+        </div>
+    </a>
+    <p class="post-meta">
+        Posted by zhoujie on April 24, 2021
+    </p>
+</div>
+<hr>
+
+<div class="post-preview">
+    <a href="/2021/04/24/markdown-sort_1/">
+        <h2 class="post-title">
+            十大排序算法(一),冒泡排序
+        </h2>
+        
+        <h3 class="post-subtitle">
+            
+        </h3>
+        
+        <div class="post-content-preview">
+            
+                图解思路
+
+
+  最大/小的数 冒泡 到最后面
+
+
+
+
+假设数组长度 n
+
+  比较相邻2位, 大的数交换到右边, 直到第 n 个数也完成交换
+  n 减一 (第1步使得最大的数冒泡到了最右边)
+  继续 1~2, 直到 n = 1
+
+
+实现
+
+1
+2
+3
+4
+5
+6
+7
+8
+9
+10
+11
+12
+13
+14
+15
+        // n 轮
+        for (int i = le...
+            
+        </div>
+    </a>
+    <p class="post-meta">
+        Posted by zhoujie on April 24, 2021
     </p>
 </div>
 <hr>
@@ -648,25 +811,30 @@ Request(真实) 只有在图片组件的大小准备好了才会开始真正的�
         </a>
         
         
-                <a data-sort="0006" 
+                <a data-sort="0017" 
                     href="/archive/?tag=glide3.7.0"
                     title="glide3.7.0"
                     rel="9">glide3.7.0</a>
         
-                <a data-sort="0006" 
+                <a data-sort="0016" 
+                    href="/archive/?tag=%E6%8E%92%E5%BA%8F%E7%AE%97%E6%B3%95"
+                    title="排序算法"
+                    rel="10">排序算法</a>
+        
+                <a data-sort="0017" 
                     href="/archive/?tag=%E6%BA%90%E7%A0%81"
                     title="源码"
                     rel="9">源码</a>
         
-                <a data-sort="0012" 
+                <a data-sort="0022" 
                     href="/archive/?tag=%E4%BA%8C%E5%8F%89%E6%A0%91"
                     title="二叉树"
-                    rel="3">二叉树</a>
+                    rel="4">二叉树</a>
         
-                <a data-sort="0012" 
+                <a data-sort="0022" 
                     href="/archive/?tag=%E6%95%B0%E6%8D%AE%E7%BB%93%E6%9E%84"
                     title="数据结构"
-                    rel="3">数据结构
+                    rel="4">数据结构
     </div>
 </section>
 
