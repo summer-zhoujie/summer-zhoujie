@@ -1,0 +1,60 @@
+I"�<h1 id="算法图解">算法图解</h1>
+
+<blockquote>
+  <p><code class="language-plaintext highlighter-rouge">插入</code> 第 i(范围0~length)个数,到有序队列的合适位置</p>
+</blockquote>
+
+<p><img src="https://p6-juejin.byteimg.com/tos-cn-i-k3u1fbpfcp/d8509ccc63604c4aa050f14e577ff4f1~tplv-k3u1fbpfcp-watermark.image" alt="17400545-311766e7ef5be50c.gif" /></p>
+
+<p>假设数组长度 n , i(代表有序数组的长度) = 0</p>
+<ol>
+  <li>取第 i+1 个数, <code class="language-plaintext highlighter-rouge">插入</code>到长度 i 有序数组的合适位置</li>
+  <li>i+1</li>
+  <li>重复 1~2, 直到 i = n</li>
+</ol>
+
+<h1 id="实现">实现</h1>
+
+<div class="language-java highlighter-rouge"><div class="highlight"><pre class="highlight"><code><table class="rouge-table"><tbody><tr><td class="rouge-gutter gl"><pre class="lineno">1
+2
+3
+4
+5
+6
+7
+8
+9
+10
+11
+12
+</pre></td><td class="rouge-code"><pre>        <span class="kt">int</span> <span class="n">n</span> <span class="o">=</span> <span class="n">array</span><span class="o">.</span><span class="na">length</span><span class="o">;</span>
+
+        <span class="k">for</span> <span class="o">(</span><span class="kt">int</span> <span class="n">i</span> <span class="o">=</span> <span class="mi">0</span><span class="o">;</span> <span class="n">i</span> <span class="o">&lt;</span> <span class="n">n</span> <span class="o">-</span> <span class="mi">1</span><span class="o">;</span> <span class="n">i</span><span class="o">++)</span> <span class="o">{</span>
+            <span class="kt">int</span> <span class="n">waitToInsert</span> <span class="o">=</span> <span class="n">array</span><span class="o">[</span><span class="n">i</span> <span class="o">+</span> <span class="mi">1</span><span class="o">];</span>
+            <span class="kt">int</span> <span class="n">pos</span> <span class="o">=</span> <span class="n">i</span> <span class="o">+</span> <span class="mi">1</span><span class="o">;</span>
+            <span class="k">while</span> <span class="o">(</span><span class="n">pos</span> <span class="o">&gt;</span> <span class="mi">0</span> <span class="o">&amp;&amp;</span> <span class="n">waitToInsert</span> <span class="o">&lt;</span> <span class="n">array</span><span class="o">[</span><span class="n">pos</span> <span class="o">-</span> <span class="mi">1</span><span class="o">])</span> <span class="o">{</span>
+                <span class="c1">// swap</span>
+                <span class="n">array</span><span class="o">[</span><span class="n">pos</span><span class="o">]</span> <span class="o">=</span> <span class="n">array</span><span class="o">[</span><span class="n">pos</span> <span class="o">-</span> <span class="mi">1</span><span class="o">];</span>
+                <span class="n">pos</span><span class="o">--;</span>
+            <span class="o">}</span>
+            <span class="n">array</span><span class="o">[</span><span class="n">pos</span><span class="o">]</span> <span class="o">=</span> <span class="n">waitToInsert</span><span class="o">;</span>
+        <span class="o">}</span>
+</pre></td></tr></tbody></table></code></pre></div></div>
+
+<h1 id="时间复杂度">时间复杂度</h1>
+
+<p><code class="language-plaintext highlighter-rouge">O(n) ~ O(n^2)</code></p>
+
+<p>最好: 数组是有序的, 只需要遍历一遍</p>
+
+<p>f(n) = n = O(n)</p>
+
+<p>最差: 数组是混乱的</p>
+
+<p>f(n) = n (n-1) / 2 = O(n^2)</p>
+
+<h1 id="空间复杂度">空间复杂度</h1>
+
+<p><code class="language-plaintext highlighter-rouge">O(1)</code> 没有使用到多余的空间</p>
+
+:ET

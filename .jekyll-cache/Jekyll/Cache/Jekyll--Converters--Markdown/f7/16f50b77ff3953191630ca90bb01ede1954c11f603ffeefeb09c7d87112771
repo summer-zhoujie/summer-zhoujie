@@ -1,0 +1,125 @@
+I"�#<h1 id="简介">简介</h1>
+
+<p>用来排序0~100数字最好的算法, 可以在<code class="language-plaintext highlighter-rouge">基数排序</code>中更有效的排序范围较大的数组</p>
+
+<h1 id="算法实现">算法实现</h1>
+
+<p><strong>思路图示</strong></p>
+
+<p><img src="https://p6-juejin.byteimg.com/tos-cn-i-k3u1fbpfcp/a5c79c3aa948416f9b0e0d4c70825a60~tplv-k3u1fbpfcp-watermark.image" alt="20190712143216563.gif" /></p>
+
+<p><strong>具体步骤</strong></p>
+
+<ol>
+  <li><code class="language-plaintext highlighter-rouge">最大/小值</code>: 找出Arr(待排序的数组)中最大(max)和最小(min)的元素；</li>
+  <li>创建计数数组C, 长度是 K (K = max - min + 1)</li>
+  <li><code class="language-plaintext highlighter-rouge">计数</code>: 统计数组中每个值为i的元素出现的次数，存入数组C的第i项；</li>
+  <li><code class="language-plaintext highlighter-rouge">累加</code> C中数据进行累加(c[i]=c[i]+c[i-1]), 累加结束 c[i] 则代表 数字(i + min) 最终存储下标</li>
+  <li><code class="language-plaintext highlighter-rouge">填充</code> B：将每个元素<code class="language-plaintext highlighter-rouge">(i+min)</code>放在新数组B的第<code class="language-plaintext highlighter-rouge">C(i)</code>项，每放一个元素就将<code class="language-plaintext highlighter-rouge">C(i)减去1</code>。</li>
+</ol>
+
+<p><strong>算法图示</strong></p>
+
+<p><code class="language-plaintext highlighter-rouge">最大/小值</code> , <code class="language-plaintext highlighter-rouge">计数</code> , <code class="language-plaintext highlighter-rouge">累加</code></p>
+
+<p><img src="https://p3-juejin.byteimg.com/tos-cn-i-k3u1fbpfcp/b2a63891c3b846259cd18e328feddcc3~tplv-k3u1fbpfcp-watermark.image" alt="截屏2021-04-20 上午11.03.38.png" /></p>
+
+<p><code class="language-plaintext highlighter-rouge">填充</code></p>
+
+<p><img src="https://p9-juejin.byteimg.com/tos-cn-i-k3u1fbpfcp/4a3b0f775b46454d90300fffd444aed2~tplv-k3u1fbpfcp-watermark.image" alt="截屏2021-04-20 上午11.03.42.png" /></p>
+
+<div class="language-java highlighter-rouge"><div class="highlight"><pre class="highlight"><code><table class="rouge-table"><tbody><tr><td class="rouge-gutter gl"><pre class="lineno">1
+2
+3
+4
+5
+6
+7
+8
+9
+10
+11
+12
+13
+14
+15
+16
+17
+18
+19
+20
+21
+22
+23
+24
+25
+26
+27
+28
+29
+30
+31
+32
+33
+34
+35
+36
+37
+38
+</pre></td><td class="rouge-code"><pre><span class="kd">public</span> <span class="kd">static</span> <span class="kt">int</span><span class="o">[]</span> <span class="nf">sort</span><span class="o">(</span><span class="kt">int</span><span class="o">[]</span> <span class="n">arr</span><span class="o">)</span> <span class="o">{</span>
+        <span class="k">if</span> <span class="o">(</span><span class="n">arr</span> <span class="o">==</span> <span class="kc">null</span> <span class="o">||</span> <span class="n">arr</span><span class="o">.</span><span class="na">length</span> <span class="o">&lt;=</span> <span class="mi">1</span><span class="o">)</span> <span class="o">{</span>
+            <span class="k">return</span> <span class="n">arr</span><span class="o">;</span>
+        <span class="o">}</span>
+
+        <span class="c1">// 找出最大值和最小值</span>
+        <span class="kt">int</span> <span class="n">max</span> <span class="o">=</span> <span class="mi">0</span><span class="o">;</span>
+        <span class="kt">int</span> <span class="n">min</span> <span class="o">=</span> <span class="mi">0</span><span class="o">;</span>
+        <span class="k">for</span> <span class="o">(</span><span class="kt">int</span> <span class="n">i</span> <span class="o">:</span> <span class="n">arr</span><span class="o">)</span> <span class="o">{</span>
+            <span class="n">max</span> <span class="o">=</span> <span class="nc">Math</span><span class="o">.</span><span class="na">max</span><span class="o">(</span><span class="n">max</span><span class="o">,</span> <span class="n">i</span><span class="o">);</span>
+            <span class="n">min</span> <span class="o">=</span> <span class="nc">Math</span><span class="o">.</span><span class="na">min</span><span class="o">(</span><span class="n">min</span><span class="o">,</span> <span class="n">i</span><span class="o">);</span>
+        <span class="o">}</span>
+
+        <span class="kt">int</span> <span class="n">k</span> <span class="o">=</span> <span class="n">max</span> <span class="o">-</span> <span class="n">min</span> <span class="o">+</span> <span class="mi">1</span><span class="o">;</span>
+        <span class="kt">int</span><span class="o">[]</span> <span class="n">c</span> <span class="o">=</span> <span class="k">new</span> <span class="kt">int</span><span class="o">[</span><span class="n">k</span><span class="o">];</span>
+
+        <span class="c1">// 计数</span>
+        <span class="kt">int</span> <span class="n">length</span> <span class="o">=</span> <span class="n">arr</span><span class="o">.</span><span class="na">length</span><span class="o">;</span>
+        <span class="k">for</span> <span class="o">(</span><span class="kt">int</span> <span class="n">i</span> <span class="o">=</span> <span class="mi">0</span><span class="o">;</span> <span class="n">i</span> <span class="o">&lt;</span> <span class="n">length</span><span class="o">;</span> <span class="n">i</span><span class="o">++)</span> <span class="o">{</span>
+            <span class="n">c</span><span class="o">[</span><span class="n">arr</span><span class="o">[</span><span class="n">i</span><span class="o">]</span> <span class="o">-</span> <span class="n">min</span><span class="o">]</span> <span class="o">=</span> <span class="n">c</span><span class="o">[</span><span class="n">arr</span><span class="o">[</span><span class="n">i</span><span class="o">]</span> <span class="o">-</span> <span class="n">min</span><span class="o">]</span> <span class="o">+</span> <span class="mi">1</span><span class="o">;</span>
+        <span class="o">}</span>
+
+        <span class="c1">// 求和</span>
+        <span class="k">for</span> <span class="o">(</span><span class="kt">int</span> <span class="n">i</span> <span class="o">=</span> <span class="mi">1</span><span class="o">;</span> <span class="n">i</span> <span class="o">&lt;</span> <span class="n">k</span><span class="o">;</span> <span class="n">i</span><span class="o">++)</span> <span class="o">{</span>
+            <span class="n">c</span><span class="o">[</span><span class="n">i</span><span class="o">]</span> <span class="o">=</span> <span class="n">c</span><span class="o">[</span><span class="n">i</span><span class="o">]</span> <span class="o">+</span> <span class="n">c</span><span class="o">[</span><span class="n">i</span> <span class="o">-</span> <span class="mi">1</span><span class="o">];</span>
+        <span class="o">}</span>
+
+        <span class="c1">// 回填</span>
+        <span class="kt">int</span><span class="o">[]</span> <span class="n">b</span> <span class="o">=</span> <span class="k">new</span> <span class="kt">int</span><span class="o">[</span><span class="n">length</span><span class="o">];</span>
+        <span class="k">for</span> <span class="o">(</span><span class="kt">int</span> <span class="n">i</span> <span class="o">=</span> <span class="mi">0</span><span class="o">;</span> <span class="n">i</span> <span class="o">&lt;</span> <span class="n">arr</span><span class="o">.</span><span class="na">length</span><span class="o">;</span> <span class="n">i</span><span class="o">++)</span> <span class="o">{</span>
+            <span class="kt">int</span> <span class="n">num</span> <span class="o">=</span> <span class="n">arr</span><span class="o">[</span><span class="n">i</span><span class="o">];</span>
+            <span class="kt">int</span> <span class="n">index</span> <span class="o">=</span> <span class="n">c</span><span class="o">[</span><span class="n">num</span> <span class="o">-</span> <span class="n">min</span><span class="o">]</span> <span class="o">-</span> <span class="mi">1</span><span class="o">;</span>
+            <span class="n">c</span><span class="o">[</span><span class="n">num</span> <span class="o">-</span> <span class="n">min</span><span class="o">]--;</span>
+            <span class="n">b</span><span class="o">[</span><span class="n">index</span><span class="o">]</span> <span class="o">=</span> <span class="n">num</span><span class="o">;</span>
+        <span class="o">}</span>
+
+        <span class="k">return</span> <span class="n">b</span><span class="o">;</span>
+    <span class="o">}</span>
+</pre></td></tr></tbody></table></code></pre></div></div>
+
+<h1 id="时间复杂度">时间复杂度</h1>
+
+<p><code class="language-plaintext highlighter-rouge">O(n+k)</code></p>
+
+<p>f(n) = n(最大/小) + n(计数) + k(求和) + n(回填) = 3n + k = O(n+k)</p>
+
+<h1 id="空间复杂度">空间复杂度</h1>
+
+<p><code class="language-plaintext highlighter-rouge">O(n+k)</code></p>
+
+<p>f(n) = n(数组B) + k(数组c) = O(n+k)</p>
+
+<h1 id="参考">参考</h1>
+
+<p><a href="https://zh.wikipedia.org/wiki/%E8%AE%A1%E6%95%B0%E6%8E%92%E5%BA%8F">维基百科-计数排序</a></p>
+
+:ET

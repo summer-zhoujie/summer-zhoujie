@@ -1,0 +1,40 @@
+I"�<h1 id="完美二叉树-perfect-binary-tree">完美二叉树 (Perfect Binary Tree)</h1>
+
+<p>A Perfect Binary Tree(PBT) is a tree with all leaf nodes at the same depth. All internal nodes have degree 2.</p>
+
+<ul>
+  <li>所有节点的度都是 2</li>
+  <li>所有叶子节点都在同一个层级</li>
+</ul>
+
+<p><img src="https://p6-juejin.byteimg.com/tos-cn-i-k3u1fbpfcp/fe0160078b4244b3be88325e74ecfd88~tplv-k3u1fbpfcp-watermark.image" alt="4E9B6FC9-E9C2-4989-8D65-90FE89B673E0.png" /></p>
+
+<blockquote>
+  <p>度: 一个节点有几个孩子</p>
+</blockquote>
+
+<h1 id="完全二叉树-complete-binary-tree">完全二叉树 (Complete Binary Tree)</h1>
+
+<p>A Complete Binary Tree （CBT) is a binary tree in which every level,except possibly the last, is completely filled, and all nodes are as far left as possible.</p>
+
+<ul>
+  <li>除了最后一层外, 所有层都完美填充</li>
+  <li>最后一层所有叶子节点靠左对齐</li>
+</ul>
+
+<p><img src="https://p6-juejin.byteimg.com/tos-cn-i-k3u1fbpfcp/b6c8806a5faf4df49cd177b29e05ca60~tplv-k3u1fbpfcp-watermark.image" alt="4A41A860-C35A-4D44-B03A-E3EA4F11AF1F.png" /></p>
+
+<h1 id="完满二叉树-full-binary-tree">完满二叉树 (Full Binary Tree)</h1>
+
+<p>A Full Binary Tree (FBT) is a tree in which every node other than the leaves has two children.</p>
+
+<ul>
+  <li>除去叶子节点, 所有节点的度都是 2</li>
+</ul>
+
+<p><img src="https://p9-juejin.byteimg.com/tos-cn-i-k3u1fbpfcp/ce154151eb8b40da9704f5a0db98b0c2~tplv-k3u1fbpfcp-watermark.image" alt="A3379524-DB06-4B0E-A45A-BC988E4BF9FC.png" /></p>
+
+<h1 id="参考">参考</h1>
+
+<p><a href="https://www.cnblogs.com/idorax/p/6441043.html">https://www.cnblogs.com/idorax/p/6441043.html</a></p>
+:ET

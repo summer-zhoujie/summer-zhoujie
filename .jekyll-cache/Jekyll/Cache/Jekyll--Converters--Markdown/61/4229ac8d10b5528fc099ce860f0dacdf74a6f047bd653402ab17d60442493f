@@ -1,0 +1,360 @@
+I"W`<h1 id="须知须会">须知须会</h1>
+
+<h2 id="数据结构-堆">数据结构-堆</h2>
+
+<p>分为最大堆和最小堆</p>
+<ul>
+  <li><code class="language-plaintext highlighter-rouge">最大堆</code>, 父节点的值大于子节点</li>
+  <li><code class="language-plaintext highlighter-rouge">最小堆</code>, 父节点的值小于子节点</li>
+</ul>
+
+<blockquote>
+  <p>本文采用<code class="language-plaintext highlighter-rouge">最大堆</code>解决问题</p>
+</blockquote>
+
+<h2 id="父子节点的对应索引关系推导">父子节点的对应索引关系推导</h2>
+
+<p>假定我们拿到这样一个数组, 并且把它表示成以下的树结构</p>
+
+<p><img src="https://p9-juejin.byteimg.com/tos-cn-i-k3u1fbpfcp/68ca794b6b0e43949c7f5fc5a9dc7ef2~tplv-k3u1fbpfcp-watermark.image" alt="截屏2021-04-19 下午4.39.48.png" /></p>
+
+<p>设:</p>
+<ul>
+  <li>P 是父节点对应数组的索引</li>
+  <li>C 是左子节点对应数组的索引</li>
+  <li>i 是子节点所在二叉树的层次</li>
+  <li>j 是子节点所在层次的偏移量</li>
+</ul>
+
+<p><strong>拿上图举例, P == 1(父节点 6), C == 3(子节点 5), i == 1, j == 1</strong></p>
+
+<p>可以推导:</p>
+
+<p>C = 2^i + j
+P = 2^(i-1) + (j-1)/2
+P = ( (2^i + j) - 1 ) / 2 = (C - 1) / 2</p>
+
+<div class="language-java highlighter-rouge"><div class="highlight"><pre class="highlight"><code><table class="rouge-table"><tbody><tr><td class="rouge-gutter gl"><pre class="lineno">1
+2
+3
+4
+5
+6
+</pre></td><td class="rouge-code"><pre>    <span class="kd">private</span> <span class="kt">int</span> <span class="nf">getParentIndex</span><span class="o">(</span><span class="kt">int</span> <span class="n">child</span><span class="o">)</span> <span class="o">{</span>
+        <span class="k">return</span> <span class="o">(</span><span class="n">child</span> <span class="o">-</span> <span class="mi">1</span><span class="o">)</span> <span class="o">/</span> <span class="mi">2</span><span class="o">;</span>
+    <span class="o">}</span>
+    <span class="kd">private</span> <span class="kt">int</span> <span class="nf">getLeftChildIndex</span><span class="o">(</span><span class="kt">int</span> <span class="n">parent</span><span class="o">)</span> <span class="o">{</span>
+        <span class="k">return</span> <span class="mi">2</span> <span class="o">*</span> <span class="n">parent</span> <span class="o">+</span> <span class="mi">1</span><span class="o">;</span>
+    <span class="o">}</span>
+</pre></td></tr></tbody></table></code></pre></div></div>
+
+<h2 id="如何构建一个最大堆">如何构建一个最大堆</h2>
+
+<p>假设二叉树最后一层最后一个chaild是C</p>
+<ol>
+  <li>获取C的父节点, 并判断父节点是否小于子节点</li>
+  <li>如果<code class="language-plaintext highlighter-rouge">小于</code>, 父子交换(并且递归判断替换到C位置的父节点是否还能被其子节点替换)</li>
+  <li>如果<code class="language-plaintext highlighter-rouge">大于等于</code> 结束本次操作</li>
+  <li>C减一,重复1~3直至C==0</li>
+</ol>
+
+<div class="language-java highlighter-rouge"><div class="highlight"><pre class="highlight"><code><table class="rouge-table"><tbody><tr><td class="rouge-gutter gl"><pre class="lineno">1
+2
+3
+4
+5
+6
+7
+8
+9
+10
+11
+12
+13
+14
+15
+16
+17
+18
+19
+20
+21
+22
+23
+24
+25
+26
+27
+28
+29
+30
+31
+32
+</pre></td><td class="rouge-code"><pre>    <span class="kt">int</span> <span class="n">last</span> <span class="o">=</span> <span class="n">arr</span><span class="o">.</span><span class="na">length</span> <span class="o">-</span> <span class="mi">1</span><span class="o">;</span>
+
+    <span class="c1">// 初始化最大堆, 找到C的parent, C的基础上减一递归找平衡</span>
+    <span class="k">for</span> <span class="o">(</span><span class="kt">int</span> <span class="n">i</span> <span class="o">=</span> <span class="n">getParentIndex</span><span class="o">(</span><span class="n">last</span><span class="o">);</span> <span class="n">i</span> <span class="o">&gt;=</span> <span class="mi">0</span><span class="o">;</span> <span class="o">--</span><span class="n">i</span><span class="o">)</span> <span class="o">{</span>
+        <span class="n">adjustHeap</span><span class="o">(</span><span class="n">i</span><span class="o">,</span> <span class="n">last</span><span class="o">);</span>
+    <span class="o">}</span>
+
+    <span class="kd">private</span> <span class="kt">void</span> <span class="nf">adjustHeap</span><span class="o">(</span><span class="kt">int</span> <span class="n">i</span><span class="o">,</span> <span class="kt">int</span> <span class="n">len</span><span class="o">)</span> <span class="o">{</span>
+        <span class="kt">int</span> <span class="n">left</span><span class="o">,</span> <span class="n">right</span><span class="o">,</span> <span class="n">j</span><span class="o">;</span>
+        <span class="c1">// 获取父节点i的左子</span>
+        <span class="n">left</span> <span class="o">=</span> <span class="n">getLeftChildIndex</span><span class="o">(</span><span class="n">i</span><span class="o">);</span>
+        <span class="c1">// 如果i有子节点</span>
+        <span class="k">while</span> <span class="o">(</span><span class="n">left</span> <span class="o">&lt;=</span> <span class="n">len</span><span class="o">)</span> <span class="o">{</span>
+            <span class="c1">// i的右子</span>
+            <span class="n">right</span> <span class="o">=</span> <span class="n">left</span> <span class="o">+</span> <span class="mi">1</span><span class="o">;</span>
+            <span class="n">j</span> <span class="o">=</span> <span class="n">left</span><span class="o">;</span>
+            <span class="c1">// 找出左右子最大的值</span>
+            <span class="k">if</span> <span class="o">(</span><span class="n">j</span> <span class="o">&lt;</span> <span class="n">len</span> <span class="o">&amp;&amp;</span> <span class="n">arr</span><span class="o">[</span><span class="n">left</span><span class="o">]</span> <span class="o">&lt;</span> <span class="n">arr</span><span class="o">[</span><span class="n">right</span><span class="o">])</span> <span class="o">{</span>
+                <span class="n">j</span><span class="o">++;</span>
+            <span class="o">}</span>
+            <span class="c1">// 父节点小于子节点最大值</span>
+            <span class="k">if</span> <span class="o">(</span><span class="n">arr</span><span class="o">[</span><span class="n">i</span><span class="o">]</span> <span class="o">&lt;</span> <span class="n">arr</span><span class="o">[</span><span class="n">j</span><span class="o">])</span> <span class="o">{</span>
+                <span class="c1">// 父子替换</span>
+                <span class="n">swap</span><span class="o">(</span><span class="n">array</span><span class="o">,</span> <span class="n">i</span><span class="o">,</span> <span class="n">j</span><span class="o">);</span>
+                <span class="c1">// 替换后的父节点向下寻找看有没有比它大的子节点</span>
+                <span class="n">i</span> <span class="o">=</span> <span class="n">j</span><span class="o">;</span>
+                <span class="n">left</span> <span class="o">=</span> <span class="n">getLeftChildIndex</span><span class="o">(</span><span class="n">i</span><span class="o">);</span>
+            <span class="o">}</span> <span class="k">else</span> <span class="o">{</span>
+                <span class="k">break</span><span class="o">;</span> <span class="c1">// 停止筛选</span>
+            <span class="o">}</span>
+        <span class="o">}</span>
+    <span class="o">}</span>
+</pre></td></tr></tbody></table></code></pre></div></div>
+
+<h1 id="算法思路">算法思路</h1>
+
+<p>借助<code class="language-plaintext highlighter-rouge">数据结构-堆</code>的思想, 假定数组长度 n, 定义 i = n</p>
+
+<ol>
+  <li>对数组中[0,i-1]的数据进行<code class="language-plaintext highlighter-rouge">最大堆</code>排序</li>
+  <li>取出堆根节点和数组i位置进行替换, i减1</li>
+  <li>重复1~2步骤,直至i==0</li>
+</ol>
+
+<div class="language-java highlighter-rouge"><div class="highlight"><pre class="highlight"><code><table class="rouge-table"><tbody><tr><td class="rouge-gutter gl"><pre class="lineno">1
+2
+3
+4
+5
+6
+7
+8
+9
+10
+11
+12
+13
+14
+15
+16
+17
+</pre></td><td class="rouge-code"><pre>    <span class="kd">public</span> <span class="kd">static</span> <span class="kt">void</span> <span class="nf">sort</span><span class="o">(</span><span class="kt">int</span><span class="o">[]</span> <span class="n">arr</span><span class="o">)</span> <span class="o">{</span>
+        <span class="k">if</span> <span class="o">(</span><span class="n">arr</span> <span class="o">==</span> <span class="kc">null</span> <span class="o">||</span> <span class="n">arr</span><span class="o">.</span><span class="na">length</span> <span class="o">&lt;=</span> <span class="mi">1</span><span class="o">)</span> <span class="o">{</span>
+            <span class="k">return</span><span class="o">;</span>
+        <span class="o">}</span>
+
+        <span class="kt">int</span> <span class="n">length</span> <span class="o">=</span> <span class="n">arr</span><span class="o">.</span><span class="na">length</span><span class="o">;</span>
+        <span class="k">for</span> <span class="o">(</span><span class="kt">int</span> <span class="n">i</span> <span class="o">=</span> <span class="n">getParentIndex</span><span class="o">(</span><span class="n">length</span> <span class="o">-</span> <span class="mi">1</span><span class="o">);</span> <span class="n">i</span> <span class="o">&gt;=</span> <span class="mi">0</span><span class="o">;</span> <span class="n">i</span><span class="o">--)</span> <span class="o">{</span>
+            <span class="n">ajustHeap</span><span class="o">(</span><span class="n">arr</span><span class="o">,</span> <span class="n">i</span><span class="o">,</span> <span class="n">length</span> <span class="o">-</span> <span class="mi">1</span><span class="o">);</span>
+        <span class="o">}</span>
+
+        <span class="kt">int</span> <span class="n">i</span> <span class="o">=</span> <span class="n">length</span> <span class="o">-</span> <span class="mi">1</span><span class="o">;</span>
+        <span class="k">while</span> <span class="o">(</span><span class="n">i</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="o">)</span> <span class="o">{</span>
+            <span class="n">swap</span><span class="o">(</span><span class="n">arr</span><span class="o">,</span> <span class="mi">0</span><span class="o">,</span> <span class="n">i</span><span class="o">);</span>
+            <span class="n">i</span><span class="o">--;</span>
+            <span class="n">ajustHeap</span><span class="o">(</span><span class="n">arr</span><span class="o">,</span> <span class="mi">0</span><span class="o">,</span> <span class="n">i</span><span class="o">);</span>
+        <span class="o">}</span>
+    <span class="o">}</span>
+</pre></td></tr></tbody></table></code></pre></div></div>
+
+<h1 id="时间复杂度">时间复杂度</h1>
+
+<p><code class="language-plaintext highlighter-rouge">O(nlogn)</code></p>
+
+<p>初始化建堆过程时间：O(n)
+更改堆元素后重建堆时间：O(nlogn)
+<code class="language-plaintext highlighter-rouge">f(n) = n + nlogn = n(logn+1) = O(nlogn)</code></p>
+<blockquote>
+  <p>推算过程：</p>
+</blockquote>
+
+<p>        首先要理解怎么计算这个堆化过程所消耗的时间，可以直接画图去理解；</p>
+
+<p>        假设高度为k，则从倒数第二层右边的节点开始，这一层的节点都要执行子节点比较然后交换（如果顺序是对的就不用交换）；倒数第三层呢，则会选择其子节点进行比较和交换，如果没交换就可以不用再执行下去了。如果交换了，那么又要选择一支子树进行比较和交换；</p>
+
+<p>        那么总的时间计算为：s = 2^( i - 1 )  *  ( k - i )；其中 i 表示第几层，2^( i - 1) 表示该层上有多少个元素，( k - i) 表示子树上要比较的次数，如果在最差的条件下，就是比较次数后还要交换；因为这个是常数，所以提出来后可以忽略；</p>
+
+<p>        S = 2^(k-2) * 1 + 2^(k-3)<em>2…..+2</em>(k-2)+2^(0)*(k-1)  ===&gt; 因为叶子层不用交换，所以i从 k-1 开始到 1；</p>
+
+<p>        这个等式求解，我想高中已经会了：等式左右乘上2，然后和原来的等式相减，就变成了：</p>
+
+<p>        S = 2^(k - 1) + 2^(k - 2) + 2^(k - 3) ….. + 2 - (k-1)</p>
+
+<p>        除最后一项外，就是一个等比数列了，直接用求和公式：S = {  a1[ 1-  (q^n) ] }  / (1-q)；</p>
+
+<p>        S = 2^k -k -1；又因为k为完全二叉树的深度，所以 (2^k) &lt;=  n &lt; (2^k  -1 )，总之可以认为：k = logn （实际计算得到应该是 log(n+1) &lt; k &lt;= logn ）;</p>
+
+<p>        综上所述得到：S = n - longn -1，所以时间复杂度为：O(n)</p>
+
+<p>        更改堆元素后重建堆时间：O(nlogn)</p>
+
+<p>        推算过程：</p>
+
+<p>       1、循环  n -1 次，每次都是从根节点往下循环查找，所以每一次时间是 logn，总时间：logn(n-1) = nlogn  - logn ；
+<a href="https://blog.csdn.net/YuZhiHui_No1/article/details/44258297">具体推导过程原文链接</a></p>
+
+<h1 id="空间复杂度">空间复杂度</h1>
+
+<p>O(1)</p>
+
+<h1 id="参考">参考</h1>
+
+<ul>
+  <li><a href="https://blog.csdn.net/qq_34462436/article/details/90273910">https://blog.csdn.net/qq_34462436/article/details/90273910</a></li>
+  <li><a href="https://zhuanlan.zhihu.com/p/42586566">https://zhuanlan.zhihu.com/p/42586566</a></li>
+</ul>
+
+<h1 id="完整代码">完整代码</h1>
+
+<div class="language-java highlighter-rouge"><div class="highlight"><pre class="highlight"><code><table class="rouge-table"><tbody><tr><td class="rouge-gutter gl"><pre class="lineno">1
+2
+3
+4
+5
+6
+7
+8
+9
+10
+11
+12
+13
+14
+15
+16
+17
+18
+19
+20
+21
+22
+23
+24
+25
+26
+27
+28
+29
+30
+31
+32
+33
+34
+35
+36
+37
+38
+39
+40
+41
+42
+43
+44
+45
+46
+47
+48
+49
+50
+51
+52
+53
+54
+55
+56
+57
+58
+59
+60
+61
+62
+63
+64
+65
+66
+67
+68
+</pre></td><td class="rouge-code"><pre><span class="kd">class</span> <span class="nc">HeapSort</span> <span class="o">{</span>
+
+    <span class="kd">public</span> <span class="kd">static</span> <span class="kt">void</span> <span class="nf">sort</span><span class="o">(</span><span class="kt">int</span><span class="o">[]</span> <span class="n">arr</span><span class="o">)</span> <span class="o">{</span>
+        <span class="k">if</span> <span class="o">(</span><span class="n">arr</span> <span class="o">==</span> <span class="kc">null</span> <span class="o">||</span> <span class="n">arr</span><span class="o">.</span><span class="na">length</span> <span class="o">&lt;=</span> <span class="mi">1</span><span class="o">)</span> <span class="o">{</span>
+            <span class="k">return</span><span class="o">;</span>
+        <span class="o">}</span>
+
+        <span class="kt">int</span> <span class="n">length</span> <span class="o">=</span> <span class="n">arr</span><span class="o">.</span><span class="na">length</span><span class="o">;</span>
+        <span class="k">for</span> <span class="o">(</span><span class="kt">int</span> <span class="n">i</span> <span class="o">=</span> <span class="n">getParentIndex</span><span class="o">(</span><span class="n">length</span> <span class="o">-</span> <span class="mi">1</span><span class="o">);</span> <span class="n">i</span> <span class="o">&gt;=</span> <span class="mi">0</span><span class="o">;</span> <span class="n">i</span><span class="o">--)</span> <span class="o">{</span>
+            <span class="n">ajustHeap</span><span class="o">(</span><span class="n">arr</span><span class="o">,</span> <span class="n">i</span><span class="o">,</span> <span class="n">length</span> <span class="o">-</span> <span class="mi">1</span><span class="o">);</span>
+        <span class="o">}</span>
+
+        <span class="kt">int</span> <span class="n">i</span> <span class="o">=</span> <span class="n">length</span> <span class="o">-</span> <span class="mi">1</span><span class="o">;</span>
+        <span class="k">while</span> <span class="o">(</span><span class="n">i</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="o">)</span> <span class="o">{</span>
+            <span class="n">swap</span><span class="o">(</span><span class="n">arr</span><span class="o">,</span> <span class="mi">0</span><span class="o">,</span> <span class="n">i</span><span class="o">);</span>
+            <span class="n">i</span><span class="o">--;</span>
+            <span class="n">ajustHeap</span><span class="o">(</span><span class="n">arr</span><span class="o">,</span> <span class="mi">0</span><span class="o">,</span> <span class="n">i</span><span class="o">);</span>
+        <span class="o">}</span>
+    <span class="o">}</span>
+
+    <span class="kd">private</span> <span class="kd">static</span> <span class="kt">void</span> <span class="nf">swap</span><span class="o">(</span><span class="kt">int</span><span class="o">[]</span> <span class="n">arr</span><span class="o">,</span> <span class="kt">int</span> <span class="n">i</span><span class="o">,</span> <span class="kt">int</span> <span class="n">j</span><span class="o">)</span> <span class="o">{</span>
+        <span class="kt">int</span> <span class="n">t</span> <span class="o">=</span> <span class="n">arr</span><span class="o">[</span><span class="n">i</span><span class="o">];</span>
+        <span class="n">arr</span><span class="o">[</span><span class="n">i</span><span class="o">]</span> <span class="o">=</span> <span class="n">arr</span><span class="o">[</span><span class="n">j</span><span class="o">];</span>
+        <span class="n">arr</span><span class="o">[</span><span class="n">j</span><span class="o">]</span> <span class="o">=</span> <span class="n">t</span><span class="o">;</span>
+    <span class="o">}</span>
+
+    <span class="kd">private</span> <span class="kd">static</span> <span class="kt">void</span> <span class="nf">ajustHeap</span><span class="o">(</span><span class="kt">int</span><span class="o">[]</span> <span class="n">arr</span><span class="o">,</span> <span class="kt">int</span> <span class="n">start</span><span class="o">,</span> <span class="kt">int</span> <span class="n">end</span><span class="o">)</span> <span class="o">{</span>
+        <span class="kt">int</span> <span class="n">left</span> <span class="o">=</span> <span class="n">getLeftChildIndex</span><span class="o">(</span><span class="n">start</span><span class="o">);</span>
+        <span class="k">while</span> <span class="o">(</span><span class="n">left</span> <span class="o">&lt;=</span> <span class="n">end</span><span class="o">)</span> <span class="o">{</span>
+            <span class="kt">int</span> <span class="n">right</span> <span class="o">=</span> <span class="n">left</span> <span class="o">+</span> <span class="mi">1</span><span class="o">;</span>
+            <span class="kt">int</span> <span class="n">target</span> <span class="o">=</span> <span class="n">left</span><span class="o">;</span>
+
+            <span class="k">if</span> <span class="o">(</span><span class="n">right</span> <span class="o">&lt;=</span> <span class="n">end</span> <span class="o">&amp;&amp;</span> <span class="n">arr</span><span class="o">[</span><span class="n">left</span><span class="o">]</span> <span class="o">&lt;</span> <span class="n">arr</span><span class="o">[</span><span class="n">right</span><span class="o">])</span> <span class="o">{</span>
+                <span class="n">target</span> <span class="o">=</span> <span class="n">right</span><span class="o">;</span>
+            <span class="o">}</span>
+
+            <span class="k">if</span> <span class="o">(</span><span class="n">arr</span><span class="o">[</span><span class="n">start</span><span class="o">]</span> <span class="o">&lt;</span> <span class="n">arr</span><span class="o">[</span><span class="n">target</span><span class="o">])</span> <span class="o">{</span>
+                <span class="n">swap</span><span class="o">(</span><span class="n">arr</span><span class="o">,</span> <span class="n">start</span><span class="o">,</span> <span class="n">target</span><span class="o">);</span>
+                <span class="n">start</span> <span class="o">=</span> <span class="n">target</span><span class="o">;</span>
+                <span class="n">left</span> <span class="o">=</span> <span class="n">getLeftChildIndex</span><span class="o">(</span><span class="n">start</span><span class="o">);</span>
+            <span class="o">}</span> <span class="k">else</span> <span class="o">{</span>
+                <span class="k">break</span><span class="o">;</span>
+            <span class="o">}</span>
+        <span class="o">}</span>
+    <span class="o">}</span>
+
+    <span class="kd">private</span> <span class="kd">static</span> <span class="kt">int</span> <span class="nf">getParentIndex</span><span class="o">(</span><span class="kt">int</span> <span class="n">child</span><span class="o">)</span> <span class="o">{</span>
+        <span class="k">return</span> <span class="o">(</span><span class="n">child</span> <span class="o">-</span> <span class="mi">1</span><span class="o">)</span> <span class="o">/</span> <span class="mi">2</span><span class="o">;</span>
+    <span class="o">}</span>
+
+    <span class="kd">private</span> <span class="kd">static</span> <span class="kt">int</span> <span class="nf">getLeftChildIndex</span><span class="o">(</span><span class="kt">int</span> <span class="n">parent</span><span class="o">)</span> <span class="o">{</span>
+        <span class="k">return</span> <span class="mi">2</span> <span class="o">*</span> <span class="n">parent</span> <span class="o">+</span> <span class="mi">1</span><span class="o">;</span>
+    <span class="o">}</span>
+
+    <span class="kd">public</span> <span class="kd">static</span> <span class="kt">void</span> <span class="nf">main</span><span class="o">(</span><span class="nc">String</span><span class="o">[]</span> <span class="n">args</span><span class="o">)</span> <span class="o">{</span>
+        <span class="kt">int</span><span class="o">[]</span> <span class="n">array</span> <span class="o">=</span> <span class="o">{</span><span class="mi">111</span><span class="o">,</span> <span class="mi">52</span><span class="o">,</span> <span class="mi">77</span><span class="o">,</span> <span class="mi">98</span><span class="o">,</span> <span class="mi">36</span><span class="o">,</span> <span class="mi">12</span><span class="o">,</span> <span class="mi">13</span><span class="o">,</span> <span class="mi">48</span><span class="o">,</span> <span class="mi">79</span><span class="o">,</span> <span class="mi">10</span><span class="o">,</span> <span class="mi">6</span><span class="o">,</span> <span class="mi">500</span><span class="o">};</span>
+        <span class="n">sort</span><span class="o">(</span><span class="n">array</span><span class="o">);</span>
+        <span class="nc">System</span><span class="o">.</span><span class="na">out</span><span class="o">.</span><span class="na">println</span><span class="o">(</span><span class="n">arrayToString</span><span class="o">(</span><span class="n">array</span><span class="o">));</span>
+    <span class="o">}</span>
+
+    <span class="kd">private</span> <span class="kd">static</span> <span class="nc">String</span> <span class="nf">arrayToString</span><span class="o">(</span><span class="kt">int</span><span class="o">[]</span> <span class="n">array</span><span class="o">)</span> <span class="o">{</span>
+        <span class="nc">StringBuilder</span> <span class="n">builder</span> <span class="o">=</span> <span class="k">new</span> <span class="nc">StringBuilder</span><span class="o">();</span>
+        <span class="k">for</span> <span class="o">(</span><span class="kt">int</span> <span class="n">t</span> <span class="o">:</span> <span class="n">array</span><span class="o">)</span> <span class="o">{</span>
+            <span class="n">builder</span><span class="o">.</span><span class="na">append</span><span class="o">(</span><span class="n">t</span> <span class="o">+</span> <span class="s">" "</span><span class="o">);</span>
+        <span class="o">}</span>
+        <span class="k">return</span> <span class="n">builder</span><span class="o">.</span><span class="na">toString</span><span class="o">();</span>
+    <span class="o">}</span>
+<span class="o">}</span>
+</pre></td></tr></tbody></table></code></pre></div></div>
+
+:ET

@@ -1,0 +1,792 @@
+I"�<h1 id="红黑树--bst">红黑树 &amp;&amp; BST</h1>
+
+<p>红黑树就是在 BST 的基础上加入了一些自己的特征</p>
+
+<h1 id="一特征">一、特征</h1>
+
+<ol>
+  <li><code class="language-plaintext highlighter-rouge">符合 BST 所有特征</code></li>
+  <li>节点有两色, 红, 黑</li>
+  <li>根是黑</li>
+  <li>所有叶子节点是黑 (叶子是NIL节点)</li>
+  <li>每个红色节点必须有两个黑节点</li>
+  <li>任意节点到每个叶子节点的路径都包含相同数量的黑节点
+<img src="https://img-blog.csdnimg.cn/20210411182045480.png?x-oss-process=image/watermark,type_ZmFuZ3poZW5naGVpdGk,shadow_10,text_aHR0cHM6Ly9ibG9nLmNzZG4ubmV0L3FxXzI1Nzc4MzY5,size_16,color_FFFFFF,t_70" alt="在这里插入图片描述" /></li>
+</ol>
+
+<p>这些特征保证了, 根到叶子节点的最长路径, 最长不会超过最短路径的 2 倍
+因为操作比如插入、删除和查找某个值的最坏情况时间都要求与树的高度成比例，这个在高度上的理论上限允许红黑树在最坏情况下都是高效的, 而不同于 BST</p>
+
+<blockquote>
+  <p>如何理解 路径max &lt;= 路径min * 2, 看看性质 4, 导致路径中不会有两个相连的红节点, 最短的可能路径是全黑路径, 最长的可能路径是红黑交替路径, 又性质 5, 每个路径黑色节点数一致, 得出, 最长和最短拥有相同数量的黑节点, 表明不可能超过两倍</p>
+</blockquote>
+
+<p><code class="language-plaintext highlighter-rouge">所有节点一定有两个黑色的空叶子节点(NIL节点), 很多文章没画出来也是默认有的</code></p>
+
+<h1 id="二算法描述">二、算法描述</h1>
+
+<h2 id="0-节点结构">0. 节点结构</h2>
+
+<div class="language-java highlighter-rouge"><div class="highlight"><pre class="highlight"><code><table class="rouge-table"><tbody><tr><td class="rouge-gutter gl"><pre class="lineno">1
+2
+3
+4
+5
+</pre></td><td class="rouge-code"><pre>    <span class="kd">public</span> <span class="kd">static</span> <span class="kd">class</span> <span class="nc">Node</span> <span class="o">{</span>
+        <span class="kd">public</span> <span class="nc">Node</span> <span class="n">left</span><span class="o">,</span> <span class="n">right</span><span class="o">,</span> <span class="n">parent</span><span class="o">;</span>
+        <span class="kd">public</span> <span class="kt">boolean</span> <span class="n">black</span> <span class="o">=</span> <span class="kc">false</span><span class="o">;</span>
+        <span class="kd">public</span> <span class="kt">int</span> <span class="n">value</span><span class="o">;</span>
+    <span class="o">}</span>
+</pre></td></tr></tbody></table></code></pre></div></div>
+
+<h2 id="1-查找">1. 查找</h2>
+
+<ul>
+  <li>先查找根节点,</li>
+  <li><code class="language-plaintext highlighter-rouge">&lt; 根</code>, 则找左子树;</li>
+  <li><code class="language-plaintext highlighter-rouge">&gt; 根</code>, 则找右子树;</li>
+  <li><code class="language-plaintext highlighter-rouge">= 根</code>, 则找到返回;</li>
+</ul>
+
+<div class="language-java highlighter-rouge"><div class="highlight"><pre class="highlight"><code><table class="rouge-table"><tbody><tr><td class="rouge-gutter gl"><pre class="lineno">1
+2
+3
+4
+5
+6
+7
+8
+9
+10
+11
+12
+13
+14
+15
+16
+17
+18
+</pre></td><td class="rouge-code"><pre>    <span class="kd">public</span> <span class="nc">Node</span> <span class="nf">search</span><span class="o">(</span><span class="kt">int</span> <span class="n">num</span><span class="o">)</span> <span class="o">{</span>
+        <span class="k">return</span> <span class="nf">doSearch</span><span class="o">(</span><span class="n">root</span><span class="o">,</span> <span class="n">num</span><span class="o">);</span>
+    <span class="o">}</span>
+
+    <span class="kd">private</span> <span class="nc">Node</span> <span class="nf">doSearch</span><span class="o">(</span><span class="nc">Node</span> <span class="n">root</span><span class="o">,</span> <span class="kt">int</span> <span class="n">num</span><span class="o">)</span> <span class="o">{</span>
+        <span class="k">if</span> <span class="o">(</span><span class="n">root</span> <span class="o">==</span> <span class="kc">null</span><span class="o">)</span> <span class="o">{</span>
+            <span class="k">return</span> <span class="kc">null</span><span class="o">;</span>
+        <span class="o">}</span>
+
+        <span class="k">if</span> <span class="o">(</span><span class="n">root</span><span class="o">.</span><span class="na">value</span> <span class="o">==</span> <span class="n">num</span><span class="o">)</span> <span class="o">{</span>
+            <span class="k">return</span> <span class="n">root</span><span class="o">;</span>
+        <span class="o">}</span> <span class="k">else</span> <span class="k">if</span> <span class="o">(</span><span class="n">root</span><span class="o">.</span><span class="na">value</span> <span class="o">&gt;</span> <span class="n">num</span><span class="o">)</span> <span class="o">{</span>
+            <span class="k">return</span> <span class="nf">doSearch</span><span class="o">(</span><span class="n">root</span><span class="o">.</span><span class="na">left</span><span class="o">,</span> <span class="n">num</span><span class="o">);</span>
+        <span class="o">}</span> <span class="k">else</span> <span class="k">if</span> <span class="o">(</span><span class="n">root</span><span class="o">.</span><span class="na">value</span> <span class="o">&lt;</span> <span class="n">num</span><span class="o">)</span> <span class="o">{</span>
+            <span class="k">return</span> <span class="nf">doSearch</span><span class="o">(</span><span class="n">root</span><span class="o">.</span><span class="na">right</span><span class="o">,</span> <span class="n">num</span><span class="o">);</span>
+        <span class="o">}</span>
+        <span class="k">return</span> <span class="kc">null</span><span class="o">;</span>
+    <span class="o">}</span>
+</pre></td></tr></tbody></table></code></pre></div></div>
+
+<p>算法时间复杂度 对于 n 个节点的树</p>
+
+<ul>
+  <li><code class="language-plaintext highlighter-rouge">最优</code> f(n) = 需要查找的次数 = 二叉树的层数 ~= O(logn)</li>
+</ul>
+
+<p><img src="https://img-blog.csdnimg.cn/20210411182058318.png?x-oss-process=image/watermark,type_ZmFuZ3poZW5naGVpdGk,shadow_10,text_aHR0cHM6Ly9ibG9nLmNzZG4ubmV0L3FxXzI1Nzc4MzY5,size_16,color_FFFFFF,t_70" alt="在这里插入图片描述" /></p>
+
+<ul>
+  <li><code class="language-plaintext highlighter-rouge">最差</code> f(n) = 需要查找的次数 = 二叉树的层数 = n = O(n)</li>
+</ul>
+
+<p><img src="https://img-blog.csdnimg.cn/20210411182108334.png?x-oss-process=image/watermark,type_ZmFuZ3poZW5naGVpdGk,shadow_10,text_aHR0cHM6Ly9ibG9nLmNzZG4ubmV0L3FxXzI1Nzc4MzY5,size_16,color_FFFFFF,t_70" alt="在这里插入图片描述" /></p>
+
+<p>但是由于我们插入算法的原因, 基本维持在O(logn)左右</p>
+
+<h2 id="2-插入">2. 插入</h2>
+
+<blockquote>
+  <p>首先需要明白的前提是:</p>
+  <ul>
+    <li>所有的插入操作都是在叶子节点进行的;</li>
+    <li>我们默认插入节点都是红色, 这样就不会增加树的高度了, 因为如果树的高度增加, 势必会迭代到父节点里面去处理红黑树黑节点高度平衡问题</li>
+    <li>以下图示约定:
+<img src="https://img-blog.csdnimg.cn/20210411182121190.png?x-oss-process=image/watermark,type_ZmFuZ3poZW5naGVpdGk,shadow_10,text_aHR0cHM6Ly9ibG9nLmNzZG4ubmV0L3FxXzI1Nzc4MzY5,size_16,color_FFFFFF,t_70" alt="在这里插入图片描述" /></li>
+  </ul>
+</blockquote>
+
+<p><strong>case 1: 插入的是空树</strong></p>
+<blockquote>
+  <p>操作:</p>
+  <ul>
+    <li>I 颜色置黑</li>
+    <li>I 赋值给<code class="language-plaintext highlighter-rouge">root</code></li>
+  </ul>
+</blockquote>
+
+<p><img src="https://img-blog.csdnimg.cn/20210411182142213.png?x-oss-process=image/watermark,type_ZmFuZ3poZW5naGVpdGk,shadow_10,text_aHR0cHM6Ly9ibG9nLmNzZG4ubmV0L3FxXzI1Nzc4MzY5,size_16,color_FFFFFF,t_70" alt="在这里插入图片描述" /></p>
+
+<p><strong>case 2: 插入节点值重复</strong></p>
+<blockquote>
+  <p>操作:</p>
+  <ul>
+    <li>直接返回, 无操作
+<img src="https://img-blog.csdnimg.cn/20210411182154975.png?x-oss-process=image/watermark,type_ZmFuZ3poZW5naGVpdGk,shadow_10,text_aHR0cHM6Ly9ibG9nLmNzZG4ubmV0L3FxXzI1Nzc4MzY5,size_16,color_FFFFFF,t_70" alt="在这里插入图片描述" /></li>
+  </ul>
+</blockquote>
+
+<p><strong>case 3: 父节点是黑</strong></p>
+<blockquote>
+  <p>操作:</p>
+  <ul>
+    <li>无操作, 不需要修复平衡</li>
+  </ul>
+</blockquote>
+
+<p><img src="https://img-blog.csdnimg.cn/20210411182205362.png?x-oss-process=image/watermark,type_ZmFuZ3poZW5naGVpdGk,shadow_10,text_aHR0cHM6Ly9ibG9nLmNzZG4ubmV0L3FxXzI1Nzc4MzY5,size_16,color_FFFFFF,t_70" alt="在这里插入图片描述" /></p>
+
+<p><strong>case 4: 父节点是红, 叔节点是红</strong></p>
+<blockquote>
+  <p>操作:</p>
+  <ul>
+    <li>P 和 U 置黑</li>
+    <li>GP 置红</li>
+    <li>GP 作为插入点, 继续迭代一遍, 平衡红黑树
+<img src="https://img-blog.csdnimg.cn/20210411182214884.png?x-oss-process=image/watermark,type_ZmFuZ3poZW5naGVpdGk,shadow_10,text_aHR0cHM6Ly9ibG9nLmNzZG4ubmV0L3FxXzI1Nzc4MzY5,size_16,color_FFFFFF,t_70" alt="在这里插入图片描述" /></li>
+  </ul>
+</blockquote>
+
+<p><strong>case 5: 父节点是红, 叔节点是黑/Nil, <code class="language-plaintext highlighter-rouge">左左</code></strong></p>
+<blockquote>
+  <p>操作:</p>
+  <ul>
+    <li>GP 置红</li>
+    <li>P 置黑</li>
+    <li>GP 右旋</li>
+  </ul>
+
+  <p><code class="language-plaintext highlighter-rouge">左左</code>: P是GP的左儿子, I是P的左儿子
+<code class="language-plaintext highlighter-rouge">右旋之后</code>: 树的每条路径黑节点数量并没有增加, 符合特征6, 至此树平衡结束
+<code class="language-plaintext highlighter-rouge">三角形</code>: 代表子树, 可能由 case 4, case 7, case 8,递归到本case 导致有子树结构
+<img src="https://img-blog.csdnimg.cn/20210411182225624.png?x-oss-process=image/watermark,type_ZmFuZ3poZW5naGVpdGk,shadow_10,text_aHR0cHM6Ly9ibG9nLmNzZG4ubmV0L3FxXzI1Nzc4MzY5,size_16,color_FFFFFF,t_70" alt="在这里插入图片描述" /></p>
+</blockquote>
+
+<p><strong>case 6: 父节点是红, 叔节点是黑/Nil, <code class="language-plaintext highlighter-rouge">右右</code></strong></p>
+<blockquote>
+  <p>操作:</p>
+  <ul>
+    <li>GP 置红</li>
+    <li>P 置黑</li>
+    <li>GP 左旋</li>
+  </ul>
+
+  <p><code class="language-plaintext highlighter-rouge">右右</code>: P是GP的右儿子, I是P的右儿子
+<code class="language-plaintext highlighter-rouge">右旋之后</code>: 树的每条路径黑节点数量并没有增加, 符合特征6, 至此树平衡结束
+<code class="language-plaintext highlighter-rouge">三角形</code>: 代表子树, 可能由 case 4, case 7, case 8,递归到本case 导致有子树结构
+<img src="https://img-blog.csdnimg.cn/20210411182236400.png?x-oss-process=image/watermark,type_ZmFuZ3poZW5naGVpdGk,shadow_10,text_aHR0cHM6Ly9ibG9nLmNzZG4ubmV0L3FxXzI1Nzc4MzY5,size_16,color_FFFFFF,t_70" alt="在这里插入图片描述" /></p>
+</blockquote>
+
+<p><strong>case 7: 父节点是红, 叔节点是黑/Nil, <code class="language-plaintext highlighter-rouge">左右</code></strong></p>
+<blockquote>
+  <p>操作:</p>
+  <ul>
+    <li>GP 置红</li>
+    <li>P 置黑</li>
+    <li>P 左旋</li>
+    <li>继续执行 case 5 逻辑</li>
+  </ul>
+
+  <p><code class="language-plaintext highlighter-rouge">左右</code>: P是GP的左儿子, I是P的右儿子
+<code class="language-plaintext highlighter-rouge">左旋之后</code>: 转变成了 <strong>case 5</strong>
+<code class="language-plaintext highlighter-rouge">三角形</code>: 代表子树, 可能由 case 4 递归到本case 导致有子树结构</p>
+</blockquote>
+
+<p><img src="https://img-blog.csdnimg.cn/20210411182257168.png?x-oss-process=image/watermark,type_ZmFuZ3poZW5naGVpdGk,shadow_10,text_aHR0cHM6Ly9ibG9nLmNzZG4ubmV0L3FxXzI1Nzc4MzY5,size_16,color_FFFFFF,t_70" alt="在这里插入图片描述" /></p>
+
+<p><strong>case 8: 父节点是红, 叔节点是黑/Nil, <code class="language-plaintext highlighter-rouge">右左</code></strong></p>
+<blockquote>
+  <p>操作:</p>
+  <ul>
+    <li>GP 置红</li>
+    <li>P 置黑</li>
+    <li>P 右旋</li>
+    <li>继续执行 case 6 逻辑</li>
+  </ul>
+
+  <p><code class="language-plaintext highlighter-rouge">右左</code>: P是GP的右儿子, I是P的左儿子
+<code class="language-plaintext highlighter-rouge">右旋之后</code>: 转变成了 <strong>case 6</strong>
+<code class="language-plaintext highlighter-rouge">三角形</code>: 代表子树, 可能由 case 4 递归到本case 导致有子树结构</p>
+</blockquote>
+
+<p><img src="https://img-blog.csdnimg.cn/20210411182308832.png?x-oss-process=image/watermark,type_ZmFuZ3poZW5naGVpdGk,shadow_10,text_aHR0cHM6Ly9ibG9nLmNzZG4ubmV0L3FxXzI1Nzc4MzY5,size_16,color_FFFFFF,t_70" alt="在这里插入图片描述" /></p>
+
+<div class="language-java highlighter-rouge"><div class="highlight"><pre class="highlight"><code><table class="rouge-table"><tbody><tr><td class="rouge-gutter gl"><pre class="lineno">1
+2
+3
+4
+5
+6
+7
+8
+9
+10
+11
+12
+13
+14
+15
+16
+17
+18
+19
+20
+21
+22
+23
+24
+25
+26
+27
+28
+29
+30
+31
+32
+33
+34
+35
+36
+37
+38
+39
+40
+41
+42
+43
+44
+45
+46
+47
+48
+49
+50
+51
+52
+53
+54
+55
+56
+57
+58
+59
+60
+61
+62
+63
+64
+65
+66
+67
+68
+69
+70
+71
+72
+73
+74
+75
+76
+77
+78
+79
+80
+81
+82
+83
+84
+85
+86
+87
+88
+89
+90
+91
+92
+93
+94
+95
+96
+97
+98
+99
+100
+101
+</pre></td><td class="rouge-code"><pre>    <span class="kd">public</span> <span class="kt">void</span> <span class="nf">insert</span><span class="o">(</span><span class="kt">int</span> <span class="n">v</span><span class="o">)</span> <span class="o">{</span>
+
+        <span class="kd">final</span> <span class="nc">Node</span> <span class="n">node</span> <span class="o">=</span> <span class="k">new</span> <span class="nc">Node</span><span class="o">();</span>
+        <span class="n">node</span><span class="o">.</span><span class="na">left</span> <span class="o">=</span> <span class="n">node</span><span class="o">.</span><span class="na">right</span> <span class="o">=</span> <span class="n">node</span><span class="o">.</span><span class="na">parent</span> <span class="o">=</span> <span class="kc">null</span><span class="o">;</span>
+        <span class="n">node</span><span class="o">.</span><span class="na">black</span> <span class="o">=</span> <span class="kc">false</span><span class="o">;</span>
+        <span class="n">node</span><span class="o">.</span><span class="na">value</span> <span class="o">=</span> <span class="n">v</span><span class="o">;</span>
+
+        <span class="c1">// case 1: 插入节点是根</span>
+        <span class="k">if</span> <span class="o">(</span><span class="n">root</span> <span class="o">==</span> <span class="kc">null</span><span class="o">)</span> <span class="o">{</span>
+            <span class="n">root</span> <span class="o">=</span> <span class="n">node</span><span class="o">;</span>
+            <span class="n">root</span><span class="o">.</span><span class="na">black</span> <span class="o">=</span> <span class="kc">true</span><span class="o">;</span>
+            <span class="k">return</span><span class="o">;</span>
+        <span class="o">}</span> <span class="k">else</span> <span class="o">{</span>
+            <span class="nc">Node</span> <span class="n">p</span> <span class="o">=</span> <span class="n">findParent</span><span class="o">(</span><span class="n">v</span><span class="o">);</span>
+            <span class="c1">// case 2: 插入值重复</span>
+            <span class="k">if</span> <span class="o">(</span><span class="n">p</span> <span class="o">==</span> <span class="kc">null</span><span class="o">)</span> <span class="o">{</span>
+                <span class="k">return</span><span class="o">;</span>
+            <span class="o">}</span>
+
+            <span class="n">setParent</span><span class="o">(</span><span class="n">node</span><span class="o">,</span> <span class="n">p</span><span class="o">);</span>
+            <span class="k">if</span> <span class="o">(</span><span class="n">v</span> <span class="o">&gt;</span> <span class="n">p</span><span class="o">.</span><span class="na">value</span><span class="o">)</span> <span class="o">{</span>
+                <span class="n">p</span><span class="o">.</span><span class="na">right</span> <span class="o">=</span> <span class="n">node</span><span class="o">;</span>
+            <span class="o">}</span> <span class="k">else</span> <span class="o">{</span>
+                <span class="n">p</span><span class="o">.</span><span class="na">left</span> <span class="o">=</span> <span class="n">node</span><span class="o">;</span>
+            <span class="o">}</span>
+
+            <span class="n">fixInsert</span><span class="o">(</span><span class="n">node</span><span class="o">);</span>
+        <span class="o">}</span>
+    <span class="o">}</span>
+
+    <span class="c1">// 找到属于v的parent准备插入</span>
+    <span class="kd">private</span> <span class="nc">Node</span> <span class="nf">findParent</span><span class="o">(</span><span class="kt">int</span> <span class="n">v</span><span class="o">)</span> <span class="o">{</span>
+        <span class="nc">Node</span> <span class="n">pre</span> <span class="o">=</span> <span class="n">root</span><span class="o">;</span>
+        <span class="nc">Node</span> <span class="n">index</span> <span class="o">=</span> <span class="n">root</span><span class="o">;</span>
+        <span class="k">while</span> <span class="o">(</span><span class="n">index</span> <span class="o">!=</span> <span class="kc">null</span><span class="o">)</span> <span class="o">{</span>
+
+            <span class="c1">// 找到相同值直接返回</span>
+            <span class="k">if</span> <span class="o">(</span><span class="n">index</span><span class="o">.</span><span class="na">value</span> <span class="o">==</span> <span class="n">v</span><span class="o">)</span> <span class="o">{</span>
+                <span class="k">return</span> <span class="kc">null</span><span class="o">;</span>
+            <span class="o">}</span>
+
+            <span class="n">pre</span> <span class="o">=</span> <span class="n">index</span><span class="o">;</span>
+            <span class="n">index</span> <span class="o">=</span> <span class="n">v</span> <span class="o">&lt;</span> <span class="n">index</span><span class="o">.</span><span class="na">value</span> <span class="o">?</span> <span class="n">index</span><span class="o">.</span><span class="na">left</span> <span class="o">:</span> <span class="n">index</span><span class="o">.</span><span class="na">right</span><span class="o">;</span>
+        <span class="o">}</span>
+        <span class="k">return</span> <span class="n">pre</span><span class="o">;</span>
+    <span class="o">}</span>
+
+    <span class="c1">// 平衡红黑树</span>
+    <span class="kd">private</span> <span class="kt">void</span> <span class="nf">fixInsert</span><span class="o">(</span><span class="nc">Node</span> <span class="n">node</span><span class="o">)</span> <span class="o">{</span>
+
+
+        <span class="kd">final</span> <span class="nc">Node</span> <span class="n">parent</span> <span class="o">=</span> <span class="n">node</span><span class="o">.</span><span class="na">parent</span><span class="o">;</span>
+        <span class="kd">final</span> <span class="nc">Node</span> <span class="n">uncle</span> <span class="o">=</span> <span class="n">node</span><span class="o">.</span><span class="na">uncle</span><span class="o">();</span>
+        <span class="kd">final</span> <span class="nc">Node</span> <span class="n">grandparent</span> <span class="o">=</span> <span class="n">node</span><span class="o">.</span><span class="na">grandparent</span><span class="o">();</span>
+        <span class="c1">// case 1: 插入节点是根</span>
+        <span class="k">if</span> <span class="o">(</span><span class="n">parent</span> <span class="o">==</span> <span class="kc">null</span><span class="o">)</span> <span class="o">{</span>
+            <span class="n">root</span> <span class="o">=</span> <span class="n">node</span><span class="o">;</span>
+            <span class="n">root</span><span class="o">.</span><span class="na">black</span> <span class="o">=</span> <span class="kc">true</span><span class="o">;</span>
+        <span class="o">}</span>
+        <span class="c1">// case 3: 插入节点的 父亲 是黑</span>
+        <span class="k">else</span> <span class="nf">if</span> <span class="o">(</span><span class="n">parent</span> <span class="o">!=</span> <span class="kc">null</span> <span class="o">&amp;&amp;</span> <span class="n">parent</span><span class="o">.</span><span class="na">black</span><span class="o">)</span> <span class="o">{</span>
+            <span class="c1">// do nothing</span>
+        <span class="o">}</span>
+        <span class="k">else</span> <span class="nf">if</span> <span class="o">(</span><span class="n">parent</span> <span class="o">!=</span> <span class="kc">null</span> <span class="o">&amp;&amp;</span> <span class="o">!</span><span class="n">parent</span><span class="o">.</span><span class="na">black</span><span class="o">)</span> <span class="o">{</span>
+
+            <span class="c1">// case 4: 插入节点的 父亲 是红, 叔叔 也是红</span>
+            <span class="k">if</span> <span class="o">(</span><span class="n">uncle</span> <span class="o">!=</span> <span class="kc">null</span> <span class="o">&amp;&amp;</span> <span class="o">!</span><span class="n">uncle</span><span class="o">.</span><span class="na">black</span><span class="o">)</span> <span class="o">{</span>
+                <span class="n">parent</span><span class="o">.</span><span class="na">black</span> <span class="o">=</span> <span class="kc">true</span><span class="o">;</span>
+                <span class="n">uncle</span><span class="o">.</span><span class="na">black</span> <span class="o">=</span> <span class="kc">true</span><span class="o">;</span>
+                <span class="c1">// 有叔叔必定有祖父</span>
+                <span class="n">grandparent</span><span class="o">.</span><span class="na">black</span> <span class="o">=</span> <span class="kc">false</span><span class="o">;</span>
+                <span class="c1">// 祖父的父亲是 红, 和祖父冲突了</span>
+                <span class="n">fixInsert</span><span class="o">(</span><span class="n">grandparent</span><span class="o">);</span>
+            <span class="o">}</span>
+            <span class="k">else</span> <span class="nf">if</span> <span class="o">(</span><span class="n">uncle</span> <span class="o">==</span> <span class="kc">null</span> <span class="o">||</span> <span class="n">uncle</span><span class="o">.</span><span class="na">black</span><span class="o">)</span> <span class="o">{</span>
+                <span class="c1">// case 5: 叔叔 是黑/空, `左左`</span>
+                <span class="k">if</span> <span class="o">(</span><span class="n">parent</span> <span class="o">==</span> <span class="n">grandparent</span><span class="o">.</span><span class="na">left</span> <span class="o">&amp;&amp;</span> <span class="n">node</span> <span class="o">==</span> <span class="n">parent</span><span class="o">.</span><span class="na">left</span><span class="o">)</span> <span class="o">{</span>
+                    <span class="n">parent</span><span class="o">.</span><span class="na">black</span> <span class="o">=</span> <span class="kc">true</span><span class="o">;</span>
+                    <span class="n">grandparent</span><span class="o">.</span><span class="na">black</span> <span class="o">=</span> <span class="kc">false</span><span class="o">;</span>
+                    <span class="n">rotateRight</span><span class="o">(</span><span class="n">grandparent</span><span class="o">);</span>
+                <span class="o">}</span>
+                <span class="c1">// case 6: 叔叔 是黑/空, `左右`</span>
+                <span class="k">else</span> <span class="nf">if</span> <span class="o">(</span><span class="n">parent</span> <span class="o">==</span> <span class="n">grandparent</span><span class="o">.</span><span class="na">left</span> <span class="o">&amp;&amp;</span> <span class="n">node</span> <span class="o">==</span> <span class="n">parent</span><span class="o">.</span><span class="na">right</span><span class="o">)</span> <span class="o">{</span>
+                    <span class="n">rotateLeft</span><span class="o">(</span><span class="n">parent</span><span class="o">);</span>
+                    <span class="n">fixInsert</span><span class="o">(</span><span class="n">parent</span><span class="o">);</span>
+                <span class="o">}</span>
+                <span class="c1">// case 7: 叔叔 是黑/空, `右右`</span>
+                <span class="k">else</span> <span class="nf">if</span> <span class="o">(</span><span class="n">parent</span> <span class="o">==</span> <span class="n">grandparent</span><span class="o">.</span><span class="na">right</span> <span class="o">&amp;&amp;</span> <span class="n">node</span> <span class="o">==</span> <span class="n">parent</span><span class="o">.</span><span class="na">right</span><span class="o">)</span> <span class="o">{</span>
+                    <span class="n">parent</span><span class="o">.</span><span class="na">black</span> <span class="o">=</span> <span class="kc">true</span><span class="o">;</span>
+                    <span class="n">grandparent</span><span class="o">.</span><span class="na">black</span> <span class="o">=</span> <span class="kc">false</span><span class="o">;</span>
+                    <span class="n">rotateLeft</span><span class="o">(</span><span class="n">grandparent</span><span class="o">);</span>
+                <span class="o">}</span>
+                <span class="c1">// case 8: 叔叔 是黑/空, `右左`</span>
+                <span class="k">else</span> <span class="nf">if</span> <span class="o">(</span><span class="n">parent</span> <span class="o">==</span> <span class="n">grandparent</span><span class="o">.</span><span class="na">right</span> <span class="o">&amp;&amp;</span> <span class="n">node</span> <span class="o">==</span> <span class="n">parent</span><span class="o">.</span><span class="na">left</span><span class="o">)</span> <span class="o">{</span>
+                    <span class="n">rotateRight</span><span class="o">(</span><span class="n">parent</span><span class="o">);</span>
+                    <span class="n">fixInsert</span><span class="o">(</span><span class="n">parent</span><span class="o">);</span>
+                <span class="o">}</span>
+            <span class="o">}</span>
+        <span class="o">}</span>
+
+    <span class="o">}</span>
+</pre></td></tr></tbody></table></code></pre></div></div>
+
+<p><strong>算法时间复杂度</strong>
+<img src="https://img-blog.csdnimg.cn/20210411182318402.png?x-oss-process=image/watermark,type_ZmFuZ3poZW5naGVpdGk,shadow_10,text_aHR0cHM6Ly9ibG9nLmNzZG4ubmV0L3FxXzI1Nzc4MzY5,size_16,color_FFFFFF,t_70" alt="在这里插入图片描述" /></p>
+
+<p>对于有n个节点的树(由于树的高度趋近logn), f(n) = logn次左右查找对比 + 最多只需要2次旋转 + logn次的颜色替换 = O(logn) + O(1) + O(1) = O(logn)</p>
+<blockquote>
+  <p>由于颜色替换十分迅速, 这里可以把logn次替换看成是O(1)复杂度</p>
+</blockquote>
+
+<h2 id="3-删除">3. 删除</h2>
+
+<blockquote>
+  <p>需要明白的是, 所有的删除操作最终都会变成删除一个叶子节点, 比如下图
+<img src="https://img-blog.csdnimg.cn/20210411182336316.png?x-oss-process=image/watermark,type_ZmFuZ3poZW5naGVpdGk,shadow_10,text_aHR0cHM6Ly9ibG9nLmNzZG4ubmV0L3FxXzI1Nzc4MzY5,size_16,color_FFFFFF,t_70" alt="在这里插入图片描述" /></p>
+</blockquote>
+
+<blockquote>
+  <p>以下图示约定
+<img src="https://img-blog.csdnimg.cn/20210411182348645.png?x-oss-process=image/watermark,type_ZmFuZ3poZW5naGVpdGk,shadow_10,text_aHR0cHM6Ly9ibG9nLmNzZG4ubmV0L3FxXzI1Nzc4MzY5,size_16,color_FFFFFF,t_70" alt="在这里插入图片描述" /></p>
+</blockquote>
+
+<p><strong>case 1: 树空</strong></p>
+<blockquote>
+  <p>操作:</p>
+  <ul>
+    <li>删除失败</li>
+  </ul>
+</blockquote>
+
+<p><strong>case 2: 无匹配项</strong></p>
+<blockquote>
+  <p>操作:</p>
+  <ul>
+    <li>删除失败</li>
+  </ul>
+</blockquote>
+
+<p><strong>case 3: d 是红</strong></p>
+<blockquote>
+  <p>操作:</p>
+  <ul>
+    <li>直接删除</li>
+  </ul>
+</blockquote>
+
+<p><img src="https://img-blog.csdnimg.cn/20210411182400497.png?x-oss-process=image/watermark,type_ZmFuZ3poZW5naGVpdGk,shadow_10,text_aHR0cHM6Ly9ibG9nLmNzZG4ubmV0L3FxXzI1Nzc4MzY5,size_16,color_FFFFFF,t_70" alt="在这里插入图片描述" /></p>
+
+<p><strong>case 4: d 是黑, s 是红</strong></p>
+<blockquote>
+  <p>操作:</p>
+  <ul>
+    <li>P 置红</li>
+    <li>S 置黑</li>
+    <li>P 左旋(D 是左儿子) 或者 右旋(D 是右儿子)</li>
+    <li>旋转之后兄弟节点就变为黑色了, 递归到下面的 case 5, 6, 7 进行处理</li>
+  </ul>
+
+  <p><code class="language-plaintext highlighter-rouge">三角形</code>: 代表子树, 可能由 case 7,递归到本case 导致有子树结构
+<code class="language-plaintext highlighter-rouge">递归处理</code>: 之所以需要递归处理, 是因为在旋转之后, 所有路径的黑色节点数和旋转前一样, 若 D节点路径中少了一个黑色节点, 不满足性质6了,需要递归处理一下</p>
+</blockquote>
+
+<p>P 左旋(D 是左儿子)
+<img src="https://img-blog.csdnimg.cn/20210411182417455.png?x-oss-process=image/watermark,type_ZmFuZ3poZW5naGVpdGk,shadow_10,text_aHR0cHM6Ly9ibG9nLmNzZG4ubmV0L3FxXzI1Nzc4MzY5,size_16,color_FFFFFF,t_70" alt="在这里插入图片描述" /></p>
+
+<p>右旋(D 是右儿子)
+<img src="https://img-blog.csdnimg.cn/20210411182428732.png?x-oss-process=image/watermark,type_ZmFuZ3poZW5naGVpdGk,shadow_10,text_aHR0cHM6Ly9ibG9nLmNzZG4ubmV0L3FxXzI1Nzc4MzY5,size_16,color_FFFFFF,t_70" alt="在这里插入图片描述" /></p>
+
+<p><strong>case 5.1: d 是黑, s 是黑, s 右孩子是红 且 d 是左孩子</strong></p>
+<blockquote>
+  <p>操作:</p>
+  <ul>
+    <li>P 和 S 颜色互换</li>
+    <li>P 左旋</li>
+  </ul>
+
+  <p><code class="language-plaintext highlighter-rouge">三角形</code>: 代表子树, 可能由 case 4,6,7 ,递归到本case 导致有子树结构
+<code class="language-plaintext highlighter-rouge">左旋</code>: 左旋之后直接平衡了, 可以由下图, 看出, 所有路径旋转之后 D 节点路径中多了一个黑色节点, 其他路径黑色节点数都没变化, 而我们恰巧需要删除 D节点中的一个黑色节点, 至此, 满足性质6, 红黑树刚好平衡</p>
+</blockquote>
+
+<p><img src="https://img-blog.csdnimg.cn/20210411182440923.png?x-oss-process=image/watermark,type_ZmFuZ3poZW5naGVpdGk,shadow_10,text_aHR0cHM6Ly9ibG9nLmNzZG4ubmV0L3FxXzI1Nzc4MzY5,size_16,color_FFFFFF,t_70" alt="在这里插入图片描述" /></p>
+
+<p><strong>case 5.2: d 是黑, s 是黑, s 左孩子是红 且 d 是右孩子</strong></p>
+<blockquote>
+  <p>操作:</p>
+  <ul>
+    <li>P 和 S 颜色互换</li>
+    <li>P 右旋</li>
+  </ul>
+</blockquote>
+
+<p><img src="https://img-blog.csdnimg.cn/20210411182450663.png?x-oss-process=image/watermark,type_ZmFuZ3poZW5naGVpdGk,shadow_10,text_aHR0cHM6Ly9ibG9nLmNzZG4ubmV0L3FxXzI1Nzc4MzY5,size_16,color_FFFFFF,t_70" alt="在这里插入图片描述" /></p>
+
+<p><strong>case 6.1: d 是黑, s 是黑, s 左孩子是红 且 d 是左孩子</strong></p>
+<blockquote>
+  <p>操作:</p>
+  <ul>
+    <li>S 置红, SL 置黑</li>
+    <li>S 右旋</li>
+    <li>树的结构就切换成了 case 5.1 的模样, 递归使用 case 5.1 解决</li>
+  </ul>
+</blockquote>
+
+<p><img src="https://img-blog.csdnimg.cn/20210411182501182.png?x-oss-process=image/watermark,type_ZmFuZ3poZW5naGVpdGk,shadow_10,text_aHR0cHM6Ly9ibG9nLmNzZG4ubmV0L3FxXzI1Nzc4MzY5,size_16,color_FFFFFF,t_70" alt="在这里插入图片描述" /></p>
+
+<p><strong>case 6.2: d 是黑, s 是黑, s 右孩子是红 且 d 是右孩子</strong></p>
+<blockquote>
+  <p>操作:</p>
+  <ul>
+    <li>S 置红, SR 置黑</li>
+    <li>S 左旋</li>
+    <li>树的结构就切换成了 case 5.2 的模样, 递归使用 case 5.2 解决</li>
+  </ul>
+</blockquote>
+
+<p><img src="https://img-blog.csdnimg.cn/20210411182511923.png?x-oss-process=image/watermark,type_ZmFuZ3poZW5naGVpdGk,shadow_10,text_aHR0cHM6Ly9ibG9nLmNzZG4ubmV0L3FxXzI1Nzc4MzY5,size_16,color_FFFFFF,t_70" alt="在这里插入图片描述" /></p>
+
+<p><strong>case 7: d 是黑, s sl sr 全是黑</strong></p>
+<blockquote>
+  <p>操作:</p>
+  <ul>
+    <li>S 置红</li>
+    <li>递归 P 节点, 平衡红黑树</li>
+  </ul>
+
+  <p><code class="language-plaintext highlighter-rouge">递归</code>: S 置红会导致右子树路径上黑节点数量少1, 左子树由于 D(黑节点) 将被删除, 所以路径上黑节点数也会少1, 符合性质6, 但是此时 P 所在树整体所有路径黑色节点数少1, 需要向上递归平衡红黑树</p>
+</blockquote>
+
+<p><img src="https://img-blog.csdnimg.cn/20210411182523238.png?x-oss-process=image/watermark,type_ZmFuZ3poZW5naGVpdGk,shadow_10,text_aHR0cHM6Ly9ibG9nLmNzZG4ubmV0L3FxXzI1Nzc4MzY5,size_16,color_FFFFFF,t_70" alt="在这里插入图片描述" />
+<img src="https://img-blog.csdnimg.cn/20210411182531208.png?x-oss-process=image/watermark,type_ZmFuZ3poZW5naGVpdGk,shadow_10,text_aHR0cHM6Ly9ibG9nLmNzZG4ubmV0L3FxXzI1Nzc4MzY5,size_16,color_FFFFFF,t_70" alt="在这里插入图片描述" /></p>
+
+<div class="language-java highlighter-rouge"><div class="highlight"><pre class="highlight"><code><table class="rouge-table"><tbody><tr><td class="rouge-gutter gl"><pre class="lineno">1
+2
+3
+4
+5
+6
+7
+8
+9
+10
+11
+12
+13
+14
+15
+16
+17
+18
+19
+20
+21
+22
+23
+24
+25
+26
+27
+28
+29
+30
+31
+32
+33
+34
+35
+36
+37
+38
+39
+40
+41
+42
+43
+44
+45
+46
+47
+48
+49
+50
+51
+52
+53
+54
+55
+56
+57
+58
+59
+60
+61
+62
+63
+64
+65
+66
+67
+68
+69
+70
+71
+72
+73
+74
+75
+76
+77
+78
+79
+80
+81
+82
+83
+84
+85
+86
+87
+88
+89
+90
+91
+92
+93
+94
+95
+96
+97
+98
+99
+100
+101
+102
+103
+104
+105
+</pre></td><td class="rouge-code"><pre>    <span class="kd">public</span> <span class="nc">Node</span> <span class="nf">remove</span><span class="o">(</span><span class="kt">int</span> <span class="n">num</span><span class="o">)</span> <span class="o">{</span>
+        <span class="c1">// case 1: 树空, 删除失败</span>
+        <span class="k">if</span> <span class="o">(</span><span class="n">root</span> <span class="o">==</span> <span class="kc">null</span><span class="o">)</span> <span class="o">{</span>
+            <span class="k">return</span> <span class="kc">null</span><span class="o">;</span>
+        <span class="o">}</span> <span class="k">else</span> <span class="o">{</span>
+            <span class="kd">final</span> <span class="nc">Node</span> <span class="n">numNode</span> <span class="o">=</span> <span class="n">findNum</span><span class="o">(</span><span class="n">root</span><span class="o">,</span> <span class="n">num</span><span class="o">);</span>
+
+            <span class="c1">// case 2: 无匹配项, 删除失败</span>
+            <span class="k">if</span> <span class="o">(</span><span class="n">numNode</span> <span class="o">==</span> <span class="kc">null</span><span class="o">)</span> <span class="o">{</span>
+                <span class="k">return</span> <span class="kc">null</span><span class="o">;</span>
+            <span class="o">}</span>
+
+            <span class="c1">// 此时, replaceNode 一定是个叶子节点</span>
+            <span class="kd">final</span> <span class="nc">Node</span> <span class="n">replaceNode</span> <span class="o">=</span> <span class="n">findReplaceNode</span><span class="o">(</span><span class="n">numNode</span><span class="o">);</span>
+
+            <span class="k">if</span> <span class="o">(</span><span class="n">replaceNode</span><span class="o">.</span><span class="na">black</span><span class="o">)</span> <span class="o">{</span>
+                <span class="c1">// 所有的删除操作最后都被转换成一种情况, 删除一个叶子节点</span>
+                <span class="n">fixRemove</span><span class="o">(</span><span class="n">replaceNode</span><span class="o">);</span>
+            <span class="o">}</span>
+
+            <span class="n">replaceNode</span><span class="o">.</span><span class="na">value</span> <span class="o">=</span> <span class="n">num</span><span class="o">;</span>
+            <span class="n">replaceNode</span><span class="o">.</span><span class="na">black</span> <span class="o">=</span> <span class="n">numNode</span><span class="o">.</span><span class="na">black</span><span class="o">;</span>
+            <span class="k">if</span> <span class="o">(</span><span class="n">replaceNode</span><span class="o">.</span><span class="na">parent</span> <span class="o">!=</span> <span class="kc">null</span><span class="o">)</span> <span class="o">{</span>
+                <span class="k">if</span> <span class="o">(</span><span class="n">replaceNode</span><span class="o">.</span><span class="na">parent</span><span class="o">.</span><span class="na">left</span> <span class="o">==</span> <span class="n">replaceNode</span><span class="o">)</span> <span class="o">{</span>
+                    <span class="n">replaceNode</span><span class="o">.</span><span class="na">parent</span><span class="o">.</span><span class="na">left</span> <span class="o">=</span> <span class="kc">null</span><span class="o">;</span>
+                <span class="o">}</span> <span class="k">else</span> <span class="o">{</span>
+                    <span class="n">replaceNode</span><span class="o">.</span><span class="na">parent</span><span class="o">.</span><span class="na">right</span> <span class="o">=</span> <span class="kc">null</span><span class="o">;</span>
+                <span class="o">}</span>
+            <span class="o">}</span>
+            <span class="n">replaceNode</span><span class="o">.</span><span class="na">parent</span> <span class="o">=</span> <span class="kc">null</span><span class="o">;</span>
+            <span class="k">return</span> <span class="n">replaceNode</span><span class="o">;</span>
+        <span class="o">}</span>
+    <span class="o">}</span>
+
+    <span class="c1">// 平衡红黑树</span>
+    <span class="c1">// r: 替换的节点</span>
+    <span class="kd">private</span> <span class="kt">void</span> <span class="nf">fixRemove</span><span class="o">(</span><span class="nc">Node</span> <span class="n">d</span><span class="o">)</span> <span class="o">{</span>
+
+        <span class="kd">final</span> <span class="nc">Node</span> <span class="n">p</span> <span class="o">=</span> <span class="n">d</span><span class="o">.</span><span class="na">parent</span><span class="o">;</span>
+        <span class="kd">final</span> <span class="nc">Node</span> <span class="n">s</span> <span class="o">=</span> <span class="n">d</span><span class="o">.</span><span class="na">sibling</span><span class="o">();</span>
+        <span class="kd">final</span> <span class="nc">Node</span> <span class="n">sL</span> <span class="o">=</span> <span class="n">d</span><span class="o">.</span><span class="na">siblingLeft</span><span class="o">();</span>
+        <span class="kd">final</span> <span class="nc">Node</span> <span class="n">sR</span> <span class="o">=</span> <span class="n">d</span><span class="o">.</span><span class="na">siblingRight</span><span class="o">();</span>
+
+        <span class="c1">// case 1: 替换的是根节点</span>
+        <span class="k">if</span> <span class="o">(</span><span class="n">root</span> <span class="o">==</span> <span class="n">d</span><span class="o">)</span> <span class="o">{</span>
+            <span class="n">root</span> <span class="o">=</span> <span class="kc">null</span><span class="o">;</span>
+        <span class="o">}</span>
+        <span class="c1">// case 3: 替换的是 红</span>
+        <span class="k">else</span> <span class="nf">if</span> <span class="o">(!</span><span class="n">d</span><span class="o">.</span><span class="na">black</span><span class="o">)</span> <span class="o">{</span>
+            <span class="c1">// do nothing</span>
+            <span class="n">d</span><span class="o">.</span><span class="na">black</span> <span class="o">=</span> <span class="kc">true</span><span class="o">;</span>
+        <span class="o">}</span>
+        <span class="c1">// 替换的是 黑</span>
+        <span class="k">else</span> <span class="nf">if</span> <span class="o">(</span><span class="n">d</span><span class="o">.</span><span class="na">black</span><span class="o">)</span> <span class="o">{</span>
+
+            <span class="c1">// case 4: s 是红, 可以借, 旋转</span>
+            <span class="k">if</span> <span class="o">(</span><span class="n">s</span> <span class="o">!=</span> <span class="kc">null</span> <span class="o">&amp;&amp;</span> <span class="o">!</span><span class="n">s</span><span class="o">.</span><span class="na">black</span><span class="o">)</span> <span class="o">{</span>
+                <span class="n">p</span><span class="o">.</span><span class="na">black</span> <span class="o">=</span> <span class="kc">false</span><span class="o">;</span>
+                <span class="n">s</span><span class="o">.</span><span class="na">black</span> <span class="o">=</span> <span class="kc">true</span><span class="o">;</span>
+                <span class="k">if</span> <span class="o">(</span><span class="n">s</span> <span class="o">==</span> <span class="n">p</span><span class="o">.</span><span class="na">left</span><span class="o">)</span> <span class="o">{</span>
+                    <span class="n">rotateRight</span><span class="o">(</span><span class="n">p</span><span class="o">);</span>
+                <span class="o">}</span> <span class="k">else</span> <span class="o">{</span>
+                    <span class="n">rotateLeft</span><span class="o">(</span><span class="n">p</span><span class="o">);</span>
+                <span class="o">}</span>
+
+                <span class="n">fixRemove</span><span class="o">(</span><span class="n">d</span><span class="o">);</span>
+            <span class="o">}</span> <span class="k">else</span> <span class="k">if</span> <span class="o">((</span><span class="n">s</span> <span class="o">==</span> <span class="kc">null</span> <span class="o">||</span> <span class="n">s</span><span class="o">.</span><span class="na">black</span><span class="o">))</span> <span class="o">{</span>
+
+                <span class="c1">// case 5.1: s是黑, sL是红, r是p的右节点</span>
+                <span class="k">if</span> <span class="o">((</span><span class="n">sL</span> <span class="o">!=</span> <span class="kc">null</span> <span class="o">&amp;&amp;</span> <span class="o">!</span><span class="n">sL</span><span class="o">.</span><span class="na">black</span><span class="o">)</span> <span class="o">&amp;&amp;</span> <span class="n">d</span> <span class="o">==</span> <span class="n">p</span><span class="o">.</span><span class="na">right</span><span class="o">)</span> <span class="o">{</span>
+                    <span class="n">s</span><span class="o">.</span><span class="na">black</span> <span class="o">=</span> <span class="n">p</span><span class="o">.</span><span class="na">black</span><span class="o">;</span>
+                    <span class="n">p</span><span class="o">.</span><span class="na">black</span> <span class="o">=</span> <span class="kc">true</span><span class="o">;</span>
+                    <span class="n">sL</span><span class="o">.</span><span class="na">black</span> <span class="o">=</span> <span class="kc">true</span><span class="o">;</span>
+                    <span class="n">rotateRight</span><span class="o">(</span><span class="n">p</span><span class="o">);</span>
+                <span class="o">}</span>
+                <span class="c1">// case 5.2: s是黑, sR是红, r是p的左节点</span>
+                <span class="k">else</span> <span class="nf">if</span> <span class="o">((</span><span class="n">sR</span> <span class="o">!=</span> <span class="kc">null</span> <span class="o">&amp;&amp;</span> <span class="o">!</span><span class="n">sR</span><span class="o">.</span><span class="na">black</span><span class="o">)</span> <span class="o">&amp;&amp;</span> <span class="n">d</span> <span class="o">==</span> <span class="n">p</span><span class="o">.</span><span class="na">left</span><span class="o">)</span> <span class="o">{</span>
+                    <span class="n">s</span><span class="o">.</span><span class="na">black</span> <span class="o">=</span> <span class="n">p</span><span class="o">.</span><span class="na">black</span><span class="o">;</span>
+                    <span class="n">p</span><span class="o">.</span><span class="na">black</span> <span class="o">=</span> <span class="kc">true</span><span class="o">;</span>
+                    <span class="n">sR</span><span class="o">.</span><span class="na">black</span> <span class="o">=</span> <span class="kc">true</span><span class="o">;</span>
+                    <span class="n">rotateLeft</span><span class="o">(</span><span class="n">p</span><span class="o">);</span>
+                <span class="o">}</span>
+                <span class="c1">// case 6.1: s是黑, sL是红, r是p的左节点</span>
+                <span class="k">else</span> <span class="nf">if</span> <span class="o">((</span><span class="n">sL</span> <span class="o">!=</span> <span class="kc">null</span> <span class="o">&amp;&amp;</span> <span class="o">!</span><span class="n">sL</span><span class="o">.</span><span class="na">black</span><span class="o">)</span> <span class="o">&amp;&amp;</span> <span class="n">d</span> <span class="o">==</span> <span class="n">p</span><span class="o">.</span><span class="na">left</span><span class="o">)</span> <span class="o">{</span>
+                    <span class="n">s</span><span class="o">.</span><span class="na">black</span> <span class="o">=</span> <span class="kc">false</span><span class="o">;</span>
+                    <span class="n">sL</span><span class="o">.</span><span class="na">black</span> <span class="o">=</span> <span class="kc">true</span><span class="o">;</span>
+                    <span class="n">rotateRight</span><span class="o">(</span><span class="n">s</span><span class="o">);</span>
+                    <span class="n">fixRemove</span><span class="o">(</span><span class="n">d</span><span class="o">);</span>
+                <span class="o">}</span>
+                <span class="c1">// case 6.2: s是黑, sR是红, r是p的右节点</span>
+                <span class="k">else</span> <span class="nf">if</span> <span class="o">((</span><span class="n">sR</span> <span class="o">!=</span> <span class="kc">null</span> <span class="o">&amp;&amp;</span> <span class="o">!</span><span class="n">sR</span><span class="o">.</span><span class="na">black</span><span class="o">)</span> <span class="o">&amp;&amp;</span> <span class="n">d</span> <span class="o">==</span> <span class="n">p</span><span class="o">.</span><span class="na">right</span><span class="o">)</span> <span class="o">{</span>
+                    <span class="n">s</span><span class="o">.</span><span class="na">black</span> <span class="o">=</span> <span class="kc">false</span><span class="o">;</span>
+                    <span class="n">sR</span><span class="o">.</span><span class="na">black</span> <span class="o">=</span> <span class="kc">true</span><span class="o">;</span>
+                    <span class="n">rotateLeft</span><span class="o">(</span><span class="n">s</span><span class="o">);</span>
+                    <span class="n">fixRemove</span><span class="o">(</span><span class="n">d</span><span class="o">);</span>
+                <span class="o">}</span>
+            <span class="o">}</span>
+            <span class="c1">// case 7: s == sL == sR 全黑</span>
+            <span class="k">else</span> <span class="nf">if</span> <span class="o">((</span><span class="n">s</span> <span class="o">==</span> <span class="kc">null</span> <span class="o">||</span> <span class="n">s</span><span class="o">.</span><span class="na">black</span><span class="o">)</span> <span class="o">&amp;&amp;</span> <span class="o">(</span><span class="n">sL</span> <span class="o">==</span> <span class="kc">null</span> <span class="o">||</span> <span class="n">sL</span><span class="o">.</span><span class="na">black</span><span class="o">)</span> <span class="o">&amp;&amp;</span> <span class="o">(</span><span class="n">sR</span> <span class="o">==</span> <span class="kc">null</span> <span class="o">||</span> <span class="n">sR</span><span class="o">.</span><span class="na">black</span><span class="o">))</span> <span class="o">{</span>
+                <span class="n">s</span><span class="o">.</span><span class="na">black</span> <span class="o">=</span> <span class="kc">false</span><span class="o">;</span>
+                <span class="n">fixRemove</span><span class="o">(</span><span class="n">p</span><span class="o">);</span>
+            <span class="o">}</span>
+        <span class="o">}</span>
+
+    <span class="o">}</span>
+</pre></td></tr></tbody></table></code></pre></div></div>
+
+<p><strong>算法时间复杂度</strong></p>
+
+<p><img src="https://img-blog.csdnimg.cn/20210411182542348.png?x-oss-process=image/watermark,type_ZmFuZ3poZW5naGVpdGk,shadow_10,text_aHR0cHM6Ly9ibG9nLmNzZG4ubmV0L3FxXzI1Nzc4MzY5,size_16,color_FFFFFF,t_70" alt="在这里插入图片描述" /></p>
+
+<p>从流程图看:</p>
+
+<p>对于有n个节点的树(由于树的高度趋近logn), f(n) = 查找替换比对次数logn + 变色次数logn + case4 旋转次数logn + case5,6旋转次数2 = 2logn</p>
+
+<blockquote>
+  <p>变色次数logn: 由于变色操作消耗较小, 故可以看成是 O(1)</p>
+</blockquote>
+
+<p><strong><code class="language-plaintext highlighter-rouge">不对啊, 网上不都说至多旋转三次吗? 怎么从流程图看 case4旋转 会被调用logn次???</code></strong></p>
+
+<p>别急, 这里先上结论, <strong><code class="language-plaintext highlighter-rouge">一旦经过 case 4 后就不可能再有 case 7 了, 所以删除至多只有三次旋转, 最终的算法时间复杂度 logn</code></strong>
+<img src="https://img-blog.csdnimg.cn/20210411182554791.png?x-oss-process=image/watermark,type_ZmFuZ3poZW5naGVpdGk,shadow_10,text_aHR0cHM6Ly9ibG9nLmNzZG4ubmV0L3FxXzI1Nzc4MzY5,size_16,color_FFFFFF,t_70" alt="在这里插入图片描述" /></p>
+
+<p>上图是截取的 case 4 场景, 分析一下, 旋转之后 D 一定黑, S 一定黑, P一定红, 此时, 我们进入case 7 瞧瞧
+<img src="https://img-blog.csdnimg.cn/20210411182602775.png?x-oss-process=image/watermark,type_ZmFuZ3poZW5naGVpdGk,shadow_10,text_aHR0cHM6Ly9ibG9nLmNzZG4ubmV0L3FxXzI1Nzc4MzY5,size_16,color_FFFFFF,t_70" alt="在这里插入图片描述" /></p>
+
+<p>可得: 上图 P一定红, 在 S 变红之后, 只需要将 P直接转黑就行, 树就平衡了</p>
+
+<h1 id="三完整代码">三、完整代码</h1>
+
+<p>就一个<code class="language-plaintext highlighter-rouge">RBTree.java</code>文件搞定, 里面还附有main()函数测试功能, 可直接运行<a href="https://github.com/summer-zhoujie/ZJPlayGround/blob/master/app/src/main/java/com/example/playground/binarytree/RBTree.java">github传送门</a></p>
+:ET

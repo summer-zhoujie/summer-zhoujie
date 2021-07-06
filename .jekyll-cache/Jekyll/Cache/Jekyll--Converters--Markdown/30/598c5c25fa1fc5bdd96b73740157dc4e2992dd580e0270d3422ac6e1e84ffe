@@ -1,0 +1,3 @@
+I"�<h1 id="一mark--reset-的作用">一、mark / reset 的作用</h1>
+<p><a href="/2021/03/31/markdown-glide3.7.0_7/index.html">Android Glide 3.7.0 源码解析(七) , 细说图形变换和解码</a>有提到过RecyclableBufferedInputStream 对于 <code class="language-plaintext highlighter-rouge">mark(int marklimit)</code> 和 <code class="language-plaintext highlighter-rouge">reset()</code> 方法的作用, 本文则是探讨具体的实现思路</p>
+:ET

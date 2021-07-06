@@ -1,0 +1,1162 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="google-site-verification" content="xBT4GhYoi5qRD5tr338pgPM5OWHHIDR6mNg1a3euekI" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+    <meta name="description" content="关于程序与设计以及架构 | 周杰，Java & Mobile Lover，Software Engineer | 这里是 @caojiele 曹杰乐 的个人博客，与你一起发现更大的世界。">
+    <meta name="keywords"  content="周杰的博客, Zhoujie Blog, 博客, 个人网站, 互联网, Java, Android, 开发">
+    <meta name="theme-color" content="#000000">
+    
+    <!-- Open Graph -->
+    <meta property="og:title" content="Android Glide 3.7.0 源码解析(八) , RecyclableBufferedInputStream 的 mark/reset 实现 - 周杰的博客 | Zhoujie Blog">
+    
+    <meta property="og:type" content="article">
+    <meta property="og:description" content="一、mark / reset 的作用
+Android Glide 3.7.0 源码解析(七) , 细说图形变换和解码有提到过RecyclableBufferedInputStream 对于 mark(int marklimit) 和 reset() 方法的作用, 本文则是探讨具体的实现思路
+">
+    
+    <meta property="article:published_time" content="2021-04-01T23:32:52Z">
+    
+    
+    <meta property="article:author" content="zhoujie">
+    
+    
+    <meta property="article:tag" content="glide3.7.0">
+    
+    <meta property="article:tag" content="源码">
+    
+    
+    <meta property="og:image" content="https://summer-zhoujie.github.ioimg/root/head.jpg">
+    <meta property="og:url" content="https://summer-zhoujie.github.io/2021/04/01/markdown-glide3.7.0_8/">
+    <meta property="og:site_name" content="周杰的博客 | Zhoujie Blog">
+    
+    <title>Android Glide 3.7.0 源码解析(八) , RecyclableBufferedInputStream 的 mark/reset 实现 - 周杰的博客 | Zhoujie Blog</title>
+
+    <!-- Web App Manifest -->
+    <link rel="manifest" href="/pwa/manifest.json">
+
+    <!-- Favicon -->
+    <link rel="shortcut icon" href="/img/root/favicon.ico">
+    
+    <!-- Canonical URL -->
+    <link rel="canonical" href="https://summer-zhoujie.github.io/2021/04/01/markdown-glide3.7.0_8/">
+
+    <!-- Bootstrap Core CSS -->
+    <link rel="stylesheet" href="/css/bootstrap.min.css">
+
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="/css/hux-blog.min.css">
+    
+    <!-- Return to the top CSS -->
+    <link rel="stylesheet" href="/css/rocket.css">
+    <link rel="stylesheet" href="/css/signature.css">
+    <link rel="stylesheet" href="/css/toc.css">
+    
+    <!-- Custom Fonts -->
+    <!-- <link href="http://maxcdn.bootstrapcdn.com/font-awesome/4.3.0/css/font-awesome.min.css" rel="stylesheet" type="text/css"> -->
+    <!-- Hux change font-awesome CDN to qiniu -->
+    <link href="//cdnjs.cloudflare.com/ajax/libs/font-awesome/4.6.3/css/font-awesome.min.css" rel="stylesheet" type="text/css">
+
+
+    <!-- HTML5 Shim and Respond.js IE8 support of HTML5 elements and media queries -->
+    <!-- WARNING: Respond.js doesn't work if you view the page via file:// -->
+    <!--[if lt IE 9]>
+        <script src="https://oss.maxcdn.com/libs/html5shiv/3.7.0/html5shiv.js"></script>
+        <script src="https://oss.maxcdn.com/libs/respond.js/1.4.2/respond.min.js"></script>
+    <![endif]-->
+
+    <!-- ga & ba script hoook -->
+    <script></script>
+</head>
+
+
+<!-- hack iOS CSS :active style -->
+<body ontouchstart="">
+
+    <!-- Navigation -->
+
+<nav class="navbar navbar-default navbar-custom navbar-fixed-top">
+
+    <div class="container-fluid">
+        <!-- Brand and toggle get grouped for better mobile display -->
+        <div class="navbar-header page-scroll">
+            <button type="button" class="navbar-toggle">
+                <span class="sr-only">Toggle navigation</span>
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+            </button>
+            
+            
+            <a href="javascript:history.back()" style="font-size:28px" class="fa fa-angle-left navbar-brand"></a>
+            
+            
+            <a class="navbar-brand" href="/">Zhoujie Blog</a>
+            
+             <a href="javascript:void(0)" class="fa fa-search navbar-brand search-icon" id="search-ic"></a>
+            
+        </div>
+
+        <!-- Collect the nav links, forms, and other content for toggling -->
+        <div id="huxblog_navbar">
+            <div class="navbar-collapse">
+                <ul class="nav navbar-nav navbar-right">
+                    <li>
+                        <a href="/">Home</a>
+                    </li>
+                    
+                    
+                    
+                    
+                    <li>
+                        <a href="/about/">About</a>
+                    </li>
+                    
+                    
+                    
+                    <li>
+                        <a href="/archive/">Archive</a>
+                    </li>
+                    
+                    
+                    
+                    
+                    
+                    
+                    
+                    
+                    
+                    
+                    
+                    
+                    
+                    
+                    
+                    
+                    
+                </ul>    
+            </div>
+        </div>
+        <!-- /.navbar-collapse -->
+    </div>
+    <!-- /.container -->
+</nav>
+    
+<!-- Search Box -->
+<div class="search-box hidden">
+  <div class="wrapper">
+    <div class="search-grid">
+      <form class="search-form">
+        <div id="search-container">
+          <input type="text" autocomplete="off" id="search-input" class="search" placeholder="Search..." maxlength="20" onkeypress="return onKeyPress(event)">
+        </div>
+      </form>
+      <ul id="results-container" class="results-search">
+      </ul>
+      <div class="icon-close-container">
+        <span class="search-icon-close"><i class="fa fa-times" aria-hidden="true"></i></span>
+      </div>
+    </div>
+  </div>
+</div>
+    
+<script>
+    // Drop Bootstarp low-performance Navbar
+    // Use customize navbar with high-quality material design animation
+    // in high-perf jank-free CSS3 implementation
+    var $body   = document.body;
+    var $toggle = document.querySelector('.navbar-toggle');
+    var $navbar = document.querySelector('#huxblog_navbar');
+    var $collapse = document.querySelector('.navbar-collapse');
+
+    var __HuxNav__ = {
+        close: function(){
+            $navbar.className = " ";
+            // wait until animation end.
+            setTimeout(function(){
+                // prevent frequently toggle
+                if($navbar.className.indexOf('in') < 0) {
+                    $collapse.style.height = "0px"
+                }
+            },400)
+        },
+        open: function(){
+            $collapse.style.height = "auto"
+            $navbar.className += " in";
+        }
+    }
+
+    // Bind Event
+    $toggle.addEventListener('click', function(e){
+        if ($navbar.className.indexOf('in') > 0) {
+            __HuxNav__.close()
+        }else{
+            __HuxNav__.open()
+        }
+    })
+
+    /**
+     * Since Fastclick is used to delegate 'touchstart' globally
+     * to hack 300ms delay in iOS by performing a fake 'click',
+     * Using 'e.stopPropagation' to stop 'touchstart' event from 
+     * $toggle/$collapse will break global delegation.
+     * 
+     * Instead, we use a 'e.target' filter to prevent handler
+     * added to document close HuxNav.  
+     *
+     * Also, we use 'click' instead of 'touchstart' as compromise
+     */
+    document.addEventListener('click', function(e){
+        if(e.target == $toggle) return;
+        if(e.target.className == 'icon-bar') return;
+        __HuxNav__.close();
+    })
+</script>
+
+
+    <!-- Image to hack wechat -->
+<!-- <img src="/img/icon_wechat.png" width="0" height="0"> -->
+<!-- <img src="/img/root/home-bg-fj.jpg" width="0" height="0"> -->
+
+<!-- Post Header -->
+
+
+
+<style type="text/css">
+    header.intro-header{
+        position: relative;
+        background-image: url('/img/root/home-bg-fj.jpg');
+        background: ;
+    }
+
+    
+</style>
+
+<header class="intro-header" >
+
+    <div class="header-mask"></div>
+    
+    <div class="container">
+        <div class="row">
+            <div class="col-lg-8 col-lg-offset-2 col-md-10 col-md-offset-1">
+                <div class="post-heading">
+                    <div class="tags">
+                        
+                        <a class="tag" href="/archive/?tag=glide3.7.0" title="glide3.7.0">glide3.7.0</a>
+                        
+                        <a class="tag" href="/archive/?tag=%E6%BA%90%E7%A0%81" title="源码">源码</a>
+                        
+                    </div>
+                    <h1>Android Glide 3.7.0 源码解析(八) , RecyclableBufferedInputStream 的 mark/reset 实现</h1>
+                    
+                    <h2 class="subheading"></h2>
+                    <span class="meta">Posted by zhoujie on April 1, 2021</span>
+                </div>
+            </div>
+        </div>
+    </div>
+</header>
+
+
+
+
+
+
+
+<!-- 添加评论系统 -->
+<link rel="stylesheet" href="../../../../css/gitalk.css">
+<script src="../../../../js/gitalk.min.js"></script>
+
+<!-- 添加打赏 -->
+<link href="/css/reward.css?v=6.2.0" rel="stylesheet" type="text/css" />
+
+<!-- Post Content -->
+<article >
+    <div class="container" style="width: 100%;">
+        <div class="row">
+
+    <!-- Post Container -->
+            <div class="
+                col-lg-8 col-lg-offset-2
+                col-md-10 col-md-offset-1
+                post-container">
+
+                <!-- Multi-Lingual -->
+                
+
+				<h1 id="一mark--reset-的作用">一、mark / reset 的作用</h1>
+<p><a href="/2021/03/31/markdown-glide3.7.0_7/index.html">Android Glide 3.7.0 源码解析(七) , 细说图形变换和解码</a>有提到过RecyclableBufferedInputStream 对于 <code class="language-plaintext highlighter-rouge">mark(int marklimit)</code> 和 <code class="language-plaintext highlighter-rouge">reset()</code> 方法的作用, 本文则是探讨具体的实现思路</p>
+
+<p><img src="https://img-blog.csdnimg.cn/20210401101431339.png?x-oss-process=image/watermark,type_ZmFuZ3poZW5naGVpdGk,shadow_10,text_aHR0cHM6Ly9ibG9nLmNzZG4ubmV0L3FxXzI1Nzc4MzY5,size_16,color_FFFFFF,t_70" alt="在这里插入图片描述" />
+<code class="language-plaintext highlighter-rouge">mark(int marklimit)</code> 的作用是在流中创建一段起点是 markPos 长度是 markLimit 的可被重复读取区域, 当调用 <code class="language-plaintext highlighter-rouge">reset()</code> 方法时流的读取位置会回到 markPos , 实现 markLimit 可以被重复读取</p>
+
+<p>注意:</p>
+<ul>
+  <li>当读取位置到达 readPos_2 时, <code class="language-plaintext highlighter-rouge">reset()</code> 方法会失效, 因为已经超出 markLimit 的长度范围了</li>
+  <li><code class="language-plaintext highlighter-rouge">mark(int marklimit)</code> 标记的起始点 markPos 为方法调用时流的读取位置( 上图中 mark 时, 读取位置是 readPos_0, 所以 markPos == readPos_0 )</li>
+</ul>
+
+<blockquote>
+  <p>我们都知道 Stream 流只能被读取一遍</p>
+</blockquote>
+
+<h1 id="二实现思路">二、实现思路</h1>
+<p>上文中的图解还只是黑盒运行路线查看, 下面来分析具体实现的图解
+<img src="https://img-blog.csdnimg.cn/20210401102442362.png?x-oss-process=image/watermark,type_ZmFuZ3poZW5naGVpdGk,shadow_10,text_aHR0cHM6Ly9ibG9nLmNzZG4ubmV0L3FxXzI1Nzc4MzY5,size_16,color_FFFFFF,t_70" alt="在这里插入图片描述" />
+由于 <code class="language-plaintext highlighter-rouge">InputStream</code> 只能被读取一遍就消耗了, 所以我们要做到重复读取必须借助一个外部工具, 此处用的是 <code class="language-plaintext highlighter-rouge">buf</code> 一个初始大小为 64K 的 byte[] 数组, 下面来对上图元素进行说明</p>
+<ul>
+  <li>右侧是还存在 <code class="language-plaintext highlighter-rouge">InputStream</code> 中的未被读取的数据</li>
+  <li>左侧是已经从流程读取出来的数据, 存在 <code class="language-plaintext highlighter-rouge">buf</code> 中</li>
+  <li><code class="language-plaintext highlighter-rouge">count</code> 代表的是 <code class="language-plaintext highlighter-rouge">buf</code> 中有效数据的数量 ( 你读到流的末尾了,可能会产生 <code class="language-plaintext highlighter-rouge">buf</code> 读不满的情况 )</li>
+  <li><code class="language-plaintext highlighter-rouge">markpos</code> 代表 mark() 标记的位置</li>
+  <li><code class="language-plaintext highlighter-rouge">蓝色条状</code> 则是需要支持被重复读取的部分了, <code class="language-plaintext highlighter-rouge">marklimit</code> 表示它的长度</li>
+  <li><code class="language-plaintext highlighter-rouge">pos</code> 代表当前正在读取的位置</li>
+</ul>
+
+<p>现在我们有了 <code class="language-plaintext highlighter-rouge">buf</code> 作为缓存, 可以将 mark 的流数据缓存在 <code class="language-plaintext highlighter-rouge">buf</code> 中, 这样就可以重复读取了</p>
+
+<blockquote>
+  <p>注意: buf 大小不是恒定不变的, 当 marklimit &gt; buf.length 并满足一些其他条件时, buf 会被2倍扩容</p>
+</blockquote>
+
+<h1 id="三源码分析">三、源码分析</h1>
+<p>看看 RecyclableBufferedInputStream 都有哪些变量(  其实在介绍思路的时候都讲过了 )</p>
+
+<div class="language-java highlighter-rouge"><div class="highlight"><pre class="highlight"><code><table class="rouge-table"><tbody><tr><td class="rouge-gutter gl"><pre class="lineno">1
+2
+3
+4
+5
+6
+7
+8
+9
+10
+11
+12
+13
+14
+</pre></td><td class="rouge-code"><pre><span class="kd">public</span> <span class="kd">class</span> <span class="nc">RecyclableBufferedInputStream</span> <span class="kd">extends</span> <span class="nc">FilterInputStream</span> <span class="o">{</span>
+
+  	<span class="c1">// buf 缓存从流中读取出来的数据</span>
+    <span class="kd">private</span> <span class="kd">volatile</span> <span class="kt">byte</span><span class="o">[]</span> <span class="n">buf</span><span class="o">;</span>
+    <span class="c1">// buf 有效数据的长度</span>
+    <span class="kd">private</span> <span class="kt">int</span> <span class="n">count</span><span class="o">;</span>
+    <span class="c1">// mark 标记数据的长度</span>
+    <span class="kd">private</span> <span class="kt">int</span> <span class="n">marklimit</span><span class="o">;</span>
+    <span class="c1">// mark 标记的位置, 默认 -1 表示没有标记</span>
+    <span class="kd">private</span> <span class="kt">int</span> <span class="n">markpos</span> <span class="o">=</span> <span class="o">-</span><span class="mi">1</span><span class="o">;</span>
+    <span class="c1">// 当前读取 buf 的位置</span>
+    <span class="kd">private</span> <span class="kt">int</span> <span class="n">pos</span><span class="o">;</span>
+
+<span class="o">}</span>
+</pre></td></tr></tbody></table></code></pre></div></div>
+
+<h2 id="mark-和-reset">mark() 和 reset()</h2>
+<p>再来看看 mark 和 reset 方法</p>
+
+<div class="language-java highlighter-rouge"><div class="highlight"><pre class="highlight"><code><table class="rouge-table"><tbody><tr><td class="rouge-gutter gl"><pre class="lineno">1
+2
+3
+4
+5
+6
+7
+8
+9
+10
+11
+12
+13
+14
+</pre></td><td class="rouge-code"><pre>	<span class="kd">public</span> <span class="kd">synchronized</span> <span class="kt">void</span> <span class="nf">mark</span><span class="o">(</span><span class="kt">int</span> <span class="n">readlimit</span><span class="o">)</span> <span class="o">{</span>
+        <span class="n">marklimit</span> <span class="o">=</span> <span class="nc">Math</span><span class="o">.</span><span class="na">max</span><span class="o">(</span><span class="n">marklimit</span><span class="o">,</span> <span class="n">readlimit</span><span class="o">);</span>
+        <span class="n">markpos</span> <span class="o">=</span> <span class="n">pos</span><span class="o">;</span>
+    <span class="o">}</span>
+
+	<span class="kd">public</span> <span class="kd">synchronized</span> <span class="kt">void</span> <span class="nf">reset</span><span class="o">()</span> <span class="kd">throws</span> <span class="nc">IOException</span> <span class="o">{</span>
+        <span class="k">if</span> <span class="o">(</span><span class="n">buf</span> <span class="o">==</span> <span class="kc">null</span><span class="o">)</span> <span class="o">{</span>
+            <span class="k">throw</span> <span class="k">new</span> <span class="nf">IOException</span><span class="o">(</span><span class="s">"Stream is closed"</span><span class="o">);</span>
+        <span class="o">}</span>
+        <span class="k">if</span> <span class="o">(-</span><span class="mi">1</span> <span class="o">==</span> <span class="n">markpos</span><span class="o">)</span> <span class="o">{</span>
+            <span class="k">throw</span> <span class="k">new</span> <span class="nf">InvalidMarkException</span><span class="o">(</span><span class="s">"Mark has been invalidated"</span><span class="o">);</span>
+        <span class="o">}</span>
+        <span class="n">pos</span> <span class="o">=</span> <span class="n">markpos</span><span class="o">;</span>
+    <span class="o">}</span>
+</pre></td></tr></tbody></table></code></pre></div></div>
+<p>mark 就做了两件事 赋值 + 赋值</p>
+<ul>
+  <li>marklimit 和旧的作比较取一个最大值</li>
+  <li>markpos 设置为当前读取位置</li>
+</ul>
+
+<p>reset 就做了一件事</p>
+<ul>
+  <li>当前位置 pos 被重置成 markpos</li>
+</ul>
+
+<h2 id="read">read()</h2>
+
+<p>来看看 read 方法干了啥</p>
+
+<div class="language-java highlighter-rouge"><div class="highlight"><pre class="highlight"><code><table class="rouge-table"><tbody><tr><td class="rouge-gutter gl"><pre class="lineno">1
+2
+3
+4
+5
+6
+7
+8
+9
+10
+11
+12
+13
+14
+15
+16
+17
+18
+19
+20
+21
+22
+23
+24
+25
+26
+27
+28
+</pre></td><td class="rouge-code"><pre>	<span class="kd">public</span> <span class="kd">synchronized</span> <span class="kt">int</span> <span class="nf">read</span><span class="o">()</span> <span class="kd">throws</span> <span class="nc">IOException</span> <span class="o">{</span>
+        <span class="c1">// Use local refs since buf and in may be invalidated by an</span>
+        <span class="c1">// unsynchronized close()</span>
+        <span class="kt">byte</span><span class="o">[]</span> <span class="n">localBuf</span> <span class="o">=</span> <span class="n">buf</span><span class="o">;</span>
+        <span class="nc">InputStream</span> <span class="n">localIn</span> <span class="o">=</span> <span class="n">in</span><span class="o">;</span>
+        <span class="k">if</span> <span class="o">(</span><span class="n">localBuf</span> <span class="o">==</span> <span class="kc">null</span> <span class="o">||</span> <span class="n">localIn</span> <span class="o">==</span> <span class="kc">null</span><span class="o">)</span> <span class="o">{</span>
+            <span class="k">throw</span> <span class="nf">streamClosed</span><span class="o">();</span>
+        <span class="o">}</span>
+
+        <span class="c1">// Are there buffered bytes available?</span>
+        <span class="k">if</span> <span class="o">(</span><span class="n">pos</span> <span class="o">&gt;=</span> <span class="n">count</span> <span class="o">&amp;&amp;</span> <span class="n">fillbuf</span><span class="o">(</span><span class="n">localIn</span><span class="o">,</span> <span class="n">localBuf</span><span class="o">)</span> <span class="o">==</span> <span class="o">-</span><span class="mi">1</span><span class="o">)</span> <span class="o">{</span>
+            <span class="c1">// no, fill buffer</span>
+            <span class="k">return</span> <span class="o">-</span><span class="mi">1</span><span class="o">;</span>
+        <span class="o">}</span>
+        <span class="c1">// localBuf may have been invalidated by fillbuf</span>
+        <span class="k">if</span> <span class="o">(</span><span class="n">localBuf</span> <span class="o">!=</span> <span class="n">buf</span><span class="o">)</span> <span class="o">{</span>
+            <span class="n">localBuf</span> <span class="o">=</span> <span class="n">buf</span><span class="o">;</span>
+            <span class="k">if</span> <span class="o">(</span><span class="n">localBuf</span> <span class="o">==</span> <span class="kc">null</span><span class="o">)</span> <span class="o">{</span>
+                <span class="k">throw</span> <span class="nf">streamClosed</span><span class="o">();</span>
+            <span class="o">}</span>
+        <span class="o">}</span>
+
+        <span class="c1">// Did filling the buffer fail with -1 (EOF)?</span>
+        <span class="k">if</span> <span class="o">(</span><span class="n">count</span> <span class="o">-</span> <span class="n">pos</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="o">)</span> <span class="o">{</span>
+            <span class="k">return</span> <span class="n">localBuf</span><span class="o">[</span><span class="n">pos</span><span class="o">++]</span> <span class="o">&amp;</span> <span class="mh">0xFF</span><span class="o">;</span>
+        <span class="o">}</span>
+        <span class="k">return</span> <span class="o">-</span><span class="mi">1</span><span class="o">;</span>
+    <span class="o">}</span>
+</pre></td></tr></tbody></table></code></pre></div></div>
+<p>这个 read() 方法是读取单个字符用的, 每次只读去 1 个byte 返回</p>
+<ul>
+  <li>pos &gt;= count 代表 <code class="language-plaintext highlighter-rouge">buf</code> 被读完了,  调用 fillbuf(localIn, localBuf) 去重新向 <code class="language-plaintext highlighter-rouge">buf</code> 填充数据</li>
+  <li>count - pos &gt; 0 代表 <code class="language-plaintext highlighter-rouge">buf</code> 数据还够, 直接读取返回 localBuf[pos++] &amp; 0xFF</li>
+</ul>
+
+<blockquote>
+  <p>这里 return 为毛是个 int ??? 说好的 byte 呢
+ 因为返回的流数据里面是无符号的 byte 0~255 范围 , 而 java 里面的 byte 默认带符号, - 128 ~ 127, 数据范围不够, 只能用 int 来凑了, 注意这行代码:  <code class="language-plaintext highlighter-rouge">localBuf[pos++] &amp; 0xFF</code> , 把高 24 位全部清零了, 达到返回 0~255 效果</p>
+</blockquote>
+
+<p>这中间好像没有提到 mark 的部分, 猜测只能是在 <code class="language-plaintext highlighter-rouge">fillbuf</code> 函数中实现了, 跟进去看看</p>
+
+<h2 id="fillbuf">fillbuf()</h2>
+<p>代码较长, 耐心看看</p>
+<div class="language-java highlighter-rouge"><div class="highlight"><pre class="highlight"><code><table class="rouge-table"><tbody><tr><td class="rouge-gutter gl"><pre class="lineno">1
+2
+3
+4
+5
+6
+7
+8
+9
+10
+11
+12
+13
+14
+15
+16
+17
+18
+19
+20
+21
+22
+23
+24
+25
+26
+27
+28
+29
+30
+31
+32
+33
+34
+35
+36
+37
+38
+39
+40
+41
+42
+</pre></td><td class="rouge-code"><pre>	<span class="kd">private</span> <span class="kt">int</span> <span class="nf">fillbuf</span><span class="o">(</span><span class="nc">InputStream</span> <span class="n">localIn</span><span class="o">,</span> <span class="kt">byte</span><span class="o">[]</span> <span class="n">localBuf</span><span class="o">)</span>
+            <span class="kd">throws</span> <span class="nc">IOException</span> <span class="o">{</span>
+		<span class="c1">// 没有标记, 或者读取区域超过了标记的范围, 直接从流中读取数据到 buf</span>
+        <span class="k">if</span> <span class="o">(</span><span class="n">markpos</span> <span class="o">==</span> <span class="o">-</span><span class="mi">1</span> <span class="o">||</span> <span class="n">pos</span> <span class="o">-</span> <span class="n">markpos</span> <span class="o">&gt;=</span> <span class="n">marklimit</span><span class="o">)</span> <span class="o">{</span>
+            <span class="c1">// Mark position not set or exceeded readlimit</span>
+            <span class="kt">int</span> <span class="n">result</span> <span class="o">=</span> <span class="n">localIn</span><span class="o">.</span><span class="na">read</span><span class="o">(</span><span class="n">localBuf</span><span class="o">);</span>
+            <span class="k">if</span> <span class="o">(</span><span class="n">result</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="o">)</span> <span class="o">{</span>
+                <span class="n">markpos</span> <span class="o">=</span> <span class="o">-</span><span class="mi">1</span><span class="o">;</span>
+                <span class="n">pos</span> <span class="o">=</span> <span class="mi">0</span><span class="o">;</span>
+                <span class="n">count</span> <span class="o">=</span> <span class="n">result</span><span class="o">;</span>
+            <span class="o">}</span>
+            <span class="k">return</span> <span class="n">result</span><span class="o">;</span>
+        <span class="o">}</span>
+
+        <span class="c1">// [标记有效] 这里 buf.length 不够了, 扩容 2 倍</span>
+        <span class="k">if</span> <span class="o">(</span><span class="n">markpos</span> <span class="o">==</span> <span class="mi">0</span> <span class="o">&amp;&amp;</span> <span class="n">marklimit</span> <span class="o">&gt;</span> <span class="n">localBuf</span><span class="o">.</span><span class="na">length</span> <span class="o">&amp;&amp;</span> <span class="n">count</span> <span class="o">==</span> <span class="n">localBuf</span><span class="o">.</span><span class="na">length</span><span class="o">)</span> <span class="o">{</span>
+            <span class="c1">// Increase buffer size to accommodate the readlimit</span>
+            <span class="kt">int</span> <span class="n">newLength</span> <span class="o">=</span> <span class="n">localBuf</span><span class="o">.</span><span class="na">length</span> <span class="o">*</span> <span class="mi">2</span><span class="o">;</span>
+            <span class="k">if</span> <span class="o">(</span><span class="n">newLength</span> <span class="o">&gt;</span> <span class="n">marklimit</span><span class="o">)</span> <span class="o">{</span>
+                <span class="n">newLength</span> <span class="o">=</span> <span class="n">marklimit</span><span class="o">;</span>
+            <span class="o">}</span>
+            <span class="k">if</span> <span class="o">(</span><span class="nc">Log</span><span class="o">.</span><span class="na">isLoggable</span><span class="o">(</span><span class="no">TAG</span><span class="o">,</span> <span class="nc">Log</span><span class="o">.</span><span class="na">DEBUG</span><span class="o">))</span> <span class="o">{</span>
+                <span class="nc">Log</span><span class="o">.</span><span class="na">d</span><span class="o">(</span><span class="no">TAG</span><span class="o">,</span> <span class="s">"allocate buffer of length: "</span> <span class="o">+</span> <span class="n">newLength</span><span class="o">);</span>
+            <span class="o">}</span>
+            <span class="kt">byte</span><span class="o">[]</span> <span class="n">newbuf</span> <span class="o">=</span> <span class="k">new</span> <span class="kt">byte</span><span class="o">[</span><span class="n">newLength</span><span class="o">];</span>
+            <span class="nc">System</span><span class="o">.</span><span class="na">arraycopy</span><span class="o">(</span><span class="n">localBuf</span><span class="o">,</span> <span class="mi">0</span><span class="o">,</span> <span class="n">newbuf</span><span class="o">,</span> <span class="mi">0</span><span class="o">,</span> <span class="n">localBuf</span><span class="o">.</span><span class="na">length</span><span class="o">);</span>
+            <span class="n">localBuf</span> <span class="o">=</span> <span class="n">buf</span> <span class="o">=</span> <span class="n">newbuf</span><span class="o">;</span>
+        <span class="o">}</span>
+
+		<span class="c1">// [标记有效] 标记位置 &gt;0 buf中 标记位置之前还有一批数据可以被舍弃</span>
+		<span class="k">else</span> <span class="nf">if</span> <span class="o">(</span><span class="n">markpos</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="o">)</span> <span class="o">{</span>
+            <span class="nc">System</span><span class="o">.</span><span class="na">arraycopy</span><span class="o">(</span><span class="n">localBuf</span><span class="o">,</span> <span class="n">markpos</span><span class="o">,</span> <span class="n">localBuf</span><span class="o">,</span> <span class="mi">0</span><span class="o">,</span> <span class="n">localBuf</span><span class="o">.</span><span class="na">length</span>
+                    <span class="o">-</span> <span class="n">markpos</span><span class="o">);</span>
+        <span class="o">}</span>
+        <span class="c1">// 重置读取位置和 buf 中有效数据的长度</span>
+        <span class="n">pos</span> <span class="o">-=</span> <span class="n">markpos</span><span class="o">;</span>
+        <span class="n">count</span> <span class="o">=</span> <span class="n">markpos</span> <span class="o">=</span> <span class="mi">0</span><span class="o">;</span>
+        <span class="c1">// 如果 buf 不满(还有脏数据) 就开始从流中读取填充</span>
+        <span class="kt">int</span> <span class="n">bytesread</span> <span class="o">=</span> <span class="n">localIn</span><span class="o">.</span><span class="na">read</span><span class="o">(</span><span class="n">localBuf</span><span class="o">,</span> <span class="n">pos</span><span class="o">,</span> <span class="n">localBuf</span><span class="o">.</span><span class="na">length</span> <span class="o">-</span> <span class="n">pos</span><span class="o">);</span>
+        <span class="n">count</span> <span class="o">=</span> <span class="n">bytesread</span> <span class="o">&lt;=</span> <span class="mi">0</span> <span class="o">?</span> <span class="n">pos</span> <span class="o">:</span> <span class="n">pos</span> <span class="o">+</span> <span class="n">bytesread</span><span class="o">;</span>
+        <span class="k">return</span> <span class="n">bytesread</span><span class="o">;</span>
+    <span class="o">}</span>
+</pre></td></tr></tbody></table></code></pre></div></div>
+<p>以上一共有三种情况</p>
+<ul>
+  <li>第一种: 没有 mark 参与或者mark已失效 (<code class="language-plaintext highlighter-rouge">markpos == -1 || pos - markpos &gt;= marklimit</code>), 就是普通的从流中读取数据, 填满 buf , 然后把 pos 当前读取位置重置一下 ( 下图绿色表示扩容部分 )
+<img src="https://img-blog.csdnimg.cn/20210401112114187.png?x-oss-process=image/watermark,type_ZmFuZ3poZW5naGVpdGk,shadow_10,text_aHR0cHM6Ly9ibG9nLmNzZG4ubmV0L3FxXzI1Nzc4MzY5,size_16,color_FFFFFF,t_70" alt="在这里插入图片描述" /></li>
+  <li>
+    <p>第二种, (<code class="language-plaintext highlighter-rouge">markpos == 0 &amp;&amp; marklimit &gt; localBuf.length &amp;&amp; count == localBuf.length</code>)
+ mark 有效, 且 markpos 左侧已经退不可退, 抵到 buf 的最左侧了;
+ 并且 marklimit 超过了 buf 的长度;
+ 且 <code class="language-plaintext highlighter-rouge">count == localBuf.length</code> 才进行 2 倍扩容</p>
+
+    <blockquote>
+      <ul>
+        <li>看<code class="language-plaintext highlighter-rouge">count == localBuf.length</code> 这个条件, 他表示 buf 里面的有效数据必须是满的才进行扩容, buf 只有在读到文件末尾时才可能不满, 当流都读完了, 没数据了, 即使 marklimit 超过 buf 的长度也没必要扩容了, 根本读不到那么多了;</li>
+        <li>看这几行代码
+          <div class="language-java highlighter-rouge"><div class="highlight"><pre class="highlight"><code><table class="rouge-table"><tbody><tr><td class="rouge-gutter gl"><pre class="lineno">1
+2
+3
+4
+</pre></td><td class="rouge-code"><pre><span class="kt">int</span> <span class="n">newLength</span> <span class="o">=</span> <span class="n">localBuf</span><span class="o">.</span><span class="na">length</span> <span class="o">*</span> <span class="mi">2</span><span class="o">;</span>
+<span class="k">if</span> <span class="o">(</span><span class="n">newLength</span> <span class="o">&gt;</span> <span class="n">marklimit</span><span class="o">)</span> <span class="o">{</span>
+  <span class="n">newLength</span> <span class="o">=</span> <span class="n">marklimit</span><span class="o">;</span>
+<span class="o">}</span>
+</pre></td></tr></tbody></table></code></pre></div>          </div>
+          <p>如果扩充 2 倍后大于 marklimit 则以 marklimit为准, 否则, 就只扩充 2 倍, 不会一下子扩充到 marklimit 的大小, 对内存的使用可谓是抠搜到极致 ( 可以理解为懒申请, 用到了才去申请更大的 buf )</p>
+        </li>
+      </ul>
+    </blockquote>
+  </li>
+</ul>
+
+<p>第二种情况 扩容一: marklimit &lt; buf.length * 2 的情况
+<img src="https://img-blog.csdnimg.cn/20210401134958485.png?x-oss-process=image/watermark,type_ZmFuZ3poZW5naGVpdGk,shadow_10,text_aHR0cHM6Ly9ibG9nLmNzZG4ubmV0L3FxXzI1Nzc4MzY5,size_16,color_FFFFFF,t_70" alt="在这里插入图片描述" />
+2 倍超出 marklimit 的长度, 直接以 marklimit的长度为准, 上图绿色为扩容部分</p>
+
+<p>第二种情况 扩容二: marklimit &gt;= buf.length * 2 的情况</p>
+
+<p><img src="https://img-blog.csdnimg.cn/20210401135644502.png?x-oss-process=image/watermark,type_ZmFuZ3poZW5naGVpdGk,shadow_10,text_aHR0cHM6Ly9ibG9nLmNzZG4ubmV0L3FxXzI1Nzc4MzY5,size_16,color_FFFFFF,t_70" alt="在这里插入图片描述" /></p>
+<ul>
+  <li>第三种情况 markpos != 0 并且不满足扩容条件</li>
+</ul>
+
+<p>这种情况下, 只需要把 markpos 左边的数据清除, 然后再往 buf 右边空出的位置写入数据
+<img src="https://img-blog.csdnimg.cn/2021040114061454.png?x-oss-process=image/watermark,type_ZmFuZ3poZW5naGVpdGk,shadow_10,text_aHR0cHM6Ly9ibG9nLmNzZG4ubmV0L3FxXzI1Nzc4MzY5,size_16,color_FFFFFF,t_70" alt="在这里插入图片描述" />
+至此, <code class="language-plaintext highlighter-rouge">fillbuf()</code> 分析完毕, 一种分三种情况来填充 <code class="language-plaintext highlighter-rouge">buf</code> 上面都已做出图示说明</p>
+
+<h2 id="readbyte-buffer-int-offset-int-bytecount">read(byte[] buffer, int offset, int byteCount)</h2>
+
+<p>函数很长, 但是逻辑相对简单</p>
+<div class="language-java highlighter-rouge"><div class="highlight"><pre class="highlight"><code><table class="rouge-table"><tbody><tr><td class="rouge-gutter gl"><pre class="lineno">1
+2
+3
+4
+5
+6
+7
+8
+9
+10
+11
+12
+13
+14
+15
+16
+17
+18
+19
+20
+21
+22
+23
+24
+25
+26
+27
+28
+29
+30
+31
+32
+33
+34
+35
+36
+37
+38
+39
+40
+41
+42
+43
+44
+45
+46
+47
+48
+49
+50
+51
+52
+53
+54
+55
+56
+57
+58
+59
+60
+61
+62
+63
+64
+65
+66
+67
+68
+69
+70
+71
+72
+73
+74
+</pre></td><td class="rouge-code"><pre><span class="kd">public</span> <span class="kd">synchronized</span> <span class="kt">int</span> <span class="nf">read</span><span class="o">(</span><span class="kt">byte</span><span class="o">[]</span> <span class="n">buffer</span><span class="o">,</span> <span class="kt">int</span> <span class="n">offset</span><span class="o">,</span> <span class="kt">int</span> <span class="n">byteCount</span><span class="o">)</span> <span class="kd">throws</span> <span class="nc">IOException</span> <span class="o">{</span>
+        <span class="c1">// 一系列错误检查就不看了, 非主线</span>
+        <span class="kt">byte</span><span class="o">[]</span> <span class="n">localBuf</span> <span class="o">=</span> <span class="n">buf</span><span class="o">;</span>
+        <span class="k">if</span> <span class="o">(</span><span class="n">localBuf</span> <span class="o">==</span> <span class="kc">null</span><span class="o">)</span> <span class="o">{</span>
+            <span class="k">throw</span> <span class="nf">streamClosed</span><span class="o">();</span>
+        <span class="o">}</span>
+
+        <span class="k">if</span> <span class="o">(</span><span class="n">byteCount</span> <span class="o">==</span> <span class="mi">0</span><span class="o">)</span> <span class="o">{</span>
+            <span class="k">return</span> <span class="mi">0</span><span class="o">;</span>
+        <span class="o">}</span>
+        <span class="nc">InputStream</span> <span class="n">localIn</span> <span class="o">=</span> <span class="n">in</span><span class="o">;</span>
+        <span class="k">if</span> <span class="o">(</span><span class="n">localIn</span> <span class="o">==</span> <span class="kc">null</span><span class="o">)</span> <span class="o">{</span>
+            <span class="k">throw</span> <span class="nf">streamClosed</span><span class="o">();</span>
+        <span class="o">}</span>
+
+		<span class="c1">// 先直接读取 buf</span>
+        <span class="kt">int</span> <span class="n">required</span><span class="o">;</span>
+        <span class="k">if</span> <span class="o">(</span><span class="n">pos</span> <span class="o">&lt;</span> <span class="n">count</span><span class="o">)</span> <span class="o">{</span>
+            <span class="c1">// There are bytes available in the buffer.</span>
+            <span class="kt">int</span> <span class="n">copylength</span> <span class="o">=</span> <span class="n">count</span> <span class="o">-</span> <span class="n">pos</span> <span class="o">&gt;=</span> <span class="n">byteCount</span> <span class="o">?</span> <span class="n">byteCount</span> <span class="o">:</span> <span class="n">count</span> <span class="o">-</span> <span class="n">pos</span><span class="o">;</span>
+            <span class="nc">System</span><span class="o">.</span><span class="na">arraycopy</span><span class="o">(</span><span class="n">localBuf</span><span class="o">,</span> <span class="n">pos</span><span class="o">,</span> <span class="n">buffer</span><span class="o">,</span> <span class="n">offset</span><span class="o">,</span> <span class="n">copylength</span><span class="o">);</span>
+            <span class="n">pos</span> <span class="o">+=</span> <span class="n">copylength</span><span class="o">;</span>
+            <span class="k">if</span> <span class="o">(</span><span class="n">copylength</span> <span class="o">==</span> <span class="n">byteCount</span> <span class="o">||</span> <span class="n">localIn</span><span class="o">.</span><span class="na">available</span><span class="o">()</span> <span class="o">==</span> <span class="mi">0</span><span class="o">)</span> <span class="o">{</span>
+            	<span class="c1">// buf 里面就够读, 直接返回</span>
+                <span class="k">return</span> <span class="n">copylength</span><span class="o">;</span>
+            <span class="o">}</span>
+            <span class="n">offset</span> <span class="o">+=</span> <span class="n">copylength</span><span class="o">;</span>
+            <span class="c1">// 不够读计算还需要多少</span>
+            <span class="n">required</span> <span class="o">=</span> <span class="n">byteCount</span> <span class="o">-</span> <span class="n">copylength</span><span class="o">;</span>
+        <span class="o">}</span> <span class="k">else</span> <span class="o">{</span>
+        	<span class="c1">// buf 已经不能读了, 计算还需要多少</span>
+            <span class="n">required</span> <span class="o">=</span> <span class="n">byteCount</span><span class="o">;</span>
+        <span class="o">}</span>
+
+		<span class="c1">// 开启循环读到够为止</span>
+        <span class="k">while</span> <span class="o">(</span><span class="kc">true</span><span class="o">)</span> <span class="o">{</span>
+            <span class="kt">int</span> <span class="n">read</span><span class="o">;</span>
+            <span class="c1">// 如果没有 mark 的影响, 直接从流本身读取</span>
+            <span class="k">if</span> <span class="o">(</span><span class="n">markpos</span> <span class="o">==</span> <span class="o">-</span><span class="mi">1</span> <span class="o">&amp;&amp;</span> <span class="n">required</span> <span class="o">&gt;=</span> <span class="n">localBuf</span><span class="o">.</span><span class="na">length</span><span class="o">)</span> <span class="o">{</span>
+                <span class="n">read</span> <span class="o">=</span> <span class="n">localIn</span><span class="o">.</span><span class="na">read</span><span class="o">(</span><span class="n">buffer</span><span class="o">,</span> <span class="n">offset</span><span class="o">,</span> <span class="n">required</span><span class="o">);</span>
+                <span class="k">if</span> <span class="o">(</span><span class="n">read</span> <span class="o">==</span> <span class="o">-</span><span class="mi">1</span><span class="o">)</span> <span class="o">{</span>
+                	<span class="c1">// 流读尽了直接返回</span>
+                    <span class="k">return</span> <span class="n">required</span> <span class="o">==</span> <span class="n">byteCount</span> <span class="o">?</span> <span class="o">-</span><span class="mi">1</span> <span class="o">:</span> <span class="n">byteCount</span> <span class="o">-</span> <span class="n">required</span><span class="o">;</span>
+                <span class="o">}</span>
+            <span class="o">}</span> <span class="k">else</span> <span class="o">{</span>
+            	<span class="c1">// 开始利用 fillbuf() 填充 buf 数组</span>
+                <span class="k">if</span> <span class="o">(</span><span class="n">fillbuf</span><span class="o">(</span><span class="n">localIn</span><span class="o">,</span> <span class="n">localBuf</span><span class="o">)</span> <span class="o">==</span> <span class="o">-</span><span class="mi">1</span><span class="o">)</span> <span class="o">{</span>
+                    <span class="k">return</span> <span class="n">required</span> <span class="o">==</span> <span class="n">byteCount</span> <span class="o">?</span> <span class="o">-</span><span class="mi">1</span> <span class="o">:</span> <span class="n">byteCount</span> <span class="o">-</span> <span class="n">required</span><span class="o">;</span>
+                <span class="o">}</span>
+                <span class="c1">// localBuf may have been invalidated by fillbuf</span>
+                <span class="k">if</span> <span class="o">(</span><span class="n">localBuf</span> <span class="o">!=</span> <span class="n">buf</span><span class="o">)</span> <span class="o">{</span>
+                    <span class="n">localBuf</span> <span class="o">=</span> <span class="n">buf</span><span class="o">;</span>
+                    <span class="k">if</span> <span class="o">(</span><span class="n">localBuf</span> <span class="o">==</span> <span class="kc">null</span><span class="o">)</span> <span class="o">{</span>
+                        <span class="k">throw</span> <span class="nf">streamClosed</span><span class="o">();</span>
+                    <span class="o">}</span>
+                <span class="o">}</span>
+
+				<span class="c1">// 填充完开始读</span>
+                <span class="n">read</span> <span class="o">=</span> <span class="n">count</span> <span class="o">-</span> <span class="n">pos</span> <span class="o">&gt;=</span> <span class="n">required</span> <span class="o">?</span> <span class="n">required</span> <span class="o">:</span> <span class="n">count</span> <span class="o">-</span> <span class="n">pos</span><span class="o">;</span>
+                <span class="nc">System</span><span class="o">.</span><span class="na">arraycopy</span><span class="o">(</span><span class="n">localBuf</span><span class="o">,</span> <span class="n">pos</span><span class="o">,</span> <span class="n">buffer</span><span class="o">,</span> <span class="n">offset</span><span class="o">,</span> <span class="n">read</span><span class="o">);</span>
+                <span class="n">pos</span> <span class="o">+=</span> <span class="n">read</span><span class="o">;</span>
+            <span class="o">}</span>
+            <span class="n">required</span> <span class="o">-=</span> <span class="n">read</span><span class="o">;</span>
+            <span class="c1">// 这里判断够不够数, 够的话直接返回</span>
+            <span class="k">if</span> <span class="o">(</span><span class="n">required</span> <span class="o">==</span> <span class="mi">0</span><span class="o">)</span> <span class="o">{</span>
+                <span class="k">return</span> <span class="n">byteCount</span><span class="o">;</span>
+            <span class="o">}</span>
+            <span class="c1">// 这里判断流有没有读尽, 读尽了直接返回已读的size</span>
+            <span class="k">if</span> <span class="o">(</span><span class="n">localIn</span><span class="o">.</span><span class="na">available</span><span class="o">()</span> <span class="o">==</span> <span class="mi">0</span><span class="o">)</span> <span class="o">{</span>
+                <span class="k">return</span> <span class="n">byteCount</span> <span class="o">-</span> <span class="n">required</span><span class="o">;</span>
+            <span class="o">}</span>
+            <span class="n">offset</span> <span class="o">+=</span> <span class="n">read</span><span class="o">;</span>
+        <span class="o">}</span>
+    <span class="o">}</span>
+</pre></td></tr></tbody></table></code></pre></div></div>
+<p>逻辑其实很简单, 就是先读当前 buf 的内容, 不够的话进行下一步, 开启循环, 如果没有 mark , 则直接从流中读取, 否则, fillbuf 填充 buf 之后 从 buf 再读取一遍, 直至流被读尽或者读够想要的数字跳出循环返回</p>
+
+
+                <hr style="visibility: hidden;">
+            
+     <!-- 打赏功能 -->
+<!--            <div>-->
+<!--                <div style="padding: 10px 0; margin: 20px auto; width: 90%; text-align: center;">-->
+<!--                <div>☛小礼物走一走，来Github关注我☚</div>-->
+<!--                <button id="rewardButton" disable="enable" onclick="var qr = document.getElementById('QR'); if (qr.style.display === 'none') {qr.style.display='block';} else {qr.style.display='none'}">-->
+<!--                    <span>打 赏</span>-->
+<!--                </button>-->
+<!--                <div id="QR" style="display: none;">-->
+<!--                     -->
+<!--                <div id="wechat" style="display: inline-block">-->
+<!--                <img id="wechat_qr" src="/img/payimg/weipayimg.jpg" alt="caojiele 微信支付"/>-->
+<!--                <p>微信支付</p>-->
+<!--                </div>-->
+<!--                <div id="alipay" style="display: inline-block">-->
+<!--                <img id="alipay_qr" src="/img/payimg/alipayimg.jpg" alt="caojiele 支付宝"/>-->
+<!--                <p>支付宝</p>-->
+<!--                </div>                        -->
+<!--             </div>-->
+<!--         </div>         -->
+<!--     </div>-->
+		    
+                <ul class="pager">
+                    
+                    <li class="previous">
+                        <a href="/2021/04/01/markdown-glide3.7.0_7/" data-toggle="tooltip" data-placement="top" title="Android Glide 3.7.0 源码解析(七) , 细说图形变换和解码">
+                        Previous<br>
+                        <span>Android Glide 3.7.0 源码解析(七) , 细说图形变换和解码</span>
+                        </a>
+                    </li>
+                    
+                    
+                    <li class="next">
+                        <a href="/2021/07/07/markdown-ZJAPKUtils/" data-toggle="tooltip" data-placement="top" title="ZJAPKUtils">
+                        Next<br>
+                        <span>ZJAPKUtils</span>
+                        </a>
+                    </li>
+                    
+                </ul>
+                <hr style="visibility: hidden;">
+
+<!--                  -->
+
+<!--                  -->
+		
+		<!--   gitalk       -->
+                
+                <div class="comment">
+                    <div id="gitalk-container"></div>
+<link rel="stylesheet" href="https://unpkg.com/gitalk/dist/gitalk.css">
+<script src="https://unpkg.com/gitalk/dist/gitalk.min.js"></script>
+<script>
+var gitalk = new Gitalk({
+    id: '2021-04-01 23:32:52 +0800',
+    clientID: 'd116f826bbd61e1744fc',
+    clientSecret: '1c68303842916d566cb9855acf2d5124d1747703',
+    repo: 'summer-zhoujie.github.io',
+    owner: 'summer-zhoujie',
+    admin: ['summer-zhoujie'], 
+	labels: ['Gitalk'],
+})
+gitalk.render('gitalk-container')
+</script> 
+
+                </div>
+                
+             </div>  
+
+    <!-- Side Catalog Container -->
+        
+            <div class="
+                col-lg-2 col-lg-offset-0
+                visible-lg-block
+                sidebar-container
+                catalog-container">
+                <div class="side-catalog">
+                    <hr class="hidden-sm hidden-xs">
+                    <h5>
+                        <a class="catalog-toggle" href="#">CATALOG</a>
+                    </h5>
+                    <ul class="catalog-body"></ul>
+                </div>
+            </div>
+        
+
+    <!-- Sidebar Container -->
+            <div class="
+                col-lg-8 col-lg-offset-2
+                col-md-10 col-md-offset-1
+                sidebar-container">
+
+                <!-- Featured Tags -->
+                
+
+
+<section>
+    
+        <hr class="hidden-sm hidden-xs">
+    
+    <h5><a href="/archive/">FEATURED TAGS</a></h5>
+    <div class="tags">
+        
+        
+        
+        </a>
+        
+        
+                <a data-sort="0004" 
+                    href="/archive/?tag=glide3.7.0"
+                    title="glide3.7.0"
+                    rel="8">glide3.7.0</a>
+        
+                <a data-sort="0004" 
+                    href="/archive/?tag=%E6%BA%90%E7%A0%81"
+                    title="源码"
+                    rel="8">源码
+    </div>
+</section>
+
+
+
+                <!-- Friends Blog -->
+                
+
+            </div>
+        </div>
+    </div>
+</article>
+
+<!-- add support for mathjax by voleking-->
+
+
+<!--  -->
+
+
+ -->
+
+
+
+
+
+    <!-- Footer -->
+<footer>
+    <div class="container">
+        <div class="row">
+            <div class="col-lg-8 col-lg-offset-2 col-md-10 col-md-offset-1">
+                <!-- SNS Link -->
+                
+
+
+<ul class="list-inline text-center">
+
+
+  
+  
+  
+  
+  
+  
+  <li>
+    <a target="_blank" href="https://github.com/summer-zhoujie">
+      <span class="fa-stack fa-lg">
+        <i class="fa fa-circle fa-stack-2x"></i>
+        <i class="fa fa-github fa-stack-1x fa-inverse"></i>
+      </span>
+    </a>
+  </li>
+  
+  
+</ul>
+
+
+                <p class="copyright text-muted">
+                本站总访问量:<span id="busuanzi_value_site_pv"></span>，本站访客数:<span id="busuanzi_value_site_uv"></span>，本文总阅读量:<span id="busuanzi_value_page_pv"></span>
+                
+
+                    <br>
+                    <a>
+			Copyright &copy; Zhoujie Blog 2021
+                    </a>
+
+		    | Powered by <a href="https://summer-zhoujie.github.io">Zhoujie Blog</a> |
+                    <iframe
+                        style="margin-left: 2px; margin-bottom:-5px;"
+                        frameborder="0" scrolling="0" width="100px" height="20px"
+                        src="https://ghbtns.com/github-btn.html?user=summer-zhoujie&repo=summer-zhoujie.github.io&type=star&count=true" >
+                    </iframe>
+		  </div>
+                </p>
+            </div>
+        </div>
+    </div>
+</footer>
+<script async src="https://busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+
+<!-- jQuery -->
+<script src="/js/jquery.min.js "></script>
+
+<!-- Bootstrap Core JavaScript -->
+<!-- Currently, only navbar scroll-down effect at desktop still depends on this -->
+<script src="/js/bootstrap.min.js "></script>
+
+<!-- Custom Theme JavaScript -->
+<script src="/js/hux-blog.min.js "></script>
+
+<!-- script pointing to jekyll-search.js -->
+<script src="/js/simple-jekyll-search.min.js"></script>
+
+<!-- Service Worker -->
+
+<script src="/js/snackbar.js "></script>
+<script src="/js/sw-registration.js "></script>
+
+
+<!-- async load function -->
+<script>
+    function async(u, c) {
+      var d = document, t = 'script',
+          o = d.createElement(t),
+          s = d.getElementsByTagName(t)[0];
+      o.src = u;
+      if (c) { o.addEventListener('load', function (e) { c(null, e); }, false); }
+      s.parentNode.insertBefore(o, s);
+    }
+</script>
+
+<!--
+     Because of the native support for backtick-style fenced code blocks
+     right within the Markdown is landed in Github Pages,
+     From V1.6, There is no need for Highlight.js,
+     so Huxblog drops it officially.
+
+     - https://github.com/blog/2100-github-pages-now-faster-and-simpler-with-jekyll-3-0
+     - https://help.github.com/articles/creating-and-highlighting-code-blocks/
+     - https://github.com/jneen/rouge/wiki/list-of-supported-languages-and-lexers
+-->
+<!--
+    <script>
+        async("http://cdn.bootcss.com/highlight.js/8.6/highlight.min.js", function(){
+            hljs.initHighlightingOnLoad();
+        })
+    </script>
+    <link href="http://cdn.bootcss.com/highlight.js/8.6/styles/github.min.css" rel="stylesheet">
+-->
+
+
+
+
+
+<!--fastClick.js -->
+<script>
+    async("//cdnjs.cloudflare.com/ajax/libs/fastclick/1.0.6/fastclick.min.js", function(){
+        var $nav = document.querySelector("nav");
+        if($nav) FastClick.attach($nav);
+    })
+</script>
+
+
+<!-- Google Analytics -->
+
+
+
+<!-- Baidu Tongji -->
+
+
+
+<!-- Side Catalog -->
+
+<script type="text/javascript">
+    function generateCatalog (selector) {
+
+        // interop with multilangual 
+        if ('' == 'true') {
+            _containerSelector = 'div.post-container.active'
+        } else {
+            _containerSelector = 'div.post-container'
+        }
+
+        // init
+        var P = $(_containerSelector),a,n,t,l,i,c;
+        a = P.find('h1,h2,h3,h4,h5,h6');
+
+        // clean
+        $(selector).html('')
+
+        // appending
+        a.each(function () {
+            n = $(this).prop('tagName').toLowerCase();
+            i = "#"+$(this).prop('id');
+            t = $(this).text();
+            c = $('<a href="'+i+'" rel="nofollow">'+t+'</a>');
+            l = $('<li class="'+n+'_nav"></li>').append(c);
+            $(selector).append(l);
+        });
+        return true;
+    }
+
+    generateCatalog(".catalog-body");
+
+    // toggle side catalog
+    $(".catalog-toggle").click((function(e){
+        e.preventDefault();
+        $('.side-catalog').toggleClass("fold")
+    }))
+
+    /*
+     * Doc: https://github.com/davist11/jQuery-One-Page-Nav
+     * Fork by Hux to support padding
+     */
+    async("/js/jquery.nav.js", function () {
+        $('.catalog-body').onePageNav({
+            currentClass: "active",
+            changeHash: !1,
+            easing: "swing",
+            filter: "",
+            scrollSpeed: 700,
+            scrollOffset: 0,
+            scrollThreshold: .2,
+            begin: null,
+            end: null,
+            scrollChange: null,
+            padding: 80
+        });
+    });
+</script>
+
+
+<!-- Search -->
+ <script>
+     function onKeyPress(e) {
+         var keyCode = null;
+         if(e.which)
+             keyCode = e.which;
+         else if(e.keyCode)
+             keyCode = e.keyCode;
+         if(keyCode == 13) {
+             location.href="/search/?q=" + document.getElementById('search-input').value;
+             return false;
+         }
+         return true;
+     }
+     var url_string = window.location.href;
+    if (url_string.indexOf('search/?q') > 0){
+        document.getElementById('search-ic').classList.toggle('hidden');
+        var url = new URL(url_string);
+        var question = url.searchParams.get("q");
+        let title = document.getElementById('search-qs');
+        title.innerHTML = '"' + question + '"';
+        SimpleJekyllSearch({
+            searchtext: question,
+            resultsContainer: document.getElementById('results-container-list'),
+            json: '/search.json',
+            searchResultTemplate: '<li>\n' +
+                '                <div class="cbp_tmlabel result">\n' +
+                '                    <a href="{url}">\n' +
+                '                        <h2 id="boxoffice">{title}</h2>\n' +
+                '                        <ul>\n' +
+                '                            <li>\n' +
+                '                                {desc}' +
+                '                            </li>\n' +
+                '                        </ul>\n' +
+                '                        <br>\n' +
+                '                    </a>\n' +
+                '                </div>\n' +
+                '            </li>',
+            noResultsText: '',
+            fuzzy: false,
+            limit: 10000
+        });
+    } else {
+        SimpleJekyllSearch({
+            searchInput: document.getElementById('search-input'),
+            resultsContainer: document.getElementById('results-container'),
+            json: '/search.json',
+            searchResultTemplate: '<li><a href="{url}" style="display:block;width: 100%;padding-left:10px; padding-right:10px;"><i class="fa fa-angle-double-right fa-border" aria-hidden="true"></i>    {title}</a></li>',
+            noResultsText: '',
+            fuzzy: false
+        });
+    }
+ </script>
+
+
+<!-- Multi-Lingual -->
+
+
+<!-- Back to the top -->
+<a id="rocket" href="#top" class=""></a>
+<script type="text/javascript" src="/js/totop.js?v=1.0.0" async=""></script>
+<script type="text/javascript" src="/js/toc.js?v=1.0.0" async=""></script>
+
+
+
+<!-- Image to hack wechat -->
+<img src="/img/root/icon_wechat.png" width="0" height="0" />     
+<!-- Migrate from head to bottom, no longer block render and still work -->
+
+</body>
+
+</html>

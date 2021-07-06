@@ -1,0 +1,499 @@
+I"Б<h1 id="一须知须会">一、须知须会</h1>
+
+<ol>
+  <li>
+    <p><code class="language-plaintext highlighter-rouge">平衡因子</code>: 二叉树的 左子树 - 右子树 = 高度的差值,在平衡树中可能的值(-1 ,0 ,1)</p>
+  </li>
+  <li>
+    <p><code class="language-plaintext highlighter-rouge">平衡</code>: <code class="language-plaintext highlighter-rouge">平衡因子</code> 的绝对值小于 2 (下图第一张为平衡树, 第二张为不平衡树)</p>
+  </li>
+</ol>
+
+<ul>
+  <li>平衡树且平衡因子==0</li>
+</ul>
+
+<p><img src="https://img-blog.csdnimg.cn/20210411181706496.png" alt="在这里插入图片描述" /></p>
+
+<ul>
+  <li>非平衡树且平衡因子==-2</li>
+</ul>
+
+<p><img src="https://img-blog.csdnimg.cn/20210411181723885.png" alt="在这里插入图片描述" /></p>
+
+<ol>
+  <li><code class="language-plaintext highlighter-rouge">树的旋转</code>: 参考维基百科 <a href="https://zh.wikipedia.org/wiki/%E6%A0%91%E6%97%8B%E8%BD%AC">树的旋转</a>
+<img src="https://img-blog.csdnimg.cn/20210411181737214.png?x-oss-process=image/watermark,type_ZmFuZ3poZW5naGVpdGk,shadow_10,text_aHR0cHM6Ly9ibG9nLmNzZG4ubmV0L3FxXzI1Nzc4MzY5,size_16,color_FFFFFF,t_70" alt="在这里插入图片描述" />
+<img src="https://img-blog.csdnimg.cn/2021041118175095.gif" alt="在这里插入图片描述" /></li>
+</ol>
+
+<p>转轴的移动方向来决定它是左旋还是右旋, 本文中称转轴右移为右旋反之则是左旋</p>
+
+<ul>
+  <li><code class="language-plaintext highlighter-rouge">右旋</code>: (Q为树的根节点, P为转轴, 转轴最终被右移) 右旋时,</li>
+</ul>
+
+<div class="language-java highlighter-rouge"><div class="highlight"><pre class="highlight"><code><table class="rouge-table"><tbody><tr><td class="rouge-gutter gl"><pre class="lineno">1
+2
+3
+</pre></td><td class="rouge-code"><pre>   <span class="n">转轴的右孩子</span> <span class="o">=</span> <span class="n">树的根节点</span><span class="o">;</span>
+   <span class="n">根节点的左孩子</span> <span class="o">=</span> <span class="n">转轴的右子树根节点</span><span class="o">;</span>
+   <span class="n">树的根节点</span> <span class="o">=</span> <span class="n">转轴</span><span class="o">;</span>
+</pre></td></tr></tbody></table></code></pre></div></div>
+
+<ul>
+  <li><code class="language-plaintext highlighter-rouge">左旋</code> (P为树的根节点, Q为转轴, 转轴最终被左移) 左旋时,</li>
+</ul>
+
+<div class="language-java highlighter-rouge"><div class="highlight"><pre class="highlight"><code><table class="rouge-table"><tbody><tr><td class="rouge-gutter gl"><pre class="lineno">1
+2
+3
+</pre></td><td class="rouge-code"><pre>   <span class="n">转轴的左孩子</span> <span class="o">=</span> <span class="n">树的根节点</span><span class="o">;</span>
+   <span class="n">根节点的右孩子</span> <span class="o">=</span> <span class="n">转轴的左子树根节点</span><span class="o">;</span>
+   <span class="n">树的根节点</span> <span class="o">=</span> <span class="n">转轴</span><span class="o">;</span>
+</pre></td></tr></tbody></table></code></pre></div></div>
+
+<ul>
+  <li><code class="language-plaintext highlighter-rouge">中序不变</code> 旋转结束后二叉树的中序始终不变, <code class="language-plaintext highlighter-rouge">A&lt;P&lt;B&lt;Q&lt;C</code></li>
+</ul>
+
+<h1 id="二简介">二、简介</h1>
+
+<p>AVL树（Adelson-Velsky and Landis Tree）得名于它的发明者G. M. Adelson-Velsky和Evgenii Landis，他们在1962年的论文《An algorithm for the organization of information》中公开了这一数据结构。其实AVL就是在BST的基础上增加了一个平衡(Balance)的属性, 为的是稳固算法复杂度到 O(logn), BST算法复杂度受到树结构的影响会游离于 O(logn)~O(n) 之间, 而加入了平衡属性之后则会降低到恒定为 O(logn)</p>
+
+<h1 id="三基本特征">三、基本特征</h1>
+
+<ul>
+  <li>首先是 BST 的一种( BST 有的它都有)</li>
+  <li>是平衡二叉树(根节点的平衡因子绝对值不大于1)</li>
+  <li>左右子树也是平衡二叉树</li>
+</ul>
+
+<h1 id="四算法描述">四、算法描述</h1>
+
+<p>插入, 删除之后<code class="language-plaintext highlighter-rouge">是否需要平衡</code>这个树? <code class="language-plaintext highlighter-rouge">如何平衡</code>?</p>
+
+<h2 id="高度">高度</h2>
+
+<p>为了判断一个树是否平衡? 引入了高度这个概念, 记录从树的最后一层到当前层数的距离
+<img src="https://img-blog.csdnimg.cn/2021041118181410.png?x-oss-process=image/watermark,type_ZmFuZ3poZW5naGVpdGk,shadow_10,text_aHR0cHM6Ly9ibG9nLmNzZG4ubmV0L3FxXzI1Nzc4MzY5,size_16,color_FFFFFF,t_70" alt="在这里插入图片描述" /></p>
+
+<p>所以我们的节点(Node)结构定义如下</p>
+
+<div class="language-java highlighter-rouge"><div class="highlight"><pre class="highlight"><code><table class="rouge-table"><tbody><tr><td class="rouge-gutter gl"><pre class="lineno">1
+2
+3
+4
+5
+6
+</pre></td><td class="rouge-code"><pre>    <span class="kd">public</span> <span class="kd">static</span> <span class="kd">class</span> <span class="nc">Node</span> <span class="o">{</span>
+        <span class="kd">private</span> <span class="kt">int</span> <span class="n">data</span><span class="o">;</span>
+        <span class="kd">private</span> <span class="kt">int</span> <span class="n">height</span><span class="o">;</span>
+        <span class="kd">private</span> <span class="nc">Node</span> <span class="n">left</span><span class="o">;</span>
+        <span class="kd">private</span> <span class="nc">Node</span> <span class="n">right</span><span class="o">;</span>
+    <span class="o">}</span>
+</pre></td></tr></tbody></table></code></pre></div></div>
+
+<h2 id="旋转">旋转</h2>
+
+<p>为了解决树的平衡问题引入了树的旋转</p>
+
+<p><img src="https://img-blog.csdnimg.cn/20210411181830108.png?x-oss-process=image/watermark,type_ZmFuZ3poZW5naGVpdGk,shadow_10,text_aHR0cHM6Ly9ibG9nLmNzZG4ubmV0L3FxXzI1Nzc4MzY5,size_16,color_FFFFFF,t_70" alt="在这里插入图片描述" /></p>
+
+<p>A, B, C, D代表 <code class="language-plaintext highlighter-rouge">子节点</code>, <code class="language-plaintext highlighter-rouge">子树</code> 或者 <code class="language-plaintext highlighter-rouge">null</code></p>
+
+<ul>
+  <li><code class="language-plaintext highlighter-rouge">左左</code> 左节点的左节点/子树导致的不平衡, 需要<code class="language-plaintext highlighter-rouge">右旋</code></li>
+</ul>
+
+<div class="language-java highlighter-rouge"><div class="highlight"><pre class="highlight"><code><table class="rouge-table"><tbody><tr><td class="rouge-gutter gl"><pre class="lineno">1
+2
+3
+4
+5
+6
+7
+8
+9
+10
+</pre></td><td class="rouge-code"><pre>    <span class="kd">private</span> <span class="nc">Node</span> <span class="nf">rotateRight</span><span class="o">(</span><span class="nc">Node</span> <span class="n">root</span><span class="o">)</span> <span class="o">{</span>
+
+        <span class="nc">Node</span> <span class="n">t</span> <span class="o">=</span> <span class="n">root</span><span class="o">.</span><span class="na">left</span><span class="o">;</span>
+        <span class="n">root</span><span class="o">.</span><span class="na">left</span> <span class="o">=</span> <span class="n">t</span><span class="o">.</span><span class="na">right</span><span class="o">;</span>
+        <span class="n">t</span><span class="o">.</span><span class="na">right</span> <span class="o">=</span> <span class="n">root</span><span class="o">;</span>
+
+        <span class="n">root</span><span class="o">.</span><span class="na">height</span> <span class="o">=</span> <span class="nc">Math</span><span class="o">.</span><span class="na">max</span><span class="o">(</span><span class="n">height</span><span class="o">(</span><span class="n">root</span><span class="o">.</span><span class="na">left</span><span class="o">),</span> <span class="n">height</span><span class="o">(</span><span class="n">root</span><span class="o">.</span><span class="na">right</span><span class="o">))</span> <span class="o">+</span> <span class="mi">1</span><span class="o">;</span>
+        <span class="n">t</span><span class="o">.</span><span class="na">height</span> <span class="o">=</span> <span class="nc">Math</span><span class="o">.</span><span class="na">max</span><span class="o">(</span><span class="n">height</span><span class="o">(</span><span class="n">t</span><span class="o">.</span><span class="na">left</span><span class="o">),</span> <span class="n">height</span><span class="o">(</span><span class="n">t</span><span class="o">.</span><span class="na">right</span><span class="o">))</span> <span class="o">+</span> <span class="mi">1</span><span class="o">;</span>
+        <span class="k">return</span> <span class="n">t</span><span class="o">;</span>
+    <span class="o">}</span>
+</pre></td></tr></tbody></table></code></pre></div></div>
+
+<p><code class="language-plaintext highlighter-rouge">右右</code> 右节点的右节点/子树导致的不平衡, 需要<code class="language-plaintext highlighter-rouge">左旋</code></p>
+
+<div class="language-java highlighter-rouge"><div class="highlight"><pre class="highlight"><code><table class="rouge-table"><tbody><tr><td class="rouge-gutter gl"><pre class="lineno">1
+2
+3
+4
+5
+6
+7
+8
+9
+10
+</pre></td><td class="rouge-code"><pre>    <span class="kd">private</span> <span class="nc">Node</span> <span class="nf">rotateLeft</span><span class="o">(</span><span class="nc">Node</span> <span class="n">root</span><span class="o">)</span> <span class="o">{</span>
+
+        <span class="nc">Node</span> <span class="n">t</span> <span class="o">=</span> <span class="n">root</span><span class="o">.</span><span class="na">right</span><span class="o">;</span>
+        <span class="n">root</span><span class="o">.</span><span class="na">right</span> <span class="o">=</span> <span class="n">t</span><span class="o">.</span><span class="na">left</span><span class="o">;</span>
+        <span class="n">t</span><span class="o">.</span><span class="na">left</span> <span class="o">=</span> <span class="n">root</span><span class="o">;</span>
+
+        <span class="n">root</span><span class="o">.</span><span class="na">height</span> <span class="o">=</span> <span class="nc">Math</span><span class="o">.</span><span class="na">max</span><span class="o">(</span><span class="n">height</span><span class="o">(</span><span class="n">root</span><span class="o">.</span><span class="na">left</span><span class="o">),</span> <span class="n">height</span><span class="o">(</span><span class="n">root</span><span class="o">.</span><span class="na">right</span><span class="o">))</span> <span class="o">+</span> <span class="mi">1</span><span class="o">;</span>
+        <span class="n">t</span><span class="o">.</span><span class="na">height</span> <span class="o">=</span> <span class="nc">Math</span><span class="o">.</span><span class="na">max</span><span class="o">(</span><span class="n">height</span><span class="o">(</span><span class="n">t</span><span class="o">.</span><span class="na">left</span><span class="o">),</span> <span class="n">height</span><span class="o">(</span><span class="n">t</span><span class="o">.</span><span class="na">right</span><span class="o">))</span> <span class="o">+</span> <span class="mi">1</span><span class="o">;</span>
+        <span class="k">return</span> <span class="n">t</span><span class="o">;</span>
+    <span class="o">}</span>
+</pre></td></tr></tbody></table></code></pre></div></div>
+
+<p><code class="language-plaintext highlighter-rouge">左右</code> 左节点的右节点/子树导致的不平衡, 需要<code class="language-plaintext highlighter-rouge">左旋</code>, <code class="language-plaintext highlighter-rouge">右旋</code></p>
+
+<div class="language-java highlighter-rouge"><div class="highlight"><pre class="highlight"><code><table class="rouge-table"><tbody><tr><td class="rouge-gutter gl"><pre class="lineno">1
+2
+3
+4
+</pre></td><td class="rouge-code"><pre>    <span class="kd">private</span> <span class="nc">Node</span> <span class="nf">rotateLeftRight</span><span class="o">(</span><span class="nc">Node</span> <span class="n">root</span><span class="o">)</span> <span class="o">{</span>
+        <span class="n">root</span><span class="o">.</span><span class="na">left</span> <span class="o">=</span> <span class="n">rotateLeft</span><span class="o">(</span><span class="n">root</span><span class="o">.</span><span class="na">left</span><span class="o">);</span>
+        <span class="k">return</span> <span class="nf">rotateRight</span><span class="o">(</span><span class="n">root</span><span class="o">);</span>
+    <span class="o">}</span>
+</pre></td></tr></tbody></table></code></pre></div></div>
+
+<p><code class="language-plaintext highlighter-rouge">右左</code> 右节点的左节点/子树导致的不平衡, 需要<code class="language-plaintext highlighter-rouge">右旋</code>, <code class="language-plaintext highlighter-rouge">左旋</code></p>
+
+<div class="language-java highlighter-rouge"><div class="highlight"><pre class="highlight"><code><table class="rouge-table"><tbody><tr><td class="rouge-gutter gl"><pre class="lineno">1
+2
+3
+4
+</pre></td><td class="rouge-code"><pre>    <span class="kd">private</span> <span class="nc">Node</span> <span class="nf">rotateRightLeft</span><span class="o">(</span><span class="nc">Node</span> <span class="n">root</span><span class="o">)</span> <span class="o">{</span>
+        <span class="n">root</span><span class="o">.</span><span class="na">right</span> <span class="o">=</span> <span class="n">rotateRight</span><span class="o">(</span><span class="n">root</span><span class="o">.</span><span class="na">right</span><span class="o">);</span>
+        <span class="k">return</span> <span class="nf">rotateLeft</span><span class="o">(</span><span class="n">root</span><span class="o">);</span>
+    <span class="o">}</span>
+</pre></td></tr></tbody></table></code></pre></div></div>
+
+<h2 id="查找">查找</h2>
+<p>和 BST 写法一致</p>
+
+<ul>
+  <li>先查找根节点,</li>
+  <li><code class="language-plaintext highlighter-rouge">&lt; 根</code>, 则找左子树;</li>
+  <li><code class="language-plaintext highlighter-rouge">&gt; 根</code>, 则找右子树;</li>
+  <li><code class="language-plaintext highlighter-rouge">= 根</code>, 则找到返回;</li>
+</ul>
+
+<div class="language-java highlighter-rouge"><div class="highlight"><pre class="highlight"><code><table class="rouge-table"><tbody><tr><td class="rouge-gutter gl"><pre class="lineno">1
+2
+3
+4
+5
+6
+7
+8
+9
+10
+11
+12
+13
+14
+15
+16
+17
+18
+</pre></td><td class="rouge-code"><pre>    <span class="kd">public</span> <span class="nc">Node</span> <span class="nf">search</span><span class="o">(</span><span class="kt">int</span> <span class="n">num</span><span class="o">)</span> <span class="o">{</span>
+        <span class="k">return</span> <span class="nf">doSearch</span><span class="o">(</span><span class="n">root</span><span class="o">,</span> <span class="n">num</span><span class="o">);</span>
+    <span class="o">}</span>
+
+    <span class="kd">private</span> <span class="nc">Node</span> <span class="nf">doSearch</span><span class="o">(</span><span class="nc">Node</span> <span class="n">root</span><span class="o">,</span> <span class="kt">int</span> <span class="n">num</span><span class="o">)</span> <span class="o">{</span>
+        <span class="k">if</span> <span class="o">(</span><span class="n">root</span> <span class="o">==</span> <span class="kc">null</span><span class="o">)</span> <span class="o">{</span>
+            <span class="k">return</span> <span class="kc">null</span><span class="o">;</span>
+        <span class="o">}</span>
+
+        <span class="k">if</span> <span class="o">(</span><span class="n">root</span><span class="o">.</span><span class="na">data</span> <span class="o">==</span> <span class="n">num</span><span class="o">)</span> <span class="o">{</span>
+            <span class="k">return</span> <span class="n">root</span><span class="o">;</span>
+        <span class="o">}</span> <span class="k">else</span> <span class="k">if</span> <span class="o">(</span><span class="n">root</span><span class="o">.</span><span class="na">data</span> <span class="o">&gt;</span> <span class="n">num</span><span class="o">)</span> <span class="o">{</span>
+            <span class="k">return</span> <span class="nf">doSearch</span><span class="o">(</span><span class="n">root</span><span class="o">.</span><span class="na">left</span><span class="o">,</span> <span class="n">num</span><span class="o">);</span>
+        <span class="o">}</span> <span class="k">else</span> <span class="k">if</span> <span class="o">(</span><span class="n">root</span><span class="o">.</span><span class="na">data</span> <span class="o">&lt;</span> <span class="n">num</span><span class="o">)</span> <span class="o">{</span>
+            <span class="k">return</span> <span class="nf">doSearch</span><span class="o">(</span><span class="n">root</span><span class="o">.</span><span class="na">right</span><span class="o">,</span> <span class="n">num</span><span class="o">);</span>
+        <span class="o">}</span>
+        <span class="k">return</span> <span class="kc">null</span><span class="o">;</span>
+    <span class="o">}</span>
+</pre></td></tr></tbody></table></code></pre></div></div>
+
+<p>算法时间复杂度 对于 n 个节点的树
+<code class="language-plaintext highlighter-rouge">f(n) = 需要查找的次数 = 二叉树的层数 ~= O(logn)</code>
+<img src="https://img-blog.csdnimg.cn/20210411181848950.gif" alt="在这里插入图片描述" /></p>
+
+<h2 id="插入">插入</h2>
+
+<ul>
+  <li>比对根节点, 小于就往左节点比对, 大于就往右节点比对</li>
+  <li>直到需要比对的节点为空, 而这个空就是你需要插入的位置</li>
+  <li>判断树是否平衡, 否, 则需要判断旋转类型并进行旋转变换</li>
+</ul>
+
+<div class="language-java highlighter-rouge"><div class="highlight"><pre class="highlight"><code><table class="rouge-table"><tbody><tr><td class="rouge-gutter gl"><pre class="lineno">1
+2
+3
+4
+5
+6
+7
+8
+9
+10
+11
+12
+13
+14
+15
+16
+17
+18
+19
+20
+21
+22
+23
+24
+25
+26
+27
+28
+29
+30
+31
+32
+33
+34
+35
+36
+37
+38
+39
+40
+41
+42
+43
+</pre></td><td class="rouge-code"><pre>    <span class="kd">public</span> <span class="kt">void</span> <span class="nf">insert</span><span class="o">(</span><span class="kt">int</span> <span class="n">num</span><span class="o">)</span> <span class="o">{</span>
+        <span class="n">root</span> <span class="o">=</span> <span class="n">doInsert</span><span class="o">(</span><span class="n">root</span><span class="o">,</span> <span class="n">num</span><span class="o">);</span>
+    <span class="o">}</span>
+
+    <span class="kd">private</span> <span class="nc">Node</span> <span class="nf">doInsert</span><span class="o">(</span><span class="nc">Node</span> <span class="n">parent</span><span class="o">,</span> <span class="kt">int</span> <span class="n">num</span><span class="o">)</span> <span class="o">{</span>
+        <span class="k">if</span> <span class="o">(</span><span class="n">parent</span> <span class="o">==</span> <span class="kc">null</span><span class="o">)</span> <span class="o">{</span>
+            <span class="n">parent</span> <span class="o">=</span> <span class="k">new</span> <span class="nc">Node</span><span class="o">(</span><span class="n">num</span><span class="o">);</span>
+        <span class="o">}</span> <span class="k">else</span> <span class="k">if</span> <span class="o">(</span><span class="n">num</span> <span class="o">&gt;</span> <span class="n">parent</span><span class="o">.</span><span class="na">data</span><span class="o">)</span> <span class="o">{</span>
+            <span class="n">parent</span><span class="o">.</span><span class="na">right</span> <span class="o">=</span> <span class="n">doInsert</span><span class="o">(</span><span class="n">parent</span><span class="o">.</span><span class="na">right</span><span class="o">,</span> <span class="n">num</span><span class="o">);</span>
+
+            <span class="c1">// 判断树是否失衡</span>
+            <span class="k">if</span> <span class="o">(</span><span class="n">height</span><span class="o">(</span><span class="n">parent</span><span class="o">.</span><span class="na">right</span><span class="o">)</span> <span class="o">-</span> <span class="n">height</span><span class="o">(</span><span class="n">parent</span><span class="o">.</span><span class="na">left</span><span class="o">)</span> <span class="o">&gt;=</span> <span class="mi">2</span><span class="o">)</span> <span class="o">{</span>
+                <span class="c1">// '右右'</span>
+                <span class="k">if</span> <span class="o">(</span><span class="n">num</span> <span class="o">&gt;</span> <span class="n">parent</span><span class="o">.</span><span class="na">right</span><span class="o">.</span><span class="na">data</span><span class="o">)</span> <span class="o">{</span>
+                    <span class="n">parent</span> <span class="o">=</span> <span class="n">rotateLeft</span><span class="o">(</span><span class="n">parent</span><span class="o">);</span>
+                <span class="o">}</span>
+                <span class="c1">// '右左'</span>
+                <span class="k">else</span> <span class="o">{</span>
+                    <span class="n">parent</span> <span class="o">=</span> <span class="n">rotateRightLeft</span><span class="o">(</span><span class="n">parent</span><span class="o">);</span>
+                <span class="o">}</span>
+            <span class="o">}</span>
+
+        <span class="o">}</span> <span class="k">else</span> <span class="k">if</span> <span class="o">(</span><span class="n">num</span> <span class="o">&lt;</span> <span class="n">parent</span><span class="o">.</span><span class="na">data</span><span class="o">)</span> <span class="o">{</span>
+            <span class="n">parent</span><span class="o">.</span><span class="na">left</span> <span class="o">=</span> <span class="n">doInsert</span><span class="o">(</span><span class="n">parent</span><span class="o">.</span><span class="na">left</span><span class="o">,</span> <span class="n">num</span><span class="o">);</span>
+
+            <span class="c1">// 判断树是否失衡</span>
+            <span class="k">if</span> <span class="o">(</span><span class="n">height</span><span class="o">(</span><span class="n">parent</span><span class="o">.</span><span class="na">left</span><span class="o">)</span> <span class="o">-</span> <span class="n">height</span><span class="o">(</span><span class="n">parent</span><span class="o">.</span><span class="na">right</span><span class="o">)</span> <span class="o">&gt;=</span> <span class="mi">2</span><span class="o">)</span> <span class="o">{</span>
+                <span class="c1">// '左左'</span>
+                <span class="k">if</span> <span class="o">(</span><span class="n">num</span> <span class="o">&lt;</span> <span class="n">parent</span><span class="o">.</span><span class="na">left</span><span class="o">.</span><span class="na">data</span><span class="o">)</span> <span class="o">{</span>
+                    <span class="n">parent</span> <span class="o">=</span> <span class="n">rotateRight</span><span class="o">(</span><span class="n">parent</span><span class="o">);</span>
+                <span class="o">}</span>
+                <span class="c1">// '左右'</span>
+                <span class="k">else</span> <span class="o">{</span>
+                    <span class="n">parent</span> <span class="o">=</span> <span class="n">rotateLeftRight</span><span class="o">(</span><span class="n">parent</span><span class="o">);</span>
+                <span class="o">}</span>
+            <span class="o">}</span>
+        <span class="o">}</span>
+
+        <span class="c1">// 重新计算旋转之后的高度</span>
+        <span class="n">parent</span><span class="o">.</span><span class="na">height</span> <span class="o">=</span> <span class="nc">Math</span><span class="o">.</span><span class="na">max</span><span class="o">(</span><span class="n">height</span><span class="o">(</span><span class="n">parent</span><span class="o">.</span><span class="na">left</span><span class="o">),</span> <span class="n">height</span><span class="o">(</span><span class="n">parent</span><span class="o">.</span><span class="na">right</span><span class="o">))</span> <span class="o">+</span> <span class="mi">1</span><span class="o">;</span>
+
+        <span class="k">return</span> <span class="n">parent</span><span class="o">;</span>
+    <span class="o">}</span>
+</pre></td></tr></tbody></table></code></pre></div></div>
+
+<p>算法时间复杂度:
+<code class="language-plaintext highlighter-rouge">f(n) = 查找插入点的比对次数logn + 一次旋转(单旋或者双旋) + 判断是否平衡 ~= O(logn)</code></p>
+<blockquote>
+  <p>旋转的时间复杂度 O(1) 最多需要单旋或者双旋, 另外, 判断是否平衡的时间复杂度也是 O(1) ( 主要得益于 Node 使用了 height 记录高度, 典型的空间换时间), 这样总得算法复杂度还是 比对的次数
+<img src="https://img-blog.csdnimg.cn/20210411181902369.gif" alt="在这里插入图片描述" /></p>
+</blockquote>
+
+<h2 id="删除">删除</h2>
+
+<ul>
+  <li>先查找到目标节点</li>
+  <li>若: 目标左子树为空, 则, 用目标右子树根节点替换目标</li>
+  <li>若: 目标右子树为空, 则, 用目标左子树根节点替换目标</li>
+  <li>若: 都不为空, 则, 选取<code class="language-plaintext highlighter-rouge">左子树值最大节点</code>或者<code class="language-plaintext highlighter-rouge">右子树最小节点</code>替换目标, 并, 递归删除替换目标的节点</li>
+  <li>判断树是否平衡, 否, 则需要判断旋转类型并进行旋转变换</li>
+</ul>
+
+<div class="language-java highlighter-rouge"><div class="highlight"><pre class="highlight"><code><table class="rouge-table"><tbody><tr><td class="rouge-gutter gl"><pre class="lineno">1
+2
+3
+4
+5
+6
+7
+8
+9
+10
+11
+12
+13
+14
+15
+16
+17
+18
+19
+20
+21
+22
+23
+24
+25
+26
+27
+28
+29
+30
+31
+32
+33
+34
+35
+36
+37
+38
+39
+40
+41
+42
+43
+44
+45
+46
+47
+48
+49
+50
+51
+52
+53
+54
+55
+56
+57
+58
+59
+60
+61
+62
+63
+64
+65
+66
+67
+68
+69
+70
+71
+</pre></td><td class="rouge-code"><pre>    <span class="kd">public</span> <span class="kt">void</span> <span class="nf">remove</span><span class="o">(</span><span class="kt">int</span> <span class="n">num</span><span class="o">)</span> <span class="o">{</span>
+        <span class="n">root</span> <span class="o">=</span> <span class="n">doRemove</span><span class="o">(</span><span class="n">root</span><span class="o">,</span> <span class="n">num</span><span class="o">);</span>
+    <span class="o">}</span>
+
+    <span class="kd">private</span> <span class="nc">Node</span> <span class="nf">doRemove</span><span class="o">(</span><span class="nc">Node</span> <span class="n">parent</span><span class="o">,</span> <span class="kt">int</span> <span class="n">num</span><span class="o">)</span> <span class="o">{</span>
+
+        <span class="k">if</span> <span class="o">(</span><span class="n">parent</span> <span class="o">==</span> <span class="kc">null</span><span class="o">)</span> <span class="o">{</span>
+            <span class="k">return</span> <span class="kc">null</span><span class="o">;</span>
+        <span class="o">}</span>
+
+        <span class="k">if</span> <span class="o">(</span><span class="n">num</span> <span class="o">&gt;</span> <span class="n">parent</span><span class="o">.</span><span class="na">data</span><span class="o">)</span> <span class="o">{</span>
+            <span class="n">parent</span><span class="o">.</span><span class="na">right</span> <span class="o">=</span> <span class="n">doRemove</span><span class="o">(</span><span class="n">parent</span><span class="o">.</span><span class="na">right</span><span class="o">,</span> <span class="n">num</span><span class="o">);</span>
+
+            <span class="c1">// 判断树是否平衡</span>
+            <span class="k">if</span> <span class="o">(</span><span class="n">height</span><span class="o">(</span><span class="n">parent</span><span class="o">.</span><span class="na">left</span><span class="o">)</span> <span class="o">-</span> <span class="n">height</span><span class="o">(</span><span class="n">parent</span><span class="o">.</span><span class="na">right</span><span class="o">)</span> <span class="o">&gt;=</span> <span class="mi">2</span><span class="o">)</span> <span class="o">{</span>
+                <span class="nc">Node</span> <span class="n">t</span> <span class="o">=</span> <span class="n">parent</span><span class="o">.</span><span class="na">right</span><span class="o">;</span>
+                <span class="c1">// `右左`</span>
+                <span class="k">if</span> <span class="o">(</span><span class="n">t</span> <span class="o">==</span> <span class="kc">null</span> <span class="o">||</span> <span class="n">height</span><span class="o">(</span><span class="n">t</span><span class="o">.</span><span class="na">right</span><span class="o">)</span> <span class="o">&lt;</span> <span class="n">height</span><span class="o">(</span><span class="n">t</span><span class="o">.</span><span class="na">left</span><span class="o">))</span> <span class="o">{</span>
+                    <span class="n">parent</span> <span class="o">=</span> <span class="n">rotateRightLeft</span><span class="o">(</span><span class="n">parent</span><span class="o">);</span>
+                <span class="o">}</span>
+                <span class="c1">// `右右`</span>
+                <span class="k">else</span> <span class="o">{</span>
+                    <span class="n">parent</span> <span class="o">=</span> <span class="n">rotateLeft</span><span class="o">(</span><span class="n">parent</span><span class="o">);</span>
+                <span class="o">}</span>
+            <span class="o">}</span>
+
+        <span class="o">}</span> <span class="k">else</span> <span class="k">if</span> <span class="o">(</span><span class="n">num</span> <span class="o">&lt;</span> <span class="n">parent</span><span class="o">.</span><span class="na">data</span><span class="o">)</span> <span class="o">{</span>
+            <span class="n">parent</span><span class="o">.</span><span class="na">left</span> <span class="o">=</span> <span class="n">doRemove</span><span class="o">(</span><span class="n">parent</span><span class="o">.</span><span class="na">left</span><span class="o">,</span> <span class="n">num</span><span class="o">);</span>
+
+            <span class="c1">// 判断树是否平衡</span>
+            <span class="k">if</span> <span class="o">(</span><span class="n">height</span><span class="o">(</span><span class="n">parent</span><span class="o">.</span><span class="na">right</span><span class="o">)</span> <span class="o">-</span> <span class="n">height</span><span class="o">(</span><span class="n">parent</span><span class="o">.</span><span class="na">left</span><span class="o">)</span> <span class="o">&gt;=</span> <span class="mi">2</span><span class="o">)</span> <span class="o">{</span>
+                <span class="nc">Node</span> <span class="n">t</span> <span class="o">=</span> <span class="n">parent</span><span class="o">.</span><span class="na">left</span><span class="o">;</span>
+                <span class="c1">// `左右`</span>
+                <span class="k">if</span> <span class="o">(</span><span class="n">t</span> <span class="o">==</span> <span class="kc">null</span> <span class="o">||</span> <span class="n">height</span><span class="o">(</span><span class="n">t</span><span class="o">.</span><span class="na">left</span><span class="o">)</span> <span class="o">&lt;</span> <span class="n">height</span><span class="o">(</span><span class="n">t</span><span class="o">.</span><span class="na">right</span><span class="o">))</span> <span class="o">{</span>
+                    <span class="n">parent</span> <span class="o">=</span> <span class="n">rotateLeftRight</span><span class="o">(</span><span class="n">parent</span><span class="o">);</span>
+                <span class="o">}</span>
+                <span class="c1">// `左左`</span>
+                <span class="k">else</span> <span class="o">{</span>
+                    <span class="n">parent</span> <span class="o">=</span> <span class="n">rotateRight</span><span class="o">(</span><span class="n">parent</span><span class="o">);</span>
+                <span class="o">}</span>
+            <span class="o">}</span>
+        <span class="o">}</span>
+        <span class="c1">// 找出左子树最大的值或者右子树最小的值替换, 这里选择前者来实现</span>
+        <span class="k">else</span> <span class="nf">if</span> <span class="o">(</span><span class="n">parent</span><span class="o">.</span><span class="na">left</span> <span class="o">!=</span> <span class="kc">null</span> <span class="o">&amp;&amp;</span> <span class="n">parent</span><span class="o">.</span><span class="na">right</span> <span class="o">!=</span> <span class="kc">null</span><span class="o">)</span> <span class="o">{</span>
+
+            <span class="c1">// 找到左子树最大值替换</span>
+            <span class="n">parent</span><span class="o">.</span><span class="na">data</span> <span class="o">=</span> <span class="n">findMax</span><span class="o">(</span><span class="n">parent</span><span class="o">.</span><span class="na">left</span><span class="o">).</span><span class="na">data</span><span class="o">;</span>
+            <span class="c1">// 删除左子树中用于替换的节点</span>
+            <span class="n">parent</span><span class="o">.</span><span class="na">left</span> <span class="o">=</span> <span class="n">doRemove</span><span class="o">(</span><span class="n">parent</span><span class="o">.</span><span class="na">left</span><span class="o">,</span> <span class="n">parent</span><span class="o">.</span><span class="na">data</span><span class="o">);</span>
+        <span class="o">}</span>
+        <span class="c1">// 左子树为空, 直接用右子树根节点替换被删除的节点</span>
+        <span class="k">else</span> <span class="nf">if</span> <span class="o">(</span><span class="n">parent</span><span class="o">.</span><span class="na">left</span> <span class="o">==</span> <span class="kc">null</span><span class="o">)</span> <span class="o">{</span>
+            <span class="n">parent</span> <span class="o">=</span> <span class="n">parent</span><span class="o">.</span><span class="na">right</span><span class="o">;</span>
+        <span class="o">}</span>
+        <span class="c1">// 右子树为空, 直接用左子树根节点替换被删除的节点</span>
+        <span class="k">else</span> <span class="nf">if</span> <span class="o">(</span><span class="n">parent</span><span class="o">.</span><span class="na">right</span> <span class="o">==</span> <span class="kc">null</span><span class="o">)</span> <span class="o">{</span>
+            <span class="n">parent</span> <span class="o">=</span> <span class="n">parent</span><span class="o">.</span><span class="na">left</span><span class="o">;</span>
+        <span class="o">}</span>
+
+        <span class="k">return</span> <span class="n">parent</span><span class="o">;</span>
+    <span class="o">}</span>
+
+    <span class="kd">private</span> <span class="nc">Node</span> <span class="nf">findMax</span><span class="o">(</span><span class="nc">Node</span> <span class="n">node</span><span class="o">)</span> <span class="o">{</span>
+        <span class="k">if</span> <span class="o">(</span><span class="n">node</span> <span class="o">==</span> <span class="kc">null</span><span class="o">)</span> <span class="o">{</span>
+            <span class="k">return</span> <span class="n">node</span><span class="o">;</span>
+        <span class="o">}</span>
+        <span class="k">while</span> <span class="o">(</span><span class="n">node</span><span class="o">.</span><span class="na">right</span> <span class="o">!=</span> <span class="kc">null</span><span class="o">)</span> <span class="o">{</span>
+            <span class="n">node</span> <span class="o">=</span> <span class="n">node</span><span class="o">.</span><span class="na">right</span><span class="o">;</span>
+        <span class="o">}</span>
+        <span class="k">return</span> <span class="n">node</span><span class="o">;</span>
+    <span class="o">}</span>
+</pre></td></tr></tbody></table></code></pre></div></div>
+
+<p>算法复杂度:
+<code class="language-plaintext highlighter-rouge">f(n) = 需要比对的次数 = 查找到目标比对次数logn + 旋转次数logn  = O(2logn)</code></p>
+<blockquote>
+  <p>最多需要 logn 次旋转, 来确保平衡, 所以最终的时间复杂度是 O(2logn)</p>
+</blockquote>
+
+<p><img src="https://img-blog.csdnimg.cn/20210411181918302.gif" alt="在这里插入图片描述" /></p>
+
+<h1 id="五完整代码">五、完整代码</h1>
+
+<p>就一个AVLTree.java文件搞定, 里面还附有main()函数测试功能, 可直接运行<a href="https://github.com/summer-zhoujie/ZJPlayGround/blob/master/app/src/main/java/com/example/playground/binarytree/AVLTree.java">github传送门</a></p>
+:ET
