@@ -1,0 +1,39 @@
+I"G<p><a href="https://github.com/summer-zhoujie/ZJUtils">github地址</a></p>
+
+<h1 id="1简介">1.简介</h1>
+<p>身份证本地工具类</p>
+
+<ol>
+  <li>身份证号码是否有效</li>
+  <li>性别</li>
+  <li>年龄</li>
+</ol>
+
+<h1 id="2是否是格式正确的身份证--本地校验-">2.是否是格式正确的身份证 ( 本地校验 )</h1>
+<div class="language-java highlighter-rouge"><div class="highlight"><pre class="highlight"><code><table class="rouge-table"><tbody><tr><td class="rouge-gutter gl"><pre class="lineno">1
+</pre></td><td class="rouge-code"><pre><span class="kd">public</span> <span class="kd">static</span> <span class="kt">boolean</span> <span class="nf">isIdCardValid</span><span class="o">(</span><span class="nc">String</span> <span class="nc">IDNumber</span><span class="o">)</span>
+</pre></td></tr></tbody></table></code></pre></div></div>
+<p><code class="language-plaintext highlighter-rouge">@param</code> IDNumber 输入身份证号码
+<code class="language-plaintext highlighter-rouge">@return</code> true 格式正确</p>
+
+<h1 id="3判断用户的性别">3.判断用户的性别</h1>
+<div class="language-java highlighter-rouge"><div class="highlight"><pre class="highlight"><code><table class="rouge-table"><tbody><tr><td class="rouge-gutter gl"><pre class="lineno">1
+</pre></td><td class="rouge-code"><pre><span class="kd">public</span> <span class="kd">static</span> <span class="kt">int</span> <span class="nf">getGender</span><span class="o">(</span><span class="nc">String</span> <span class="n">idCard</span><span class="o">)</span>
+</pre></td></tr></tbody></table></code></pre></div></div>
+<p><code class="language-plaintext highlighter-rouge">@param</code> idCard 身份证号码
+<code class="language-plaintext highlighter-rouge">@return</code> -1: 失败, 1:男性, 2:女性</p>
+
+<h1 id="4根据身份证号码计算年龄">4.根据身份证号码计算年龄</h1>
+<div class="language-java highlighter-rouge"><div class="highlight"><pre class="highlight"><code><table class="rouge-table"><tbody><tr><td class="rouge-gutter gl"><pre class="lineno">1
+</pre></td><td class="rouge-code"><pre><span class="kd">public</span> <span class="kd">static</span> <span class="kt">int</span> <span class="nf">getAge</span><span class="o">(</span><span class="nc">String</span> <span class="n">idNumber</span><span class="o">)</span>
+</pre></td></tr></tbody></table></code></pre></div></div>
+<p><code class="language-plaintext highlighter-rouge">@param</code> idNumber 考虑到了15位身份证，但不一定存在
+<code class="language-plaintext highlighter-rouge">@return</code> 默认返回-1代表计算失败</p>
+
+<h1 id="5根据生日计算年龄">5.根据生日计算年龄</h1>
+<div class="language-java highlighter-rouge"><div class="highlight"><pre class="highlight"><code><table class="rouge-table"><tbody><tr><td class="rouge-gutter gl"><pre class="lineno">1
+</pre></td><td class="rouge-code"><pre><span class="kd">private</span> <span class="kd">static</span> <span class="kt">int</span> <span class="nf">getAgeByDate</span><span class="o">(</span><span class="nc">Date</span> <span class="n">birthday</span><span class="o">)</span>
+</pre></td></tr></tbody></table></code></pre></div></div>
+<p><code class="language-plaintext highlighter-rouge">@param</code> birthday 生日
+<code class="language-plaintext highlighter-rouge">@return</code> 年龄</p>
+:ET

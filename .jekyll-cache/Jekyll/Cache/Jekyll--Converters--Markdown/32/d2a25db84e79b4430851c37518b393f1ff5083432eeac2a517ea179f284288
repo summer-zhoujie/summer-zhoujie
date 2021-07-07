@@ -1,0 +1,49 @@
+I"B<p><a href="https://github.com/summer-zhoujie/ZJUtils">github地址</a></p>
+
+<h1 id="1简介">1.简介</h1>
+<p>log工具
+先需要初始化, 建议在 {@link Application#onCreate()} 方法中调用 init 方法进行初始化</p>
+<div class="language-java highlighter-rouge"><div class="highlight"><pre class="highlight"><code><table class="rouge-table"><tbody><tr><td class="rouge-gutter gl"><pre class="lineno">1
+</pre></td><td class="rouge-code"><pre><span class="n">init</span><span class="o">(</span><span class="kc">true</span><span class="o">,</span> <span class="no">TAG</span><span class="o">);</span>
+</pre></td></tr></tbody></table></code></pre></div></div>
+<p>接下来就可以打印log, 目前支持3种</p>
+<div class="language-java highlighter-rouge"><div class="highlight"><pre class="highlight"><code><table class="rouge-table"><tbody><tr><td class="rouge-gutter gl"><pre class="lineno">1
+2
+3
+</pre></td><td class="rouge-code"><pre><span class="n">e</span><span class="o">();</span>
+<span class="n">i</span><span class="o">();</span>
+<span class="n">d</span><span class="o">();</span>
+</pre></td></tr></tbody></table></code></pre></div></div>
+
+<h1 id="2初始化">2.初始化</h1>
+<div class="language-java highlighter-rouge"><div class="highlight"><pre class="highlight"><code><table class="rouge-table"><tbody><tr><td class="rouge-gutter gl"><pre class="lineno">1
+</pre></td><td class="rouge-code"><pre><span class="kd">public</span> <span class="kd">static</span> <span class="kt">void</span> <span class="nf">init</span><span class="o">(</span><span class="nc">Boolean</span> <span class="n">enable</span><span class="o">,</span> <span class="nc">String</span> <span class="n">tag</span><span class="o">)</span>
+</pre></td></tr></tbody></table></code></pre></div></div>
+<p>@param enable 是否使能
+@param tag    TAG</p>
+
+<h1 id="3使用">3.使用</h1>
+<div class="language-java highlighter-rouge"><div class="highlight"><pre class="highlight"><code><table class="rouge-table"><tbody><tr><td class="rouge-gutter gl"><pre class="lineno">1
+2
+3
+4
+5
+6
+7
+8
+9
+10
+11
+</pre></td><td class="rouge-code"><pre><span class="c1">//打印 D 级别的 Log</span>
+<span class="kd">public</span> <span class="kd">static</span> <span class="kt">void</span> <span class="nf">d</span><span class="o">(</span><span class="nc">String</span> <span class="n">tag</span><span class="o">,</span> <span class="nc">String</span> <span class="n">msg</span><span class="o">)</span>
+<span class="kd">public</span> <span class="kd">static</span> <span class="kt">void</span> <span class="nf">d</span><span class="o">(</span><span class="nc">String</span> <span class="n">msg</span><span class="o">)</span>
+
+<span class="c1">//打印 E 级别的 Log</span>
+<span class="kd">public</span> <span class="kd">static</span> <span class="kt">void</span> <span class="nf">e</span><span class="o">(</span><span class="nc">String</span> <span class="n">tag</span><span class="o">,</span> <span class="nc">String</span> <span class="n">msg</span><span class="o">)</span>
+<span class="kd">public</span> <span class="kd">static</span> <span class="kt">void</span> <span class="nf">e</span><span class="o">(</span><span class="nc">String</span> <span class="n">msg</span><span class="o">)</span>
+
+<span class="c1">//打印 I 级别的 Log</span>
+<span class="kd">public</span> <span class="kd">static</span> <span class="kt">void</span> <span class="nf">i</span><span class="o">(</span><span class="nc">String</span> <span class="n">tag</span><span class="o">,</span> <span class="nc">String</span> <span class="n">msg</span><span class="o">)</span>
+<span class="kd">public</span> <span class="kd">static</span> <span class="kt">void</span> <span class="nf">i</span><span class="o">(</span><span class="nc">String</span> <span class="n">msg</span><span class="o">)</span>
+</pre></td></tr></tbody></table></code></pre></div></div>
+:ET

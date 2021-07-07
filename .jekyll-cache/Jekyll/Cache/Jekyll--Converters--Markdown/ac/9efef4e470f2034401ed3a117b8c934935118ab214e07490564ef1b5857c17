@@ -1,0 +1,44 @@
+I"�<p><a href="https://github.com/summer-zhoujie/ZJUtils">github地址</a></p>
+
+<h1 id="1简介">1.简介</h1>
+<p>通知工具</p>
+
+<ol>
+  <li>显示默认Notification</li>
+  <li>显示自定义Notification</li>
+</ol>
+
+<h1 id="2显示默认notification">2.显示默认Notification</h1>
+<div class="language-java highlighter-rouge"><div class="highlight"><pre class="highlight"><code><table class="rouge-table"><tbody><tr><td class="rouge-gutter gl"><pre class="lineno">1
+2
+3
+</pre></td><td class="rouge-code"><pre><span class="kd">public</span> <span class="kd">static</span> <span class="kt">void</span> <span class="nf">show</span><span class="o">(</span><span class="nc">Context</span> <span class="n">context</span><span class="o">,</span> <span class="nc">String</span> <span class="n">title</span><span class="o">,</span> <span class="nc">String</span> <span class="n">body</span><span class="o">,</span> <span class="kt">int</span> <span class="n">smallIconId</span><span class="o">)</span>
+
+<span class="kd">public</span> <span class="kd">static</span> <span class="kt">void</span> <span class="nf">show</span><span class="o">(</span><span class="nc">Context</span> <span class="n">context</span><span class="o">,</span> <span class="kt">int</span> <span class="n">smallIconId</span><span class="o">,</span> <span class="nc">String</span> <span class="n">body</span><span class="o">,</span> <span class="nc">String</span> <span class="n">title</span><span class="o">,</span> <span class="nc">PendingIntent</span> <span class="n">pendingIntent</span><span class="o">,</span> <span class="kt">int</span> <span class="n">notifId</span><span class="o">,</span> <span class="nc">String</span> <span class="n">groupId</span><span class="o">,</span> <span class="nc">String</span> <span class="n">groupMsg</span><span class="o">,</span> <span class="nc">String</span> <span class="n">channelId</span><span class="o">,</span> <span class="nc">String</span> <span class="n">channelName</span><span class="o">,</span> <span class="nc">RemoteViews</span> <span class="n">remoteViews</span><span class="o">,</span> <span class="kt">long</span><span class="o">[]</span> <span class="n">vibrationPattern</span><span class="o">,</span> <span class="kt">int</span> <span class="n">lightColor</span><span class="o">,</span> <span class="kt">boolean</span> <span class="n">enableVibration</span><span class="o">,</span> <span class="kt">boolean</span> <span class="n">enableSound</span><span class="o">)</span>
+</pre></td></tr></tbody></table></code></pre></div></div>
+
+<p>展示notification
+<code class="language-plaintext highlighter-rouge">@param</code> smallIconId      图标
+<code class="language-plaintext highlighter-rouge">@param</code> body             正文内容
+<code class="language-plaintext highlighter-rouge">@param</code> title            标题
+<code class="language-plaintext highlighter-rouge">@param</code> pendingIntent    定义点击执行的行为
+<code class="language-plaintext highlighter-rouge">@param</code> notifId          通知Id
+<code class="language-plaintext highlighter-rouge">@param</code> groupId          通知的分组Id
+<code class="language-plaintext highlighter-rouge">@param</code> groupMsg         通知的分组信息
+<code class="language-plaintext highlighter-rouge">@param</code> channelId        通知的渠道号
+<code class="language-plaintext highlighter-rouge">@param</code> channelName      通知的渠道描述(定义属于 营销通知, 普通通知)
+<code class="language-plaintext highlighter-rouge">@param</code> enableSound      是否使用声音
+<code class="language-plaintext highlighter-rouge">@param</code> lightColor       是否使用提示灯
+<code class="language-plaintext highlighter-rouge">@param</code> enableVibration  是否使用振动
+<code class="language-plaintext highlighter-rouge">@param</code> vibrationPattern 定义振动方式
+<code class="language-plaintext highlighter-rouge">@param</code> remoteViews      定义自定义View</p>
+
+<h1 id="3展示自定义notification">3.展示自定义notification</h1>
+<div class="language-java highlighter-rouge"><div class="highlight"><pre class="highlight"><code><table class="rouge-table"><tbody><tr><td class="rouge-gutter gl"><pre class="lineno">1
+</pre></td><td class="rouge-code"><pre><span class="kd">public</span> <span class="kd">static</span> <span class="kt">void</span> <span class="nf">show</span><span class="o">(</span><span class="nc">Context</span> <span class="n">context</span><span class="o">,</span> <span class="nc">RemoteViews</span> <span class="n">remoteViews</span><span class="o">,</span> <span class="kt">int</span> <span class="n">smallIconId</span><span class="o">)</span>
+</pre></td></tr></tbody></table></code></pre></div></div>
+<p><code class="language-plaintext highlighter-rouge">@param</code> context
+<code class="language-plaintext highlighter-rouge">@param</code> remoteViews 自定义视图View
+<code class="language-plaintext highlighter-rouge">@param</code> smallIconId Notification默认传入的Icon</p>
+
+:ET

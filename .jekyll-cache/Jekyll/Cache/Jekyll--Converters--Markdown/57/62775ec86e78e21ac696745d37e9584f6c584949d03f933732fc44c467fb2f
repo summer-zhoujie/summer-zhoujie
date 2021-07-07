@@ -1,0 +1,66 @@
+I"z<p><a href="https://github.com/summer-zhoujie/ZJUtils">github地址</a></p>
+
+<h1 id="1简介">1.简介</h1>
+<p>隐藏API(@hide修饰)访问工具</p>
+
+<p><strong>1. 先使用如下方法设置方法白名单</strong></p>
+
+<div class="language-java highlighter-rouge"><div class="highlight"><pre class="highlight"><code><table class="rouge-table"><tbody><tr><td class="rouge-gutter gl"><pre class="lineno">1
+2
+</pre></td><td class="rouge-code"><pre> <span class="c1">// 对所有方法设置白名单</span>
+ <span class="nc">ZJHiddenApiUtils</span><span class="o">.</span><span class="na">exemptAll</span><span class="o">();</span>
+</pre></td></tr></tbody></table></code></pre></div></div>
+
+<p>或者</p>
+<div class="language-java highlighter-rouge"><div class="highlight"><pre class="highlight"><code><table class="rouge-table"><tbody><tr><td class="rouge-gutter gl"><pre class="lineno">1
+2
+3
+</pre></td><td class="rouge-code"><pre> <span class="c1">//  对指定方法设置白名单</span>
+ <span class="c1">//  例如: android.util.DebugUtils.sizeValueToString(long, StringBuilder)</span>
+ <span class="nc">ZJHiddenApiUtils</span><span class="o">.</span><span class="na">setExemption</span><span class="o">(</span><span class="s">"Landroid/util/DebugUtils;-&gt;sizeValueToString(JLjava/lang/StringBuilder;)Ljava/lang/String;"</span><span class="o">);</span>
+</pre></td></tr></tbody></table></code></pre></div></div>
+
+<p><strong>2. 然后开始调用方法(正常的反射流程)</strong></p>
+<div class="language-java highlighter-rouge"><div class="highlight"><pre class="highlight"><code><table class="rouge-table"><tbody><tr><td class="rouge-gutter gl"><pre class="lineno">1
+2
+3
+4
+5
+6
+7
+8
+</pre></td><td class="rouge-code"><pre>        <span class="k">try</span> <span class="o">{</span>
+            <span class="kd">final</span> <span class="nc">Class</span><span class="o">&lt;?&gt;</span> <span class="n">class_DebugUtils</span> <span class="o">=</span> <span class="nc">Class</span><span class="o">.</span><span class="na">forName</span><span class="o">(</span><span class="s">"android.util.DebugUtils"</span><span class="o">);</span>
+            <span class="kd">final</span> <span class="nc">Method</span> <span class="n">m_SizeValueToString</span> <span class="o">=</span> <span class="n">class_DebugUtils</span><span class="o">.</span><span class="na">getDeclaredMethod</span><span class="o">(</span><span class="s">"sizeValueToString"</span><span class="o">,</span> <span class="kt">long</span><span class="o">.</span><span class="na">class</span><span class="o">,</span> <span class="nc">StringBuilder</span><span class="o">.</span><span class="na">class</span><span class="o">);</span>
+            <span class="kd">final</span> <span class="nc">String</span> <span class="n">result</span> <span class="o">=</span> <span class="o">(</span><span class="nc">String</span><span class="o">)</span> <span class="n">m_SizeValueToString</span><span class="o">.</span><span class="na">invoke</span><span class="o">(</span><span class="kc">null</span><span class="o">,</span> <span class="no">SIZE_1_5M</span><span class="o">,</span> <span class="kc">null</span><span class="o">);</span>
+            <span class="n">printResult</span><span class="o">(</span><span class="n">result</span><span class="o">);</span>
+        <span class="o">}</span> <span class="k">catch</span> <span class="o">(</span><span class="nc">Exception</span> <span class="n">e</span><span class="o">)</span> <span class="o">{</span>
+            <span class="n">printResult</span><span class="o">(</span><span class="nc">Log</span><span class="o">.</span><span class="na">getStackTraceString</span><span class="o">(</span><span class="n">e</span><span class="o">));</span>
+        <span class="o">}</span>
+</pre></td></tr></tbody></table></code></pre></div></div>
+
+<h1 id="2设置某个hide方法可以被访问">2.设置某个@hide方法可以被访问</h1>
+<div class="language-java highlighter-rouge"><div class="highlight"><pre class="highlight"><code><table class="rouge-table"><tbody><tr><td class="rouge-gutter gl"><pre class="lineno">1
+</pre></td><td class="rouge-code"><pre><span class="kd">public</span> <span class="kd">static</span> <span class="kt">boolean</span> <span class="nf">setExemption</span><span class="o">(</span><span class="nc">String</span> <span class="n">method</span><span class="o">)</span>
+</pre></td></tr></tbody></table></code></pre></div></div>
+<p><code class="language-plaintext highlighter-rouge">@param</code> method
+单个方法字符串表达(语法: 参考smali)
+例如: 描述 android.util.DebugUtils#sizeValueToString ,”Landroid/util/DebugUtils;&gt;sizeValueToString(JLjava/lang/StringBuilder;)Ljava/lang/String;”
+语法参考: <a href="https://source.android.com/devices/tech/dalvik/dex-format#fullclassname">https://source.android.com/devices/tech/dalvik/dex-format#fullclassname</a>
+查看目录[ 字符串语法 -&gt; TypeDescriptor ]</p>
+
+<p><code class="language-plaintext highlighter-rouge">@return</code> 是否修改成功</p>
+
+<h1 id="3设置某些hide方法可以被访问">3.设置某些@hide方法可以被访问</h1>
+<div class="language-java highlighter-rouge"><div class="highlight"><pre class="highlight"><code><table class="rouge-table"><tbody><tr><td class="rouge-gutter gl"><pre class="lineno">1
+</pre></td><td class="rouge-code"><pre><span class="kd">public</span> <span class="kd">static</span> <span class="kt">boolean</span> <span class="nf">setExemptions</span><span class="o">(</span><span class="nc">String</span><span class="o">...</span> <span class="n">methods</span><span class="o">)</span>
+</pre></td></tr></tbody></table></code></pre></div></div>
+<p><code class="language-plaintext highlighter-rouge">@param</code> methods 方法字符串列表
+<code class="language-plaintext highlighter-rouge">@return</code> 是否修改成功</p>
+
+<h1 id="4设置全部的hide方法可以被访问">4.设置全部的@hide方法可以被访问</h1>
+<div class="language-java highlighter-rouge"><div class="highlight"><pre class="highlight"><code><table class="rouge-table"><tbody><tr><td class="rouge-gutter gl"><pre class="lineno">1
+</pre></td><td class="rouge-code"><pre><span class="kd">public</span> <span class="kd">static</span> <span class="kt">boolean</span> <span class="nf">exemptAll</span><span class="o">()</span>
+</pre></td></tr></tbody></table></code></pre></div></div>
+<p><code class="language-plaintext highlighter-rouge">@return</code> 是否设置成功</p>
+:ET

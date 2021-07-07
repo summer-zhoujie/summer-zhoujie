@@ -1,0 +1,43 @@
+I"�<p><a href="https://github.com/summer-zhoujie/ZJUtils">github地址</a></p>
+
+<h1 id="1简介">1.简介</h1>
+<p>Handler便捷工具</p>
+<ol>
+  <li>主线程 Handler</li>
+  <li>主线程延时 Handler</li>
+  <li>移除主线程 Handler的Runnable</li>
+  <li>子线程 Handler</li>
+  <li>子线程延时 Handler</li>
+  <li>移除子线程 Handler的Runnable</li>
+</ol>
+
+<h1 id="2主线程-handler">2.主线程 Handler</h1>
+<div class="language-java highlighter-rouge"><div class="highlight"><pre class="highlight"><code><table class="rouge-table"><tbody><tr><td class="rouge-gutter gl"><pre class="lineno">1
+</pre></td><td class="rouge-code"><pre><span class="kd">public</span> <span class="kd">synchronized</span> <span class="kd">static</span> <span class="kt">void</span> <span class="nf">postToMain</span><span class="o">(</span><span class="kd">final</span> <span class="nc">Runnable</span> <span class="n">run</span><span class="o">)</span>
+</pre></td></tr></tbody></table></code></pre></div></div>
+
+<h1 id="3主线程延时-handler">3.主线程延时 Handler</h1>
+<div class="language-java highlighter-rouge"><div class="highlight"><pre class="highlight"><code><table class="rouge-table"><tbody><tr><td class="rouge-gutter gl"><pre class="lineno">1
+</pre></td><td class="rouge-code"><pre><span class="kd">public</span> <span class="kd">synchronized</span> <span class="kd">static</span> <span class="kt">void</span> <span class="nf">postToMain</span><span class="o">(</span><span class="kd">final</span> <span class="nc">Runnable</span> <span class="n">run</span><span class="o">,</span> <span class="kd">final</span> <span class="kt">long</span> <span class="n">delayMillis</span><span class="o">)</span>
+</pre></td></tr></tbody></table></code></pre></div></div>
+
+<h1 id="4移除主线程-handler的runnable">4.移除主线程 Handler的Runnable</h1>
+<div class="language-java highlighter-rouge"><div class="highlight"><pre class="highlight"><code><table class="rouge-table"><tbody><tr><td class="rouge-gutter gl"><pre class="lineno">1
+</pre></td><td class="rouge-code"><pre><span class="kd">public</span> <span class="kd">synchronized</span> <span class="kd">static</span> <span class="kt">void</span> <span class="nf">removeTaskFromMan</span><span class="o">(</span><span class="kd">final</span> <span class="nc">Runnable</span> <span class="n">run</span><span class="o">)</span>
+</pre></td></tr></tbody></table></code></pre></div></div>
+
+<h1 id="5子线程-handler">5.子线程 Handler</h1>
+<div class="language-java highlighter-rouge"><div class="highlight"><pre class="highlight"><code><table class="rouge-table"><tbody><tr><td class="rouge-gutter gl"><pre class="lineno">1
+</pre></td><td class="rouge-code"><pre><span class="kd">public</span> <span class="kd">synchronized</span> <span class="kd">static</span> <span class="kt">void</span> <span class="nf">postToBackground</span><span class="o">(</span><span class="kd">final</span> <span class="nc">Runnable</span> <span class="n">run</span><span class="o">)</span>
+</pre></td></tr></tbody></table></code></pre></div></div>
+
+<h1 id="6子线程延时-handler">6.子线程延时 Handler</h1>
+<div class="language-java highlighter-rouge"><div class="highlight"><pre class="highlight"><code><table class="rouge-table"><tbody><tr><td class="rouge-gutter gl"><pre class="lineno">1
+</pre></td><td class="rouge-code"><pre><span class="kd">public</span> <span class="kd">synchronized</span> <span class="kd">static</span> <span class="kt">void</span> <span class="nf">postToBackground</span><span class="o">(</span><span class="kd">final</span> <span class="nc">Runnable</span> <span class="n">run</span><span class="o">,</span> <span class="kd">final</span> <span class="kt">long</span> <span class="n">delayMillis</span><span class="o">)</span>
+</pre></td></tr></tbody></table></code></pre></div></div>
+
+<h1 id="7移除子线程-handler的runnable">7.移除子线程 Handler的Runnable</h1>
+<div class="language-java highlighter-rouge"><div class="highlight"><pre class="highlight"><code><table class="rouge-table"><tbody><tr><td class="rouge-gutter gl"><pre class="lineno">1
+</pre></td><td class="rouge-code"><pre><span class="kd">public</span> <span class="kd">synchronized</span> <span class="kd">static</span> <span class="kt">void</span> <span class="nf">removeTaskFromBackground</span><span class="o">(</span><span class="kd">final</span> <span class="nc">Runnable</span> <span class="n">run</span><span class="o">)</span>
+</pre></td></tr></tbody></table></code></pre></div></div>
+:ET

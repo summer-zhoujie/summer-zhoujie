@@ -1,0 +1,30 @@
+I"�
+<p><a href="https://github.com/summer-zhoujie/ZJUtils">github地址</a></p>
+
+<h1 id="1简介">1.简介</h1>
+<p>单位转换工具</p>
+
+<h1 id="2dp转换成px">2.dp转换成px</h1>
+<div class="language-java highlighter-rouge"><div class="highlight"><pre class="highlight"><code><table class="rouge-table"><tbody><tr><td class="rouge-gutter gl"><pre class="lineno">1
+</pre></td><td class="rouge-code"><pre><span class="kd">public</span> <span class="kd">static</span> <span class="kt">int</span> <span class="nf">dp2px</span><span class="o">(</span><span class="kt">float</span> <span class="n">dpValue</span><span class="o">)</span>
+</pre></td></tr></tbody></table></code></pre></div></div>
+<p><code class="language-plaintext highlighter-rouge">@param</code> dpValue dp值</p>
+
+<h1 id="3px转换成dp">3.px转换成dp</h1>
+<div class="language-java highlighter-rouge"><div class="highlight"><pre class="highlight"><code><table class="rouge-table"><tbody><tr><td class="rouge-gutter gl"><pre class="lineno">1
+</pre></td><td class="rouge-code"><pre><span class="kd">public</span> <span class="kd">static</span> <span class="kt">int</span> <span class="nf">dp2px</span><span class="o">(</span><span class="kt">float</span> <span class="n">dpValue</span><span class="o">)</span>
+</pre></td></tr></tbody></table></code></pre></div></div>
+<p><code class="language-plaintext highlighter-rouge">@param</code> pxValue px值</p>
+
+<h1 id="4sp转换成px">4.sp转换成px</h1>
+<div class="language-java highlighter-rouge"><div class="highlight"><pre class="highlight"><code><table class="rouge-table"><tbody><tr><td class="rouge-gutter gl"><pre class="lineno">1
+</pre></td><td class="rouge-code"><pre><span class="kd">public</span> <span class="kd">static</span> <span class="kt">int</span> <span class="nf">sp2px</span><span class="o">(</span><span class="kt">float</span> <span class="n">spValue</span><span class="o">)</span>
+</pre></td></tr></tbody></table></code></pre></div></div>
+<p><code class="language-plaintext highlighter-rouge">@param</code> spValue sp值</p>
+
+<h1 id="5px转换成sp">5.px转换成sp</h1>
+<div class="language-java highlighter-rouge"><div class="highlight"><pre class="highlight"><code><table class="rouge-table"><tbody><tr><td class="rouge-gutter gl"><pre class="lineno">1
+</pre></td><td class="rouge-code"><pre><span class="kd">public</span> <span class="kd">static</span> <span class="kt">int</span> <span class="nf">px2sp</span><span class="o">(</span><span class="kt">float</span> <span class="n">pxValue</span><span class="o">)</span>
+</pre></td></tr></tbody></table></code></pre></div></div>
+<p><code class="language-plaintext highlighter-rouge">@param</code> pxValue px值</p>
+:ET

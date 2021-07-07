@@ -1,0 +1,75 @@
+I"�<p><a href="https://github.com/summer-zhoujie/ZJUtils">github地址</a></p>
+
+<h1 id="1-简介">1. 简介</h1>
+
+<p>public class ZJAPKUtils
+extends java.lang.Object
+apk文件工具</p>
+
+<ol>
+  <li>apk文件是否安装</li>
+  <li>调起apk文件的安装</li>
+  <li>获取apk文件的包名</li>
+</ol>
+
+<h1 id="2-apk文件是否安装">2. apk文件是否安装</h1>
+<div class="language-java highlighter-rouge"><div class="highlight"><pre class="highlight"><code><table class="rouge-table"><tbody><tr><td class="rouge-gutter gl"><pre class="lineno">1
+2
+</pre></td><td class="rouge-code"><pre><span class="kd">public</span> <span class="kd">static</span> <span class="kt">boolean</span> <span class="nf">isApkFileInstalled</span><span class="o">(</span><span class="n">android</span><span class="o">.</span><span class="na">content</span><span class="o">.</span><span class="na">Context</span> <span class="n">context</span><span class="o">,</span>
+                                         <span class="n">java</span><span class="o">.</span><span class="na">lang</span><span class="o">.</span><span class="na">String</span> <span class="n">path</span><span class="o">)</span>
+</pre></td></tr></tbody></table></code></pre></div></div>
+<p><code class="language-plaintext highlighter-rouge">@param</code> path - apk文件路径<br />
+<code class="language-plaintext highlighter-rouge">@param</code> context - 用于获取PackageManager<br />
+<code class="language-plaintext highlighter-rouge">@return</code> true:已安装<br /></p>
+
+<h1 id="3-调起安装apk文件">3. 调起安装APK文件</h1>
+<div class="language-java highlighter-rouge"><div class="highlight"><pre class="highlight"><code><table class="rouge-table"><tbody><tr><td class="rouge-gutter gl"><pre class="lineno">1
+2
+</pre></td><td class="rouge-code"><pre><span class="kd">public</span> <span class="kd">static</span> <span class="kt">void</span> <span class="nf">installApkFile</span><span class="o">(</span><span class="n">android</span><span class="o">.</span><span class="na">content</span><span class="o">.</span><span class="na">Context</span> <span class="n">context</span><span class="o">,</span>
+                                  <span class="n">java</span><span class="o">.</span><span class="na">lang</span><span class="o">.</span><span class="na">String</span> <span class="n">path</span><span class="o">)</span>
+</pre></td></tr></tbody></table></code></pre></div></div>
+<p><code class="language-plaintext highlighter-rouge">@param</code> path - apk文件路径</p>
+
+<p>需要在Manifest中集成以下内容</p>
+<div class="language-xml highlighter-rouge"><div class="highlight"><pre class="highlight"><code><table class="rouge-table"><tbody><tr><td class="rouge-gutter gl"><pre class="lineno">1
+2
+3
+4
+5
+6
+7
+8
+9
+10
+</pre></td><td class="rouge-code"><pre><span class="nt">&lt;provider</span>
+ <span class="na">android:name=</span><span class="s">"androidx.core.content.FileProvider"</span>
+ <span class="na">android:authorities=</span><span class="s">"com.zj.tools.mylibrary.fileprovider"</span>
+ <span class="na">android:exported=</span><span class="s">"false"</span>
+ <span class="na">android:grantUriPermissions=</span><span class="s">"true"</span><span class="nt">&gt;</span>
+     <span class="nt">&lt;meta-data</span>
+     <span class="na">android:name=</span><span class="s">"android.support.FILE_PROVIDER_PATHS"</span>
+     <span class="na">android:resource=</span><span class="s">"@xml/pg_file_path"</span>
+     <span class="na">tools:replace=</span><span class="s">"android:resource"</span> <span class="nt">/&gt;</span>
+<span class="nt">&lt;/provider&gt;</span>
+</pre></td></tr></tbody></table></code></pre></div></div>
+<p>再创建xml文件, 内容如下</p>
+<div class="language-xml highlighter-rouge"><div class="highlight"><pre class="highlight"><code><table class="rouge-table"><tbody><tr><td class="rouge-gutter gl"><pre class="lineno">1
+2
+3
+4
+5
+6
+7
+</pre></td><td class="rouge-code"><pre> <span class="cp">&lt;?xml version="1.0" encoding="utf-8"?&gt;</span>
+ <span class="nt">&lt;paths&gt;</span>
+ <span class="c">&lt;!--  APKUtils  这里填入自己APK文件放置的路径即可--&gt;</span>
+     <span class="nt">&lt;external-files-path</span>
+         <span class="na">name=</span><span class="s">"external_files_path"</span>
+         <span class="na">path=</span><span class="s">"Download"</span> <span class="nt">/&gt;</span>
+ <span class="nt">&lt;/paths&gt;</span>
+</pre></td></tr></tbody></table></code></pre></div></div>
+
+<h1 id="4-获取安装文件包名">4. 获取安装文件包名</h1>
+<p><code class="language-plaintext highlighter-rouge">@param</code> path apk filepath <br />
+<code class="language-plaintext highlighter-rouge">@return</code> packagename</p>
+:ET
